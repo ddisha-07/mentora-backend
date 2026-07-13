@@ -410,15 +410,15 @@ function Input({ placeholder, type = "text", value, onChange, icon, className = 
 
 function StatCard({ label, value, delta, icon }: { label: string; value: string; delta?: string; icon: React.ReactNode }) {
   return (
-    <Card className="p-5">
-      <div className="flex items-start justify-between mb-3">
+    <Card className="p-6">
+      <div className="flex items-start justify-between mb-4">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
           {icon}
         </div>
         {delta && <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-md font-mono">{delta}</span>}
       </div>
       <p {...mono("text-2xl text-foreground font-semibold")}>{value}</p>
-      <p className="text-xs text-muted-foreground mt-1">{label}</p>
+      <p className="text-xs text-muted-foreground mt-1.5">{label}</p>
     </Card>
   );
 }
@@ -1152,7 +1152,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
     : 0;
 
   return (
-    <aside className={`flex-shrink-0 flex flex-col bg-secondary border-r border-border transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}>
+    <aside className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}>
       {/* Logo */}
       <div className={`h-16 flex items-center border-b border-border px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
         {!collapsed && (
@@ -1456,25 +1456,28 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             View all <ArrowRight size={12} />
           </button>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {COURSES.filter((c) => c.progress === 0).slice(0, 3).map((course) => (
-            <Card key={course.id} className="overflow-hidden cursor-pointer group" onClick={() => onNavigate("course-detail")}>
-              <div className="h-32 overflow-hidden bg-surface">
-                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              </div>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge color="default">{course.category}</Badge>
-                  <Badge color={course.difficulty === "Advanced" ? "red" : course.difficulty === "Intermediate" ? "yellow" : "green"}>{course.difficulty}</Badge>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses
+            .filter((c) => !enrollments.some((e) => Number(e.course_id) === Number(c.id)))
+            .slice(0, 3)
+            .map((course) => (
+              <Card key={course.id} className="overflow-hidden cursor-pointer group" onClick={() => { setSelectedCourseId(course.id); onNavigate("course-detail"); }}>
+                <div className="h-32 overflow-hidden bg-surface">
+                  <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
-                <p {...sg("text-sm font-medium leading-snug group-hover:text-primary transition-colors")}>{course.title}</p>
-                <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Clock size={11} />{course.duration}</span>
-                  <span className="flex items-center gap-1"><Star size={11} className="text-amber-400" />{course.rating}</span>
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge color="default">{course.category}</Badge>
+                    <Badge color={course.difficulty === "Advanced" ? "red" : course.difficulty === "Intermediate" ? "yellow" : "green"}>{course.difficulty}</Badge>
+                  </div>
+                  <p {...sg("text-sm font-medium leading-snug mb-2 group-hover:text-primary transition-colors")}>{course.title}</p>
+                  <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Clock size={11} />{course.duration}</span>
+                    <span className="flex items-center gap-1"><Star size={11} className="text-amber-400" />{course.rating}</span>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
         </div>
       </div>
     </div>
@@ -1544,7 +1547,7 @@ function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <p className="text-muted-foreground text-sm">Try adjusting your search or filters.</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-6">
           {filtered.map((course) => (
             <Card key={course.id} className="overflow-hidden group cursor-pointer" onClick={() => handleCourseClick(course.id)}>
               <div className="h-44 overflow-hidden bg-surface relative">
@@ -1552,26 +1555,26 @@ function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
                 {course.progress > 0 && (
                   <div className="absolute bottom-3 left-3 right-3">
-                    <ProgressBar value={course.progress} />
-                    <p {...mono("text-[10px] text-white/80 mt-1")}>{course.progress}% complete</p>
+                     <ProgressBar value={course.progress} />
+                     <p {...mono("text-[10px] text-white/80 mt-1")}>{course.progress}% complete</p>
                   </div>
                 )}
               </div>
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-4">
                   <Badge color="default">{course.category}</Badge>
                   <Badge color={course.difficulty === "Advanced" ? "red" : course.difficulty === "Intermediate" ? "yellow" : "green"}>
                     {course.difficulty}
                   </Badge>
                 </div>
-                <h3 {...sg("text-sm font-semibold leading-snug mb-2 group-hover:text-primary transition-colors")}>
+                <h3 {...sg("text-sm font-semibold leading-snug mb-3 group-hover:text-primary transition-colors")}>
                   {course.title}
                 </h3>
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-5">
                   <img src={course.instructorAvatar} alt={course.instructor} className="w-5 h-5 rounded-full object-cover bg-muted" />
                   <span className="text-xs text-muted-foreground">{course.instructor}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-5">
                   <span className="flex items-center gap-1"><Clock size={12} />{course.duration}</span>
                   <span className="flex items-center gap-1"><BookOpen size={12} />{course.lessons} lessons</span>
                   <span className="flex items-center gap-1"><Star size={12} className="text-amber-400" />{course.rating}</span>
@@ -1918,7 +1921,7 @@ function LessonViewerPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       </div>
 
       {/* Sidebar: module list */}
-      <aside className="w-72 flex-shrink-0 border-l border-border bg-secondary overflow-y-auto hidden xl:block">
+      <aside className="w-72 flex-shrink-0 border-l border-sidebar-border bg-sidebar overflow-y-auto hidden xl:block">
         <div className="p-4 border-b border-border">
           <p {...sg("text-sm font-semibold")}>Course Content</p>
           <ProgressBar value={progressPercent} className="mt-2" />
@@ -2131,7 +2134,7 @@ function AIChatPage() {
       </div>
 
       {/* Sidebar: context */}
-      <aside className="w-72 flex-shrink-0 border-l border-border bg-secondary p-4 space-y-4 hidden lg:block">
+      <aside className="w-72 flex-shrink-0 border-l border-sidebar-border bg-sidebar p-4 space-y-4 hidden lg:block">
         <div>
           <p {...sg("text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3")}>Active Course</p>
           <Card className="p-3">
