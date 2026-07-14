@@ -526,8 +526,6 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     { icon: <Award size={22} />, title: "Verified Certificates", desc: "Blockchain-backed credentials shareable on LinkedIn, automatically tied to your professional profile." },
   ];
 
-  const companies = ["Stripe", "Cloudflare", "Anthropic", "Figma", "Vercel", "Linear", "Notion", "Raycast"];
-
   const faqs = [
     { q: "How does the AI assistant work?", a: "Mentora AI is trained on your organization's content, industry knowledge, and your specific courses. It understands context from your learning history and provides relevant, accurate answers — not generic web results." },
     { q: "Can Mentora integrate with our existing tools?", a: "Yes. Mentora connects with Slack, Microsoft Teams, HRIS systems, SSO providers (Okta, Azure AD), and your existing LMS content via SCORM and xAPI standards." },
@@ -707,30 +705,6 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats bar ───────────────────────────────────────────────── */}
-      <section className="py-12 border-y border-border mt-12">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-8">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest" {...mono()}>
-            Trusted by world-class teams
-          </p>
-          <div className="flex items-center gap-10 flex-wrap justify-center">
-            {companies.map((c) => (
-              <span key={c} {...sg("text-muted-foreground text-sm font-semibold hover:text-foreground/60 transition-colors cursor-default select-none")}>
-                {c}
-              </span>
-            ))}
-          </div>
-          <div className="hidden lg:flex items-center gap-8 text-center">
-            {[["4,200+", "Courses"], ["98%", "Completion"], ["340+", "Enterprises"]].map(([v, l]) => (
-              <div key={l}>
-                <p {...mono("text-xl font-semibold text-foreground")}>{v}</p>
-                <p className="text-xs text-muted-foreground">{l}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
