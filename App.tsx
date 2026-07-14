@@ -343,7 +343,7 @@ function CyanButton({ children, onClick, className = "", outline = false, size =
   if (outline) {
     return (
       <button onClick={onClick}
-        className={`${pad} rounded-xl border border-primary text-primary font-medium transition-all hover:bg-primary/10 active:scale-95 ${className}`}
+        className={`${pad} rounded-full border border-primary text-primary font-medium transition-all hover:bg-primary/10 active:scale-95 ${className}`}
         style={{ fontFamily: "'Raleway', sans-serif" }}>
         {children}
       </button>
@@ -351,7 +351,7 @@ function CyanButton({ children, onClick, className = "", outline = false, size =
   }
   return (
     <button onClick={onClick}
-      className={`${pad} rounded-xl bg-primary text-white font-semibold transition-all hover:bg-primary/90 hover:shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_45%,transparent)] active:scale-95 ${className}`}
+      className={`${pad} rounded-full bg-primary text-white font-semibold transition-all hover:bg-primary/90 hover:shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_45%,transparent)] active:scale-95 ${className}`}
       style={{ fontFamily: "'Raleway', sans-serif" }}>
       {children}
     </button>
@@ -542,7 +542,9 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Mentora Logo" className="w-8 h-8 object-contain" />
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <img src="/logo.png" alt="Mentora Logo" className="w-4.5 h-4.5 object-contain brightness-0 invert" />
+            </div>
             <span {...sg("text-lg font-bold tracking-tight")}>Mentora</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
@@ -552,7 +554,7 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           </div>
           <div className="flex items-center gap-3">
             <button onClick={toggle}
-              className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border/80 transition-all"
+              className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border/80 transition-all"
               title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
@@ -897,7 +899,9 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between flex-wrap gap-6">
             <div className="flex items-center gap-2.5">
-              <img src="/logo.png" alt="Mentora Logo" className="w-7 h-7 object-contain" />
+              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
+              </div>
               <span {...sg("font-bold tracking-tight")}>Mentora</span>
               <span className="text-muted-foreground text-xs ml-2">© 2024 Mentora Inc.</span>
             </div>
@@ -981,7 +985,9 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="relative z-10 text-center">
           <div className="flex items-center justify-center gap-2 mb-12">
-            <img src="/logo.png" alt="Mentora Logo" className="w-10 h-10 object-contain" />
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <img src="/logo.png" alt="Mentora Logo" className="w-5.5 h-5.5 object-contain brightness-0 invert" />
+            </div>
             <span {...sg("text-2xl font-bold")}>Mentora</span>
           </div>
           <NeuralNetSVG className="w-80 mb-10 opacity-70" />
@@ -1011,7 +1017,9 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </button>
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-10">
-            <img src="/logo.png" alt="Mentora Logo" className="w-8 h-8 object-contain" />
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <img src="/logo.png" alt="Mentora Logo" className="w-4.5 h-4.5 object-contain brightness-0 invert" />
+            </div>
             <span {...sg("text-lg font-semibold")}>Mentora</span>
           </div>
           <h2 style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 900, fontSize: "2rem", marginBottom: "0.5rem" }}>
@@ -1131,12 +1139,16 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
       <div className={`h-16 flex items-center border-b border-border px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Mentora Logo" className="w-7 h-7 object-contain flex-shrink-0" />
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
+            </div>
             <span {...sg("font-semibold text-base")}>Mentora</span>
           </div>
         )}
         {collapsed && (
-          <img src="/logo.png" alt="Mentora Logo" className="w-7 h-7 object-contain" />
+          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
+          </div>
         )}
         <button onClick={onToggle} className={`text-muted-foreground hover:text-foreground transition-colors ${collapsed ? "hidden" : ""}`}>
           <ChevronLeft size={16} />
