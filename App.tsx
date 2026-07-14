@@ -542,9 +542,7 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles size={16} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="Mentora Logo" className="w-8 h-8 object-contain" />
             <span {...sg("text-lg font-bold tracking-tight")}>Mentora</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
@@ -899,9 +897,7 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between flex-wrap gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                <Sparkles size={14} className="text-white" />
-              </div>
+              <img src="/logo.png" alt="Mentora Logo" className="w-7 h-7 object-contain" />
               <span {...sg("font-bold tracking-tight")}>Mentora</span>
               <span className="text-muted-foreground text-xs ml-2">© 2024 Mentora Inc.</span>
             </div>
@@ -985,9 +981,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="relative z-10 text-center">
           <div className="flex items-center justify-center gap-2 mb-12">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Sparkles size={20} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="Mentora Logo" className="w-10 h-10 object-contain" />
             <span {...sg("text-2xl font-bold")}>Mentora</span>
           </div>
           <NeuralNetSVG className="w-80 mb-10 opacity-70" />
@@ -1017,9 +1011,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </button>
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-10">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles size={16} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="Mentora Logo" className="w-8 h-8 object-contain" />
             <span {...sg("text-lg font-semibold")}>Mentora</span>
           </div>
           <h2 style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 900, fontSize: "2rem", marginBottom: "0.5rem" }}>
@@ -1139,16 +1131,12 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
       <div className={`h-16 flex items-center border-b border-border px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-              <Sparkles size={14} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="Mentora Logo" className="w-7 h-7 object-contain flex-shrink-0" />
             <span {...sg("font-semibold text-base")}>Mentora</span>
           </div>
         )}
         {collapsed && (
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-            <Sparkles size={14} className="text-white" />
-          </div>
+          <img src="/logo.png" alt="Mentora Logo" className="w-7 h-7 object-contain" />
         )}
         <button onClick={onToggle} className={`text-muted-foreground hover:text-foreground transition-colors ${collapsed ? "hidden" : ""}`}>
           <ChevronLeft size={16} />
