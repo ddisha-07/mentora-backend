@@ -2886,6 +2886,15 @@ export default function App() {
   const [page, setPage] = useState<Page>("landing");
   const [isDark, setIsDark] = useState(true);
 
+  // Synchronize theme class with html element
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDark]);
+
   // Supabase states
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
