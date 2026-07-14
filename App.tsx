@@ -2943,6 +2943,8 @@ export default function App() {
         if (active) {
           if (!coursesErr && coursesData) {
             setCourses(coursesData);
+          } else if (coursesErr) {
+            console.error("Supabase error fetching courses:", coursesErr);
           }
         }
       } catch (err) {
