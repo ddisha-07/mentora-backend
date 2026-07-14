@@ -359,12 +359,20 @@ function CyanButton({ children, onClick, className = "", outline = false, size =
 }
 
 function Badge({ children, color = "cyan" }: { children: React.ReactNode; color?: "cyan" | "green" | "yellow" | "red" | "purple" | "default" }) {
-  const c = {
+  const { isDark } = useTheme();
+  const c = isDark ? {
     cyan: "bg-primary/10 text-primary border-primary/20",
     green: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     yellow: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     red: "bg-red-500/10 text-red-400 border-red-500/20",
     purple: "bg-violet-500/10 text-violet-400 border-violet-500/20",
+    default: "bg-muted text-muted-foreground border-border",
+  }[color] : {
+    cyan: "bg-primary/10 text-primary border-primary/20",
+    green: "bg-emerald-600/10 text-emerald-700 border-emerald-600/20",
+    yellow: "bg-amber-600/10 text-amber-800 border-amber-600/20",
+    red: "bg-red-600/10 text-red-700 border-red-600/20",
+    purple: "bg-violet-600/10 text-violet-700 border-violet-600/20",
     default: "bg-muted text-muted-foreground border-border",
   }[color];
   return (
@@ -415,7 +423,7 @@ function StatCard({ label, value, delta, icon }: { label: string; value: string;
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
           {icon}
         </div>
-        {delta && <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-md font-mono">{delta}</span>}
+        {delta && <span className="text-xs dark:text-emerald-400 dark:bg-emerald-400/10 text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-md font-mono">{delta}</span>}
       </div>
       <p {...mono("text-2xl text-foreground font-semibold")}>{value}</p>
       <p className="text-xs text-muted-foreground mt-1.5">{label}</p>
@@ -583,7 +591,7 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               </span>
               <HeroIconBox bg="var(--primary)" border="var(--primary)" iconColor="#ffffff"
                 icon={<Brain style={{ width: iconSize, height: iconSize }} />} />
-              <HeroIconBox bg={isDark ? "#1a1740" : "#E6EEFF"} border="var(--border)" iconColor="var(--muted-foreground)"
+              <HeroIconBox bg={isDark ? "#1a1740" : "#E6EEFF"} border="var(--border)" iconColor={isDark ? "#7C3AED" : "#4361EE"}
                 icon={<Zap style={{ width: iconSize, height: iconSize }} />} rotate={-8} />
               <HeroIconBox bg="#4CC9F0" border="#4CC9F0" iconColor="#06060F"
                 icon={<GraduationCap style={{ width: iconSize, height: iconSize }} />} />
@@ -1046,7 +1054,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <p className="text-muted-foreground text-sm mb-8">Sign in to continue your learning journey.</p>
 
           {errorMsg && (
-            <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl mb-4">
+            <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 rounded-xl mb-4">
               {errorMsg}
             </div>
           )}
@@ -1186,7 +1194,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
       <div className="p-3 space-y-0.5 border-t border-border">
         {bottomItems.map((item, i) => <NavItem key={i} item={item} />)}
         <button onClick={signOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-red-400 hover:bg-red-400/5 transition-all">
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground dark:hover:text-red-400 hover:text-red-600 hover:bg-red-500/5 transition-all">
           <LogOut size={18} />
           {!collapsed && <span style={{ fontFamily: "'Raleway', sans-serif" }} className="font-medium">Sign Out</span>}
         </button>
@@ -1243,9 +1251,9 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
                 <span className="text-xs text-primary">Mark all read</span>
               </div>
               {[
-                { icon: <CheckCircle size={14} className="text-emerald-400" />, text: "Module 1 completed — Great job!", time: "2m ago" },
+                { icon: <CheckCircle size={14} className="dark:text-emerald-400 text-emerald-600" />, text: "Module 1 completed — Great job!", time: "2m ago" },
                 { icon: <Sparkles size={14} className="text-primary" />, text: "New course: Prompt Engineering 101", time: "1h ago" },
-                { icon: <Trophy size={14} className="text-amber-400" />, text: "Certificate earned: Leadership Excellence", time: "3h ago" },
+                { icon: <Trophy size={14} className="dark:text-amber-400 text-amber-600" />, text: "Certificate earned: Leadership Excellence", time: "3h ago" },
                 { icon: <Megaphone size={14} className="text-violet-400" />, text: "Team update from L&D: Q3 Learning Goals", time: "Yesterday" },
               ].map((n, i) => (
                 <div key={i} className="px-4 py-3 flex items-start gap-3 hover:bg-muted/60 transition-colors cursor-pointer border-b border-border/50">
@@ -1718,7 +1726,7 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                               }
                             }}>
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isLessonCompleted ? "bg-emerald-500/10" : lesson.current ? "bg-primary/10" : "bg-muted"}`}>
-                              {isLessonCompleted ? <Check size={12} className="text-emerald-400" /> : lesson.current ? <Play size={10} className="text-primary" /> : <Circle size={12} className="text-muted-foreground" />}
+                              {isLessonCompleted ? <Check size={12} className="dark:text-emerald-400 text-emerald-600" /> : lesson.current ? <Play size={10} className="text-primary" /> : <Circle size={12} className="text-muted-foreground" />}
                             </div>
                             <span className={`text-xs flex-1 ${lesson.current ? "text-foreground font-medium" : isLessonCompleted ? "text-muted-foreground line-through" : "text-muted-foreground"}`}>
                               {lesson.title}
@@ -1941,11 +1949,11 @@ function LessonViewerPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-card transition-colors ${isSelected ? "bg-primary/5 border-l-2 border-primary" : ""}`}>
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleLesson(lesson.id, isLessonCompleted); }}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isLessonCompleted ? "bg-emerald-500/10 text-emerald-400" : isSelected ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground hover:bg-border"}`}>
+                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isLessonCompleted ? "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600" : isSelected ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground hover:bg-border"}`}>
                     {isLessonCompleted ? <Check size={10} /> : isSelected ? <Play size={8} /> : null}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs truncate ${isSelected ? "text-white font-medium" : "text-muted-foreground"}`}>{lesson.title}</p>
+                    <p className={`text-xs truncate ${isSelected ? "text-foreground font-medium" : "text-muted-foreground"}`}>{lesson.title}</p>
                     <p {...mono("text-[10px] text-muted-foreground")}>{lesson.duration}</p>
                   </div>
                 </div>
@@ -2047,8 +2055,8 @@ function AIChatPage() {
           <div>
             <p {...sg("text-sm font-semibold")}>Mentora AI</p>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <p className="text-xs text-emerald-400">Online · Ready to help</p>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <p className="text-xs dark:text-emerald-400 text-emerald-600">Online · Ready to help</p>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -2318,7 +2326,7 @@ function QuizResultsPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             ))}
           </div>
           {score >= 80 && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 dark:text-amber-400 text-amber-600 text-sm mb-6">
               <Trophy size={16} />
               <span {...sg("font-medium")}>Certificate Unlocked!</span>
             </div>
@@ -2340,13 +2348,13 @@ function QuizResultsPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <Card key={q.id} className={`p-4 border-l-2 ${isCorrect ? "border-l-emerald-500" : "border-l-red-500"}`}>
                 <div className="flex items-start gap-3 mb-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${isCorrect ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
-                    {isCorrect ? <Check size={12} className="text-emerald-400" /> : <X size={12} className="text-red-400" />}
+                    {isCorrect ? <Check size={12} className="dark:text-emerald-400 text-emerald-600" /> : <X size={12} className="dark:text-red-400 text-red-600" />}
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">{q.question}</p>
                 </div>
                 <div className="ml-9 space-y-1">
-                  <p className="text-xs text-emerald-400">✓ Correct: {q.options[q.correct]}</p>
-                  {!isCorrect && <p className="text-xs text-red-400">✗ Your answer: {q.options[userAns]}</p>}
+                  <p className="text-xs dark:text-emerald-400 text-emerald-600">✓ Correct: {q.options[q.correct]}</p>
+                  {!isCorrect && <p className="text-xs dark:text-red-400 text-red-600">✗ Your answer: {q.options[userAns]}</p>}
                   <p className="text-xs text-muted-foreground mt-2">{q.explanation}</p>
                 </div>
               </Card>
