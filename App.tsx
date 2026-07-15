@@ -24,7 +24,7 @@ import {
 import { UserRole } from "./src/types";
 import { ROLES_CONFIG, canAccessFeature } from "./src/config/roles";
 import { mockService, MOCK_USERS } from "./src/services/mockData";
-import { RoleBadge, XPBadge, StreakIndicator, MissionCard, StatCard as ReusableStatCard } from "./src/components/reusable";
+import { RoleBadge, XPBadge, StreakIndicator, MissionCard, StatCard as ReusableStatCard, CourseCard } from "./src/components/reusable";
 import LearnPage from "./src/pages/LearnPage";
 import KnowledgePage from "./src/pages/KnowledgePage";
 import KnowledgeExchangePage from "./src/pages/KnowledgeExchangePage";
@@ -53,6 +53,12 @@ export type AppContextType = {
   updateLessonProgress: (courseId: number, lessonId: number, completed: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  
+  // Phase 2 Context Fields
+  activeMissions: any[];
+  completeMission: (id: number, event?: React.MouseEvent) => void;
+  streakDays: any[];
+  floatingXp: any[];
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
@@ -1337,8 +1343,17 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const { isDark } = useTheme();
-  const { profile, courses, enrollments, setSelectedCourseId } = useApp();
-  const [activeMissions, setActiveMissions] = useState<any[]>([]);
+  const {
+    profile,
+    courses,
+    enrollments,
+    setSelectedCourseId,
+    activeMissions,
+    completeMission,
+    streakDays
+  } = useApp();
+
+  const [selectedMission, setSelectedMission] = useState<any | null>(null);
 
   const activeProfile = profile || {
     name: "Learner",
@@ -1348,18 +1363,35 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     department: "Software Engineering",
     plant: "Bangalore HQ",
     currentStreak: 12,
+    longestStreak: 12,
     xp: 1890,
     knowledgeCredits: 40,
-    mentoraCredits: 180
+    mentoraCredits: 180,
+    leaderboardRank: 7
   };
 
-  useEffect(() => {
-    mockService.fetchMissions(activeProfile.role as UserRole).then(data => {
-      setActiveMissions(data);
-    });
-  }, [activeProfile.role]);
+  const todayMission = activeMissions.find(m => m.status !== 'completed');
 
-  // Find courses that are currently in progress for this user
+  // Filter recommended courses based on department / role
+  const recommendedCourses = courses
+    .filter(c => {
+      const e = enrollments.find(env => Number(env.course_id) === Number(c.id));
+      if (e && e.progress === 100) return false;
+
+      const dept = (activeProfile.department || "").toLowerCase();
+      const role = activeProfile.role as UserRole;
+
+      if (dept.includes("software") || dept.includes("it")) {
+        return c.category === "AI & ML" || c.category === "Cloud & DevOps";
+      }
+      if (role === "SHOP_FLOOR_WORKER") {
+        return c.category === "Security" || c.title.toLowerCase().includes("safety");
+      }
+      return c.category === "Leadership" || c.category === "Product";
+    })
+    .slice(0, 2);
+
+  // In-progress courses
   const inProgress = enrollments
     .filter((e) => (e.progress || 0) > 0 && (e.progress || 0) < 100)
     .map((e) => {
@@ -1369,169 +1401,274 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     })
     .filter(Boolean) as any[];
 
-  const completedCount = enrollments.filter((e) => e.progress === 100).length;
+  // Upcoming trainings
+  const upcomingTrainings = [
+    { id: 1, title: "Emergency Boiler Safety Calibration", time: "Tomorrow, 10:00 AM", instructor: "Chief Safety Officer" },
+    { id: 2, title: "Supabase JWT Auth Security Review", time: "Thursday, 2:30 PM", instructor: "DevOps Lead" }
+  ];
 
   const handleContinue = (courseId: number) => {
     setSelectedCourseId(courseId);
     onNavigate("lesson");
   };
 
-  const handleContinueLatest = () => {
-    if (inProgress.length > 0) {
-      handleContinue(inProgress[0].id);
-    } else if (enrollments.length > 0) {
-      handleContinue(enrollments[0].course_id);
-    } else {
-      onNavigate("learn");
+  const handleCompleteMissionClick = (missionId: number, e: React.MouseEvent) => {
+    completeMission(missionId, e);
+    if (selectedMission && selectedMission.id === missionId) {
+      setSelectedMission(prev => prev ? { ...prev, status: 'completed' } : null);
     }
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-[1200px] mx-auto">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-card via-muted to-card border border-border rounded-2xl p-6 relative overflow-hidden">
+      <div className="relative overflow-hidden bg-card border border-border rounded-2xl p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="absolute right-0 top-0 bottom-0 w-64 opacity-20 pointer-events-none">
           <NeuralNetSVG className="w-full h-full" />
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative z-10 space-y-4">
           <div>
-            <p className="text-muted-foreground text-sm mb-1">Good morning,</p>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h2 {...sg("text-2xl font-bold")}>{activeProfile.name || activeProfile.full_name} 👋</h2>
-              <RoleBadge role={activeProfile.role as UserRole} />
+            <span className="text-xs text-primary font-bold tracking-wider uppercase">Welcome Back</span>
+            <h2 {...sg("text-2xl md:text-3xl font-extrabold text-foreground mt-1")}>
+              Good Morning, {activeProfile.name || activeProfile.full_name} 👋
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">Your Mentora journey continues.</p>
+          </div>
+
+          <div className="flex flex-wrap gap-4 text-xs font-semibold text-foreground bg-background/50 border border-border/50 rounded-xl p-3.5 w-fit">
+            <span className="flex items-center gap-1 text-orange-400">
+              🔥 <strong className="text-foreground">{activeProfile.currentStreak || 12} Day Streak</strong>
+            </span>
+            <span className="text-muted-foreground/30">|</span>
+            <span className="flex items-center gap-1 text-primary">
+              ⭐ <strong className="text-foreground">{activeProfile.xp || 1240} XP</strong>
+            </span>
+            <span className="text-muted-foreground/30">|</span>
+            <span className="flex items-center gap-1 text-yellow-400">
+              🪙 <strong className="text-foreground">{activeProfile.mentoraCredits || 450} Credits</strong>
+            </span>
+            <span className="text-muted-foreground/30">|</span>
+            <span className="flex items-center gap-1 text-cyan-400">
+              🏆 <strong className="text-foreground">Rank #{activeProfile.leaderboardRank || 7}</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* Primary CTA today mission */}
+        <div className="relative z-10 flex-shrink-0">
+          {todayMission ? (
+            <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/30 p-5 rounded-2xl max-w-sm space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-xl pointer-events-none" />
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                Active Daily Mission
+              </div>
+              <h4 className="text-sm font-bold text-foreground leading-snug">{todayMission.title}</h4>
+              <p className="text-xs text-muted-foreground line-clamp-1">{todayMission.description}</p>
+              <button
+                onClick={() => setSelectedMission(todayMission)}
+                className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md shadow-primary/20"
+              >
+                Today's Mission &rarr; Complete Now
+              </button>
             </div>
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              {activeProfile.designation} &bull; {activeProfile.department} &bull; {activeProfile.plant}
-            </p>
-            <p className="text-muted-foreground text-[10px] mt-2">
-              Streak: {activeProfile.currentStreak || 0} days &bull; XP: {activeProfile.xp || 0} &bull; KC: {activeProfile.knowledgeCredits || 0}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <CyanButton size="sm" onClick={handleContinueLatest}>Continue Learning</CyanButton>
-            <CyanButton size="sm" outline onClick={() => onNavigate("learn")}>Learning Hub</CyanButton>
-          </div>
+          ) : (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-2xl max-w-sm space-y-2 text-center">
+              <span className="text-lg">🎉</span>
+              <h4 className="text-sm font-bold text-foreground">All Missions Completed!</h4>
+              <p className="text-xs text-muted-foreground">You are fully caught up with today's objectives.</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <ReusableStatCard label="Courses Enrolled" value={enrollments.length} icon={<BookOpen size={18} />} />
-        <ReusableStatCard label="Daily Streak" value={`${activeProfile.currentStreak || 0} Days`} icon={<Flame size={18} className="text-orange-400 fill-orange-400" />} />
-        <ReusableStatCard label="Mentora Credits" value={`${activeProfile.mentoraCredits || 0} MC`} icon={<Award size={18} />} />
-        <ReusableStatCard label="Knowledge Credits" value={`${activeProfile.knowledgeCredits || 0} KC`} icon={<Award size={18} className="text-cyan-400" />} />
-      </div>
-
-      {/* Main grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Continue Learning */}
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Active Missions */}
+          {/* Daily Role Missions */}
           <div className="space-y-4">
-            <h3 {...sg("text-base font-semibold")}>Daily Role Missions</h3>
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              📅 Today's Daily Missions ({activeMissions.length})
+            </h3>
             {activeMissions.length === 0 ? (
               <Card className="p-6 text-center text-muted-foreground text-sm">
-                No active missions for your role today. Good job keeping up!
+                No active missions assigned to your role today.
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                {activeMissions.slice(0, 2).map((m) => (
-                  <MissionCard
+                {activeMissions.map((m) => (
+                  <div
                     key={m.id}
-                    title={m.title}
-                    description={m.description}
-                    rewardType={m.rewardType}
-                    rewardAmount={m.rewardAmount}
-                    estimatedTime={m.estimatedTime}
-                    status={m.status}
-                    dueDate={m.dueDate}
-                    onStart={() => alert(`Started mission: ${m.title}`)}
-                  />
+                    onClick={() => setSelectedMission(m)}
+                    className={`bg-card border border-border hover:border-primary/20 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between h-40 ${m.status === 'completed' ? 'opacity-70 border-emerald-500/30' : ''}`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-background border border-border rounded-md text-muted-foreground">
+                          {m.type}
+                        </span>
+                        {m.status === 'completed' ? (
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                            <Check size={10} strokeWidth={3} /> Done
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            Assigned
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-sm font-bold text-foreground line-clamp-1">{m.title}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{m.description}</p>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/50 pt-2 mt-2">
+                      <span>⏱️ {m.estimatedTime}</span>
+                      <span className="text-primary font-semibold">
+                        +{m.rewardAmount} {m.rewardType === 'both' ? 'XP + Credits' : m.rewardType.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Continue Learning */}
           <div className="space-y-4">
-            <h3 {...sg("text-base font-semibold")}>Continue Learning</h3>
+            <h3 className="text-base font-bold text-foreground">📖 Continue Learning</h3>
             {inProgress.length === 0 ? (
               <Card className="p-6 text-center text-muted-foreground text-sm">
                 <BookOpen size={30} className="mx-auto mb-2 text-border" />
-                No courses in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline">Enroll in a course</button> to start learning!
+                No courses in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-semibold">Enroll in a course</button> to start learning!
               </Card>
             ) : (
-              inProgress.map((course) => (
-                <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer" onClick={() => handleContinue(course.id)}>
-                  <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
-                  <div className="flex-1 min-w-0">
-                    <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{course.instructor}</p>
-                    <div className="mt-2">
-                      <ProgressBar value={course.progress} />
-                      <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
+              <div className="space-y-3">
+                {inProgress.map((course) => (
+                  <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer" onClick={() => handleContinue(course.id)}>
+                    <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
+                    <div className="flex-1 min-w-0">
+                      <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{course.instructor}</p>
+                      <div className="mt-2">
+                        <ProgressBar value={course.progress} />
+                        <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
+                      </div>
                     </div>
-                  </div>
-                  <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
-                </Card>
-              ))
+                    <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* Learning Chart */}
-          <Card className="p-5 mt-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 {...sg("text-sm font-semibold")}>Weekly Activity</h3>
-              <span {...mono("text-xs text-muted-foreground")}>This week</span>
+          {/* Recommended Learning */}
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-foreground">💡 Recommended Learning</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {recommendedCourses.map(course => (
+                <CourseCard
+                  key={course.id}
+                  title={course.title}
+                  duration={course.duration}
+                  rating={course.rating}
+                  thumbnail={course.thumbnail}
+                  category={course.category}
+                  onNavigate={() => handleContinue(course.id)}
+                />
+              ))}
             </div>
-            <ResponsiveContainer width="100%" height={160}>
-              <AreaChart data={LEARNING_DATA}>
-                <defs>
-                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
-                <YAxis hide />
-                <Tooltip contentStyle={getTooltipStyle(isDark)}
-                  formatter={(v: number) => [`${v}h`, "Hours"]} />
-                <Area type="monotone" dataKey="hours" stroke="var(--primary)" strokeWidth={2} fill="url(#areaGrad)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Card>
+          </div>
         </div>
 
         {/* Right column */}
         <div className="space-y-4">
-          {/* Weekly goal */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-4")}>Weekly Goal</h3>
-            <div className="flex items-center justify-center mb-4">
-              <div className="relative w-28 h-28">
-                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" strokeWidth="8" />
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" strokeWidth="8"
-                    strokeDasharray={`${251.2 * 0.68} 251.2`}
-                    strokeLinecap="round"
-                    style={{ filter: "drop-shadow(0 0 6px rgba(247,37,133,0.45))" }} />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p {...mono("text-2xl font-semibold text-foreground")}>68%</p>
-                  <p className="text-[10px] text-muted-foreground">of goal</p>
-                </div>
-              </div>
+          {/* Streak 7-Day Tracker */}
+          <Card className="p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-border/50 pb-2">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Streak Tracker</h3>
+              <span className="text-xs text-orange-400 font-bold flex items-center gap-0.5">
+                🔥 {activeProfile.currentStreak || 12} Day Streak
+              </span>
             </div>
-            <div className="space-y-2">
-              {[["Target", "20h / week"], ["Completed", "13.6h"], ["Remaining", "6.4h"]].map(([k, v]) => (
-                <div key={k} className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{k}</span>
-                  <span {...mono("text-foreground")}>{v}</span>
+            <div className="grid grid-cols-7 gap-2 text-center pt-2">
+              {streakDays.map((d, i) => (
+                <div key={i} className="space-y-2 relative flex flex-col items-center">
+                  <span className="text-[10px] font-semibold text-muted-foreground">{d.day}</span>
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                      d.active
+                        ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                        : d.current
+                        ? "border-2 border-primary bg-primary/5 animate-pulse"
+                        : "bg-background border border-border text-muted-foreground"
+                    }`}
+                  >
+                    {d.active ? (
+                      <Check size={12} strokeWidth={3} />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
+            <div className="flex justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/50 mt-2">
+              <span>Longest streak: {activeProfile.longestStreak || 12} days</span>
+              <span>XP Multiplier: 1.2x</span>
+            </div>
           </Card>
 
-          {/* AI Assistant */}
+          {/* Skill Passport Preview */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Skill Passport</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <img src={activeProfile.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-border" />
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">{activeProfile.name}</h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{activeProfile.designation}</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-xs pt-1 border-t border-border/50">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Expertise Level</span>
+                  <span className="font-semibold text-foreground">{activeProfile.skillLevel}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Verified Skills</span>
+                  <span className="font-semibold text-foreground">8 Completed</span>
+                </div>
+              </div>
+              <button
+                onClick={() => onNavigate("skill-passport")}
+                className="w-full text-center bg-card border border-border hover:bg-muted font-semibold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1"
+              >
+                Open Skill Passport <ChevronRight size={14} />
+              </button>
+            </div>
+          </Card>
+
+          {/* Upcoming Training */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Upcoming Live Training</h3>
+            <div className="space-y-3">
+              {upcomingTrainings.map(t => (
+                <div key={t.id} className="p-3 border border-border bg-background rounded-xl space-y-1 relative overflow-hidden">
+                  <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{t.title}</h4>
+                  <p className="text-[10px] text-muted-foreground">{t.time}</p>
+                  <p className="text-[9px] text-primary">{t.instructor}</p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => onNavigate("training")}
+              className="w-full text-center bg-card border border-border hover:bg-muted font-semibold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1"
+            >
+              View Training Calendar <ChevronRight size={14} />
+            </button>
+          </Card>
+
+          {/* AI Assistant Banner */}
           <Card className="p-5 border-primary/20 bg-gradient-to-br from-card to-muted">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -1547,64 +1684,65 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               Start Conversation
             </CyanButton>
           </Card>
+        </div>
+      </div>
 
-          {/* Recent Activity */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-3")}>Recent Activity</h3>
-            <div className="space-y-3">
-              {[
-                { icon: <Play size={12} />, text: "Watched: Gradient Descent Variants", time: "2h ago", color: "#F72585" },
-                { icon: <CheckCircle size={12} />, text: "Completed: Backpropagation Algorithm", time: "Yesterday", color: "#10B981" },
-                { icon: <Trophy size={12} />, text: "Quiz passed: ML Basics (96%)", time: "2 days ago", color: "#F59E0B" },
-                { icon: <Award size={12} />, text: "Certificate: ML Fundamentals", time: "5 days ago", color: "#7C3AED" },
-              ].map((a, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: a.color + "15", color: a.color }}>
-                    {a.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-foreground truncate">{a.text}</p>
-                    <p className="text-[10px] text-muted-foreground">{a.time}</p>
-                  </div>
-                </div>
-              ))}
+      {/* Mission Detail Modal */}
+      {selectedMission && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-6 relative overflow-hidden shadow-2xl">
+            <button
+              onClick={() => setSelectedMission(null)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-background border border-border rounded-md text-muted-foreground">
+                {selectedMission.type}
+              </span>
+              <h3 className="text-lg font-bold text-foreground">{selectedMission.title}</h3>
+              <p className="text-xs text-muted-foreground">Status: {selectedMission.status === 'completed' ? 'Completed' : 'Assigned'}</p>
             </div>
-          </Card>
-        </div>
-      </div>
 
-      {/* Recommended */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 {...sg("text-base font-semibold")}>Recommended for you</h3>
-          <button onClick={() => onNavigate("courses")} className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-            View all <ArrowRight size={12} />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses
-            .filter((c) => !enrollments.some((e) => Number(e.course_id) === Number(c.id)))
-            .slice(0, 3)
-            .map((course) => (
-              <Card key={course.id} className="overflow-hidden cursor-pointer group" onClick={() => { setSelectedCourseId(course.id); onNavigate("course-detail"); }}>
-                <div className="h-32 overflow-hidden bg-surface">
-                  <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <div className="space-y-4 bg-background/50 border border-border/50 rounded-xl p-4 text-xs leading-relaxed text-muted-foreground">
+              <p>{selectedMission.description}</p>
+              <div className="grid grid-cols-2 gap-4 border-t border-border/50 pt-3 mt-3">
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase font-semibold">Estimated Time</span>
+                  <p className="text-foreground font-bold mt-0.5">⏱️ {selectedMission.estimatedTime}</p>
                 </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge color="default">{course.category}</Badge>
-                    <Badge color={course.difficulty === "Advanced" ? "red" : course.difficulty === "Intermediate" ? "yellow" : "green"}>{course.difficulty}</Badge>
-                  </div>
-                  <p {...sg("text-sm font-medium leading-snug mb-2 group-hover:text-primary transition-colors")}>{course.title}</p>
-                  <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock size={11} />{course.duration}</span>
-                    <span className="flex items-center gap-1"><Star size={11} className="text-amber-400" />{course.rating}</span>
-                  </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase font-semibold">Reward</span>
+                  <p className="text-primary font-bold mt-0.5">
+                    +{selectedMission.rewardAmount} {selectedMission.rewardType === 'both' ? 'XP + Credits' : selectedMission.rewardType.toUpperCase()}
+                  </p>
                 </div>
-              </Card>
-            ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setSelectedMission(null)}
+                className="flex-1 bg-background border border-border hover:bg-muted text-foreground font-semibold py-2.5 rounded-xl text-xs transition-all"
+              >
+                Close
+              </button>
+              {selectedMission.status !== 'completed' && (
+                <button
+                  onClick={(e) => {
+                    handleCompleteMissionClick(selectedMission.id, e);
+                  }}
+                  className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1"
+                >
+                  Complete Mission
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -3072,6 +3210,73 @@ export default function App() {
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Phase 2 State
+  const [activeMissions, setActiveMissions] = useState<any[]>([]);
+  const [floatingXp, setFloatingXp] = useState<{ id: number; amount: number; x: number; y: number }[]>([]);
+  const [streakDays, setStreakDays] = useState([
+    { day: "Mon", active: true, current: false },
+    { day: "Tue", active: true, current: false },
+    { day: "Wed", active: true, current: false },
+    { day: "Thu", active: true, current: false },
+    { day: "Fri", active: false, current: true },
+    { day: "Sat", active: false, current: false },
+    { day: "Sun", active: false, current: false },
+  ]);
+
+  // Load missions when profile role changes
+  useEffect(() => {
+    if (profile) {
+      mockService.fetchMissions(profile.role).then(data => {
+        setActiveMissions(data);
+      });
+    }
+  }, [profile?.role]);
+
+  const completeMission = (missionId: number, event?: React.MouseEvent) => {
+    setActiveMissions(prev =>
+      prev.map(m => (m.id === missionId ? { ...m, status: 'completed' } : m))
+    );
+
+    const mission = activeMissions.find(m => m.id === missionId);
+    if (!mission) return;
+
+    const isXp = mission.rewardType === 'xp' || mission.rewardType === 'both';
+    const isCredits = mission.rewardType === 'credits' || mission.rewardType === 'both';
+    const xpAmt = isXp ? mission.rewardAmount : 0;
+    const credAmt = isCredits ? (mission.rewardType === 'both' ? 100 : mission.rewardAmount) : 0;
+
+    // Trigger floating XP animation
+    const x = event ? event.clientX : window.innerWidth / 2;
+    const y = event ? event.clientY : window.innerHeight / 2;
+    
+    if (xpAmt > 0) {
+      const animId = Date.now();
+      setFloatingXp(prev => [...prev, { id: animId, amount: xpAmt, x, y }]);
+      setTimeout(() => {
+        setFloatingXp(prev => prev.filter(item => item.id !== animId));
+      }, 1200);
+    }
+
+    // Update profile stats
+    setProfile((prev: any) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        xp: (prev.xp || 0) + xpAmt,
+        mentoraCredits: (prev.mentoraCredits || 0) + credAmt,
+        knowledgeCredits: mission.type === 'KNOWLEDGE_SHARING' || mission.type === 'EXPERIENCE_SHARING'
+          ? (prev.knowledgeCredits || 0) + 20
+          : (prev.knowledgeCredits || 0),
+        currentStreak: (prev.currentStreak || 0) + 1
+      };
+    });
+
+    // Mark current day as active in streak visual tracker
+    setStreakDays(prev =>
+      prev.map(d => (d.current ? { ...d, active: true } : d))
+    );
+  };
+
   const appPages: Page[] = [
     "dashboard", "courses", "course-detail", "lesson", "ai-chat",
     "quiz", "quiz-results", "certificates", "profile", "settings", "announcements",
@@ -3359,20 +3564,42 @@ export default function App() {
       enrollInCourse,
       updateLessonProgress,
       signOut,
-      loading
+      loading,
+      activeMissions,
+      completeMission,
+      streakDays,
+      floatingXp
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
-        <div className={isDark ? "dark" : ""} style={{ colorScheme: isDark ? "dark" : "light" }}>
+        <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>
           <style>{`
             ::-webkit-scrollbar { width: 5px; height: 5px; }
             ::-webkit-scrollbar-track { background: transparent; }
             ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
             ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
             * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+            @keyframes floatUp {
+              0% { transform: translateY(0) scale(0.9); opacity: 1; }
+              100% { transform: translateY(-70px) scale(1.05); opacity: 0; }
+            }
+            .animate-float-up {
+              animation: floatUp 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            }
           `}</style>
           {page === "landing" && <LandingPage onNavigate={navigateTo} />}
           {page === "login" && <LoginPage onNavigate={navigateTo} />}
           {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
+
+          {/* Floating XP Labels Container */}
+          {floatingXp.map(item => (
+            <div
+              key={item.id}
+              className="fixed text-primary font-bold text-base pointer-events-none animate-float-up z-[9999] flex items-center gap-1 shadow-lg bg-card border border-primary/30 px-3 py-1.5 rounded-full"
+              style={{ left: item.x - 45, top: item.y - 20 }}
+            >
+              🚀 +{item.amount} XP
+            </div>
+          ))}
         </div>
       </ThemeCtx.Provider>
     </AppCtx.Provider>
