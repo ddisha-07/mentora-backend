@@ -3333,7 +3333,7 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
       case "leaderboard":
         return <LeaderboardPage />;
       case "rewards":
-        return <RewardsPage mentoraCredits={activeProfile.mentoraCredits || activeProfile.mentora_credits || 0} />;
+        return <RewardsPage />;
       case "skill-passport":
         return <SkillPassportPage userProfile={activeProfile} />;
       
