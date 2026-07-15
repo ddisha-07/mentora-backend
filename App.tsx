@@ -2255,11 +2255,54 @@ function LessonViewerPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
 // ─── AI Chat ──────────────────────────────────────────────────────────────────
 function AIChatPage() {
-  const [messages, setMessages] = useState(INITIAL_CHAT);
+  const { profile, knowledgeQuestions, setKnowledgeQuestions, setPage } = useApp();
+  
+  const activeProfile = profile || {
+    name: "Learner",
+    role: "JUNIOR_EMPLOYEE" as UserRole,
+    department: "Software Engineering",
+    xp: 1240
+  };
+
+  const xp = activeProfile.xp || 1240;
+  const skillLevel = xp > 5000 ? "Advanced Specialist" : xp > 2000 ? "Intermediate Practitioner" : "Core Associate (Beginner)";
+
+  const getRelevantSOPs = (dept: string) => {
+    switch (dept) {
+      case "Safety & EHS":
+      case "Safety":
+        return ["SOP-14.2: Lockout/Tagout overrides", "SOP-202: Boiler room evacuations"];
+      case "Maintenance":
+      case "Maintenance & Boilers":
+        return ["SOP-302: Turbine Maintenance", "SOP-104: Sensor Calibrations"];
+      case "Software Engineering":
+      case "R&D / IT":
+        return ["SOP-44: Modbus Register Maps", "SOP-22: Visual Inspection Checks"];
+      default:
+        return ["SOP-12: General Factory Guidelines"];
+    }
+  };
+
+  const relevantSOPs = getRelevantSOPs(activeProfile.department || "Safety & EHS");
+
+  const [messages, setMessages] = useState<any[]>([
+    {
+      role: "ai",
+      content: `Hello! I'm **Kai**, your intelligent learning and operational assistant.
+
+I have loaded your context profile:
+* **Role**: ${activeProfile.role.replace('_', ' ')}
+* **Department**: ${activeProfile.department || 'Safety & EHS'}
+* **Skill Level**: ${skillLevel}
+
+Ask me anything about your current courses, safety procedures, or operational SOPs!`,
+      timestamp: "Just now",
+      source: "ai"
+    }
+  ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const aiResponseIdx = useRef(0);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -2271,16 +2314,93 @@ function AIChatPage() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
+
     setTimeout(() => {
       setIsTyping(false);
+      let aiContent = "";
+      let sourceTag = "ai"; 
+
+      const query = text.toLowerCase();
+      if (query.includes("explain simply") || query.includes("simple")) {
+        aiContent = `Here is a simplified explanation 💡:
+Imagine electrical voltage as water pressure in a hose pipe. 
+* **Current** is the volume of water flowing through the hose.
+* **Resistance** is a nozzle squeeze restricting the water volume.
+
+**Backpropagation** is like turning dial knobs on this hose to get exactly the right flow rate at the output nozzle based on feedback!`;
+        sourceTag = "training";
+      } else if (query.includes("example") || query.includes("give an example")) {
+        aiContent = `Here is a practical example 📝:
+On the Pune chassis line, our computer vision model scans welds under high-speed lights.
+* **Normal Weld**: Smooth surface, uniform density.
+* **Defect Weld**: Hairline gaps, low density.
+AI model automatically tags defects with 96% accuracy, notifying operators instantly.`;
+        sourceTag = "training";
+      } else if (query.includes("translate")) {
+        aiContent = `Translating key factory concepts 🌐:
+* **Lockout/Tagout (LOTO)**: "Absperrung und Kennzeichnung" (German) or "तालाबंदी और टैग करना" (Hindi).
+* **Isolate Breaker 4B**: "Isolieren Sie Leistungsschalter 4B" (German) or "ब्रेकर 4B को अलग करें" (Hindi).`;
+        sourceTag = "ai";
+      } else if (query.includes("sop") || query.includes("show related sop")) {
+        aiContent = `Based on your active department (${activeProfile.department || 'Safety & EHS'}), here is the relevant factory procedure:
+**${relevantSOPs[0]}**
+* **Step 1**: Isolate main breaker switch 4B.
+* **Step 2**: Padlock the override release lever.
+* **Step 3**: Verify zero voltage on the SCADA console before starting work.`;
+        sourceTag = "sop";
+      } else if (query.includes("recommend") || query.includes("recommend learning")) {
+        aiContent = `Recommended courses to bridge your skill gaps 🎓:
+1. **Basics of Vibration Analytics** (Aligns with Boiler safety calibration)
+2. **IIoT Modbus Telemetry Integrations** (Recommended by Devendra Prasad)`;
+        sourceTag = "expert";
+      } else if (query.includes("expert") || query.includes("ask an expert")) {
+        aiContent = `If you have highly specialized operational questions, you can escalate this thread directly to Pune Plant's senior expert advisors. 
+
+Click the **"Escalate to Pune Q&A Board"** button below to submit this topic.`;
+        sourceTag = "expert";
+      } else {
+        aiContent = `I've analyzed your query regarding *"${text}"*. 
+Based on standard operational guidelines, you must always double-check the isolated breaker tags.
+
+Would you like me to:
+* Explain this simply?
+* Show related factory SOPs?`;
+        sourceTag = "ai";
+      }
+
       const aiMsg = {
         role: "ai" as const,
-        content: AI_RESPONSES[aiResponseIdx.current % AI_RESPONSES.length],
+        content: aiContent,
         timestamp: "Just now",
+        source: sourceTag,
+        originalUserText: text
       };
-      aiResponseIdx.current++;
       setMessages((prev) => [...prev, aiMsg]);
-    }, 1800);
+    }, 1200);
+  };
+
+  const handleEscalateToQna = (userText: string) => {
+    const newQuestion = {
+      id: Date.now(),
+      title: `Escalated: ${userText}`,
+      description: `Automatically escalated from Kai AI chatbot session. Context details:\n- User role: ${activeProfile.role}\n- Department: ${activeProfile.department}\n- Skill level: ${skillLevel}`,
+      author: activeProfile.name || 'Chatbot User',
+      department: activeProfile.department || 'Safety & EHS',
+      topic: 'Safety Procedures',
+      status: 'open' as const,
+      createdAt: 'Just now'
+    };
+
+    setKnowledgeQuestions((prev: any[]) => [newQuestion, ...prev]);
+    alert("This question has been successfully posted to the Pune Q&A board! Senior employees have been notified.");
+    setPage("knowledge-exchange");
+  };
+
+  const sourceLabels: Record<string, string> = {
+    ai: "Core LLM Knowledge 🧠",
+    sop: "Pune Factory SOP Directory 📋",
+    training: "Boiler Training Material 🎓",
+    expert: "Verified Expert Knowledge (D. Prasad) ✓"
   };
 
   const renderContent = (content: string) => {
@@ -2316,15 +2436,25 @@ function AIChatPage() {
             <Bot size={18} className="text-primary" />
           </div>
           <div>
-            <p {...sg("text-sm font-semibold")}>Mentora AI</p>
+            <p {...sg("text-sm font-semibold")}>Kai AI Assistant</p>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <p className="text-xs dark:text-emerald-400 text-emerald-600">Online · Ready to help</p>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <button className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border transition-all">
-<RefreshCw size={14} />
+            <button
+              onClick={() => setMessages([
+                {
+                  role: "ai",
+                  content: "Chat session reset. How can I help you today?",
+                  timestamp: "Just now",
+                  source: "ai"
+                }
+              ])}
+              className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border transition-all"
+            >
+              <RefreshCw size={14} />
             </button>
           </div>
         </div>
@@ -2338,8 +2468,24 @@ function AIChatPage() {
                   <Bot size={15} className="text-primary" />
                 </div>
               )}
-              <div className={`max-w-xl rounded-2xl px-4 py-3 text-sm ${msg.role === "ai" ? "bg-card border border-border text-muted-foreground rounded-tl-sm" : "bg-primary/10 border border-primary/20 text-white rounded-tr-sm"}`}>
+              <div className={`max-w-xl rounded-2xl px-4 py-3 text-sm flex flex-col ${msg.role === "ai" ? "bg-card border border-border text-muted-foreground rounded-tl-sm" : "bg-primary/10 border border-primary/20 text-white rounded-tr-sm"}`}>
                 {renderContent(msg.content)}
+                
+                {msg.role === "ai" && msg.source && (
+                  <div className="mt-2 text-[10px] text-primary font-mono bg-primary/5 p-1 px-2 rounded border border-primary/10 w-fit">
+                    Source: {sourceLabels[msg.source] || msg.source}
+                  </div>
+                )}
+
+                {msg.role === "ai" && msg.content.includes("Escalate to Pune Q&A Board") && (
+                  <button
+                    onClick={() => handleEscalateToQna(msg.originalUserText || "Chat query")}
+                    className="mt-3 bg-primary hover:bg-primary/95 text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-all w-fit"
+                  >
+                    Escalate to Pune Q&A Board
+                  </button>
+                )}
+
                 <p {...mono("text-[10px] text-muted-foreground/60 mt-2")}>{msg.timestamp}</p>
               </div>
               {msg.role === "user" && (
@@ -2366,20 +2512,30 @@ function AIChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggested prompts */}
-        {messages.length <= 1 && (
-          <div className="px-6 pb-2">
-            <p className="text-xs text-muted-foreground mb-2">Suggested prompts</p>
-            <div className="flex flex-wrap gap-2">
-              {SUGGESTED_PROMPTS.map((p) => (
-                <button key={p} onClick={() => sendMessage(p)}
-                  className="px-3 py-1.5 rounded-lg bg-card border border-border text-xs text-muted-foreground hover:text-foreground hover:border-border transition-all">
-    {p}
+        {/* Suggested prompts / Quick Actions */}
+        <div className="px-6 pb-2 space-y-3">
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">⚡ Kai Quick Actions</p>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { label: "Explain Simply 💡", text: "Explain Simply: explain the previous concept simply" },
+                { label: "Give an Example 📝", text: "Give an Example: show a real world usage example" },
+                { label: "Translate 🌐", text: "Translate: translate key safety terms" },
+                { label: "Show Related SOP 📋", text: "Show Related SOP: show sops matching my department" },
+                { label: "Recommend Learning 🎓", text: "Recommend Learning: recommend courses based on my profile" },
+                { label: "Ask an Expert 🛠️", text: "Ask an Expert: Escalate to Expert" }
+              ].map((a) => (
+                <button
+                  key={a.label}
+                  onClick={() => sendMessage(a.text)}
+                  className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 text-[10px] font-bold text-primary transition-all"
+                >
+                  {a.label}
                 </button>
               ))}
             </div>
           </div>
-        )}
+        </div>
 
         {/* Input */}
         <div className="p-4 border-t border-border">
@@ -2388,7 +2544,7 @@ function AIChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-              placeholder="Ask me anything about your courses…"
+              placeholder="Ask Kai anything about your courses, departments, or safety protocols..."
               className="flex-1 bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none resize-none max-h-32 min-h-[20px]"
               style={{ fontFamily: "'Poppins', sans-serif" }}
               rows={1}
@@ -2399,48 +2555,53 @@ function AIChatPage() {
             </button>
           </div>
           <p className="text-center text-[10px] text-muted-foreground mt-2">
-            Mentora AI has access to your course content and learning history.
+            Kai adapts answers dynamically using your User Profile, Department, and Skill level.
           </p>
         </div>
       </div>
 
       {/* Sidebar: context */}
-      <aside className="w-72 flex-shrink-0 border-l border-sidebar-border bg-sidebar p-4 space-y-4 hidden lg:block">
+      <aside className="w-72 flex-shrink-0 border-l border-sidebar-border bg-sidebar p-4 space-y-4 hidden lg:block overflow-y-auto">
         <div>
-          <p {...sg("text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3")}>Active Course</p>
-          <Card className="p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <img src={COURSES[0].thumbnail} alt="" className="w-10 h-8 rounded-lg object-cover bg-muted" />
-              <p className="text-xs font-medium leading-tight">{COURSES[0].title}</p>
+          <p {...sg("text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3")}>Active Context Engine</p>
+          <Card className="p-4 space-y-3.5 text-xs text-muted-foreground leading-normal">
+            <div className="flex justify-between">
+              <span>User Role</span>
+              <strong className="text-foreground">{activeProfile.role.replace('_', ' ')}</strong>
             </div>
-            <ProgressBar value={68} />
-            <p {...mono("text-[10px] text-muted-foreground mt-1")}>Module 2 of 4 • Lesson 5</p>
+            <div className="flex justify-between">
+              <span>Department</span>
+              <strong className="text-foreground">{activeProfile.department || 'Safety & EHS'}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>Skill Level</span>
+              <strong className="text-primary font-bold">{skillLevel}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>XP Level</span>
+              <strong className="text-yellow-400 font-bold">{xp} XP</strong>
+            </div>
           </Card>
         </div>
+
         <div>
-          <p {...sg("text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3")}>Capabilities</p>
+          <p {...sg("text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3")}>Relevant SOPs</p>
           <div className="space-y-2">
-            {[
-              [<Brain size={13} />, "Explain concepts from your courses"],
-              [<Code size={13} />, "Debug and review code"],
-              [<HelpCircle size={13} />, "Generate practice questions"],
-              [<Map size={13} />, "Create personalized study plans"],
-              [<FileText size={13} />, "Summarize course modules"],
-            ].map(([icon, text], i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="text-primary">{icon as React.ReactNode}</span>
-                {text as string}
+            {relevantSOPs.map(sop => (
+              <div key={sop} className="p-2.5 rounded-lg border border-border bg-card text-[11px] font-mono text-foreground flex items-center gap-1">
+                📋 {sop.split(':')[0]}
               </div>
             ))}
           </div>
         </div>
+
         <div>
           <p {...sg("text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3")}>Recent Topics</p>
           <div className="flex flex-wrap gap-1.5">
-            {["Backpropagation", "Adam optimizer", "ReLU", "Transformers", "CNNs"].map((t) => (
+            {["Backpropagation", "Modbus registers", "Active calibration", "Lockout/Tagout"].map((t) => (
               <button key={t} onClick={() => sendMessage(`Explain ${t}`)}
                 className="px-2.5 py-1 rounded-lg bg-card border border-border text-[10px] text-muted-foreground hover:text-foreground hover:border-border transition-all">
-  {t}
+                {t}
               </button>
             ))}
           </div>
