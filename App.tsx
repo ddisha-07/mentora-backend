@@ -33,6 +33,7 @@ import AIInMyWorkPage from "./src/pages/AIInMyWorkPage";
 import LeaderboardPage from "./src/pages/LeaderboardPage";
 import RewardsPage from "./src/pages/RewardsPage";
 import SkillPassportPage from "./src/pages/SkillPassportPage";
+import SavedPage from "./src/pages/SavedPage";
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
@@ -67,6 +68,12 @@ export type AppContextType = {
   setKnowledgeAnswers: React.Dispatch<React.SetStateAction<Record<number, KnowledgeAnswer[]>>>;
   preservedKnowledge: any[];
   setPreservedKnowledge: React.Dispatch<React.SetStateAction<any[]>>;
+
+  // Phase 7 Context Fields
+  savedItems: any[];
+  setSavedItems: React.Dispatch<React.SetStateAction<any[]>>;
+  notifsState: any[];
+  setNotifsState: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
@@ -82,7 +89,7 @@ type Page =
   | "lesson" | "ai-chat" | "quiz" | "quiz-results" | "certificates"
   | "profile" | "settings" | "announcements"
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
-  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport";
+  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const COURSES = [
@@ -1151,6 +1158,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
     { page: "knowledge-exchange" as Page, icon: <HelpCircle size={18} />, label: "Knowledge Exchange", feature: "Knowledge Exchange" },
     { page: "training" as Page, icon: <Video size={18} />, label: "Training", feature: "Training" },
     { page: "ai-in-my-work" as Page, icon: <Sparkles size={18} />, label: "AI in My Work", feature: "AI in My Work" },
+    { page: "saved" as Page, icon: <Bookmark size={18} />, label: "Saved Items", feature: "Home" },
     { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard", feature: "Leaderboard" },
     { page: "rewards" as Page, icon: <Gift size={18} />, label: "Rewards", feature: "Rewards" },
     { page: "skill-passport" as Page, icon: <Award size={18} />, label: "Skill Passport", feature: "Skill Passport" },
@@ -1246,13 +1254,10 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
 // ─── Top Nav ──────────────────────────────────────────────────────────────────
 function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) => void }) {
   const { isDark, toggle } = useTheme();
-  const { profile, setProfile } = useApp();
+  const { profile, setProfile, notifsState, setNotifsState } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifs, setNotifs] = useState<any[]>([]);
-
-  useEffect(() => {
-    mockService.fetchNotifications().then(data => setNotifs(data));
-  }, []);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const activeProfile = profile || {
     name: "Learner",
@@ -1273,6 +1278,45 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
     }
   };
 
+  const GLOBAL_CATALOG = [
+    // Courses
+    { id: 103, type: 'course', title: 'Advanced IIoT Robotics Course', category: 'Courses', page: 'learn' },
+    { id: 101, type: 'course', title: 'Basics of Machine Learning Fundamentals', category: 'Courses', page: 'learn' },
+    { id: 102, type: 'course', title: 'Executive Leadership & Strategic Thinking', category: 'Courses', page: 'learn' },
+    // SOPs
+    { id: 'sop_14', type: 'sop', title: 'SOP-14.2: Lockout/Tagout overrides', category: 'SOPs & Guidelines', page: 'knowledge' },
+    { id: 'sop_202', type: 'sop', title: 'SOP-202: Boiler room evacuation limits', category: 'SOPs & Guidelines', page: 'knowledge' },
+    { id: 'sop_104', type: 'sop', title: 'SOP-104: Sensor calibration safety specs', category: 'SOPs & Guidelines', page: 'knowledge' },
+    // Training
+    { id: 1, type: 'training', title: 'Emergency Boiler Safety Calibration', category: 'Training & Recordings', page: 'training' },
+    { id: 2, type: 'training', title: 'Supabase JWT Auth Security Review', category: 'Training & Recordings', page: 'training' },
+    { id: 3, type: 'training', title: 'Legacy Steam Turbine Cooldown Procedures', category: 'Training & Recordings', page: 'training' },
+    // Q&A
+    { id: 401, type: 'qna', title: 'How to bypass legacy Plant 2 valve handles?', category: 'Knowledge Exchange', page: 'knowledge-exchange' },
+    { id: 402, type: 'qna', title: 'How to calibrate Modbus gateway registers?', category: 'Knowledge Exchange', page: 'knowledge-exchange' },
+    // AI Use Cases
+    { id: 'pred_maint', type: 'ai_usecase', title: 'Predictive Maintenance Telemetry Engine', category: 'AI Use Cases', page: 'ai-in-my-work' },
+    { id: 'cv_inspection', type: 'ai_usecase', title: 'Computer Vision Weld Defect Scan', category: 'AI Use Cases', page: 'ai-in-my-work' }
+  ];
+
+  const searchResults = GLOBAL_CATALOG.filter(item =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const groupedResults = searchResults.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, typeof GLOBAL_CATALOG>);
+
+  const handleMarkNotifRead = (id: number) => {
+    setNotifsState(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleMarkAllNotifsRead = () => {
+    setNotifsState(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
   return (
     <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-background/80 backdrop-blur-sm flex-shrink-0">
       <h1 {...sg("text-lg font-semibold")}>{title}</h1>
@@ -1287,7 +1331,7 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
               const mockUser = await mockService.fetchCurrentUser(r);
               setProfile({
                 ...mockUser,
-                avatar_url: mockUser.avatar, // Sync compatibility with old code
+                avatar_url: mockUser.avatar, 
                 full_name: mockUser.name
               });
             }}
@@ -1303,43 +1347,98 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
           </select>
         </div>
 
+        {/* Global Search Interface */}
         <div className="relative hidden md:block">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input placeholder="Search courses, topics…" className="bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground w-64 outline-none focus:border-primary/50 transition-colors"
-            style={{ fontFamily: "'Poppins', sans-serif" }} />
+          <input
+            placeholder="Global search across app..."
+            value={searchQuery}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              setSearchFocused(true);
+            }}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+            className="bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder-muted-foreground w-64 outline-none focus:border-primary/50 transition-colors"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          />
+
+          {/* Search Results Dropdown Overlay */}
+          {searchFocused && searchQuery.trim() !== "" && (
+            <div className="absolute left-0 mt-2 w-96 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden max-h-96 overflow-y-auto p-4 space-y-4 animate-in fade-in zoom-in-95 duration-100">
+              <h4 className="text-[10px] font-black text-primary uppercase tracking-wider">Grouped Results ({searchResults.length})</h4>
+              
+              {Object.keys(groupedResults).map(category => (
+                <div key={category} className="space-y-1.5">
+                  <span className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">{category}</span>
+                  <div className="space-y-1">
+                    {groupedResults[category].map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          onNavigate(item.page as any);
+                          setSearchQuery("");
+                          setSearchFocused(false);
+                        }}
+                        className="p-2 bg-background border border-border hover:border-primary/20 rounded-xl cursor-pointer transition-all text-xs font-semibold text-foreground"
+                      >
+                        {item.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {searchResults.length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-4">No global matches found.</p>
+              )}
+            </div>
+          )}
         </div>
+
         <button onClick={toggle}
           className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
           title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+
+        {/* Notifications Popover Bell */}
         <div className="relative">
           <button onClick={() => setNotifOpen(!notifOpen)}
             className="relative w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all">
             <Bell size={16} />
-            {notifs.some(n => !n.read) && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />}
+            {notifsState.some(n => !n.read) && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />}
           </button>
           {notifOpen && (
-            <div className="absolute right-0 top-12 w-80 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-12 w-80 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
               <div className="p-4 border-b border-border flex items-center justify-between">
                 <span {...sg("text-sm font-semibold")}>Notifications</span>
-                <span className="text-xs text-primary cursor-pointer hover:underline" onClick={() => setNotifs(prev => prev.map(n => ({ ...n, read: true })))}>Mark all read</span>
+                <span className="text-xs text-primary cursor-pointer hover:underline font-semibold" onClick={handleMarkAllNotifsRead}>Mark all read</span>
               </div>
               <div className="max-h-64 overflow-y-auto">
-                {notifs.map((n) => (
-                  <div key={n.id} className={`px-4 py-3 flex items-start gap-3 hover:bg-muted/60 transition-colors cursor-pointer border-b border-border/50 ${!n.read ? 'bg-primary/2' : ''}`}>
+                {notifsState.map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => handleMarkNotifRead(n.id)}
+                    className={`px-4 py-3 flex items-start gap-3 hover:bg-muted/60 transition-colors cursor-pointer border-b border-border/50 ${!n.read ? 'bg-primary/5 font-bold border-l-2 border-l-primary' : ''}`}
+                  >
                     <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">{getNotifIcon(n.type)}</div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-xs text-foreground font-medium">{n.title}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{n.message}</p>
                       <p className="text-[9px] text-muted-foreground mt-1 font-mono">{n.timestamp}</p>
                     </div>
                   </div>
                 ))}
+
+                {notifsState.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic text-center py-6">No notifications logs.</p>
+                )}
               </div>
             </div>
           )}
         </div>
+
         <button onClick={() => onNavigate("profile")} className="w-9 h-9 rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-all flex-shrink-0">
           <img src={activeProfile.avatar || activeProfile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&auto=format"} alt="Profile" className="w-full h-full object-cover" />
         </button>
@@ -3282,7 +3381,8 @@ const PAGE_TITLES: Record<string, string> = {
   "ai-in-my-work": "AI in My Work",
   leaderboard: "Leaderboard",
   rewards: "Rewards Store",
-  "skill-passport": "Skill Passport"
+  "skill-passport": "Skill Passport",
+  saved: "Saved Items"
 };
 
 function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
@@ -3336,6 +3436,8 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
         return <RewardsPage />;
       case "skill-passport":
         return <SkillPassportPage userProfile={activeProfile} />;
+      case "saved":
+        return <SavedPage onNavigate={onNavigate} />;
       
       default: return <DashboardPage onNavigate={onNavigate} />;
     }
@@ -3397,6 +3499,30 @@ export default function App() {
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<KnowledgeQuestion[]>([]);
   const [knowledgeAnswers, setKnowledgeAnswers] = useState<Record<number, KnowledgeAnswer[]>>({});
   const [preservedKnowledge, setPreservedKnowledge] = useState<any[]>([]);
+
+  // Phase 7 State
+  const [savedItems, setSavedItems] = useState<any[]>([
+    { id: 103, type: 'course', title: 'Advanced IIoT Robotics Course', desc: 'Enrolls you in specialized PLC automation labs in Pune Plant.', category: 'Courses' },
+    { id: 'sop_14', type: 'sop', title: 'SOP-14.2: Lockout/Tagout overrides', desc: 'Safety protocols for isolating boiler breakers.', category: 'SOPs' },
+    { id: 402, type: 'question', title: 'How to calibrate Modbus gateway registers?', desc: 'Discussion about Modbus gateway mapping registers.', category: 'Knowledge Exchange' },
+    { id: 3, type: 'recording', title: 'Legacy Steam Turbine Cooldown Session', desc: 'Recorded playback from Devendra Prasad.', category: 'Recordings' },
+    { id: 'pred_maint', type: 'ai_usecase', title: 'Predictive Maintenance Engine', desc: 'Vibration telemetry ML model diagnostics.', category: 'AI Use Cases' }
+  ]);
+  const [notifsState, setNotifsState] = useState<any[]>([]);
+
+  // Load initial notifications
+  useEffect(() => {
+    mockService.fetchNotifications().then(data => {
+      const seedNotifs = [
+        { id: 1, title: '🔥 Daily Mission active', message: "Today's Mission: Read SOP-202 is active now!", timestamp: '10m ago', type: 'success', read: false },
+        { id: 2, title: '🔴 Live Session starting', message: 'Emergency Boiler Safety Calibration starting in 10 minutes.', timestamp: '30m ago', type: 'warning', read: false },
+        { id: 3, title: '🎓 Course Recommended', message: 'Based on your role, we recommend checking the IIoT Telemetry course.', timestamp: '1h ago', type: 'info', read: true },
+        { id: 4, title: '🏆 Leaderboard Update', message: 'You moved up to Rank #6 on Pune Learner Board!', timestamp: '2h ago', type: 'alert', read: true },
+        { id: 5, title: '💬 Answer Verified', message: 'Your solution on Modbus gateway parity checks was Expert Verified ✓.', timestamp: 'Yesterday', type: 'success', read: true }
+      ];
+      setNotifsState(seedNotifs);
+    });
+  }, []);
 
   // Load initial Q&A datasets from mockService on mount
   useEffect(() => {
@@ -3519,7 +3645,7 @@ export default function App() {
     "dashboard", "courses", "course-detail", "lesson", "ai-chat",
     "quiz", "quiz-results", "certificates", "profile", "settings", "announcements",
     "learn", "knowledge", "knowledge-exchange", "training", "ai-in-my-work",
-    "leaderboard", "rewards", "skill-passport"
+    "leaderboard", "rewards", "skill-passport", "saved"
   ];
 
   // Synchronize page state with URL pathname (clean hashless routing)
@@ -3812,7 +3938,11 @@ export default function App() {
       knowledgeAnswers,
       setKnowledgeAnswers,
       preservedKnowledge,
-      setPreservedKnowledge
+      setPreservedKnowledge,
+      savedItems,
+      setSavedItems,
+      notifsState,
+      setNotifsState
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
         <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>
