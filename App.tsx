@@ -21,7 +21,7 @@ import {
 } from "recharts";
 
 // Phase 1 Imports
-import { UserRole } from "./src/types";
+import { UserRole, KnowledgeQuestion, KnowledgeAnswer } from "./src/types";
 import { ROLES_CONFIG, canAccessFeature } from "./src/config/roles";
 import { mockService, MOCK_USERS } from "./src/services/mockData";
 import { RoleBadge, XPBadge, StreakIndicator, MissionCard, StatCard as ReusableStatCard, CourseCard } from "./src/components/reusable";
@@ -36,7 +36,7 @@ import SkillPassportPage from "./src/pages/SkillPassportPage";
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
-const useTheme = () => useContext(ThemeCtx);
+export const useTheme = () => useContext(ThemeCtx);
 
 // ─── App Context ──────────────────────────────────────────────────────────────
 export type AppContextType = {
@@ -59,10 +59,18 @@ export type AppContextType = {
   completeMission: (id: number, event?: React.MouseEvent) => void;
   streakDays: any[];
   floatingXp: any[];
+
+  // Phase 3 Context Fields
+  knowledgeQuestions: KnowledgeQuestion[];
+  setKnowledgeQuestions: React.Dispatch<React.SetStateAction<KnowledgeQuestion[]>>;
+  knowledgeAnswers: Record<number, KnowledgeAnswer[]>;
+  setKnowledgeAnswers: React.Dispatch<React.SetStateAction<Record<number, KnowledgeAnswer[]>>>;
+  preservedKnowledge: any[];
+  setPreservedKnowledge: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
-const useApp = () => {
+export const useApp = () => {
   const ctx = useContext(AppCtx);
   if (!ctx) throw new Error("useApp must be used within AppCtx.Provider");
   return ctx;
@@ -3148,12 +3156,13 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
           <LearnPage
             courses={courses}
             enrollments={enrollments}
+            profile={activeProfile}
             onNavigateCourse={handleCourseClick}
             onNavigateCertificates={() => onNavigate("skill-passport")}
           />
         );
       case "knowledge":
-        return <KnowledgePage />;
+        return <KnowledgePage onNavigate={onNavigate} />;
       case "knowledge-exchange":
         return <KnowledgeExchangePage />;
       case "training":
@@ -3222,6 +3231,74 @@ export default function App() {
     { day: "Sat", active: false, current: false },
     { day: "Sun", active: false, current: false },
   ]);
+
+  // Phase 3 State
+  const [knowledgeQuestions, setKnowledgeQuestions] = useState<KnowledgeQuestion[]>([]);
+  const [knowledgeAnswers, setKnowledgeAnswers] = useState<Record<number, KnowledgeAnswer[]>>({});
+  const [preservedKnowledge, setPreservedKnowledge] = useState<any[]>([]);
+
+  // Load initial Q&A datasets from mockService on mount
+  useEffect(() => {
+    mockService.fetchQuestions().then(data => {
+      setKnowledgeQuestions(data);
+    });
+    const initialAnswers: Record<number, KnowledgeAnswer[]> = {
+      401: [
+        {
+          id: 501,
+          questionId: 401,
+          author: 'Arjun Mehta',
+          authorRole: 'Senior Employee (R&D)',
+          content: 'Never attempt to manually override with active lines. First verify that breaker panel 4B is physically shut off. Once isolated, use the physical release lever at the base of Valve 12.',
+          answerType: 'senior_employee',
+          verified: false,
+          helpfulCount: 8
+        },
+        {
+          id: 502,
+          questionId: 401,
+          author: 'Devendra Prasad',
+          authorRole: 'Retired Expert Advisor',
+          content: 'Arjun is correct. The legacy override lever in Plant 2 is yellow-coded and located directly beneath the pressure gauge housing. Pull it downwards and rotate 90 degrees clockwise to lock mechanical pins.',
+          answerType: 'retired_expert',
+          verified: true,
+          helpfulCount: 22,
+          source: 'Plant 2 Operations Manual, Section 14.2'
+        }
+      ],
+      402: [
+        {
+          id: 503,
+          questionId: 402,
+          author: 'Sarah Jenkins',
+          authorRole: 'L&D Director',
+          content: 'I highly suggest using Zod schema verification on mount. It gives us run-time guarantees since JSONB data changes frequently. I can share our standard training module schema example.',
+          answerType: 'standard',
+          verified: false,
+          helpfulCount: 2
+        }
+      ],
+      403: [
+        {
+          id: 504,
+          questionId: 403,
+          author: 'Devendra Prasad',
+          authorRole: 'Retired Expert Advisor',
+          content: 'This was a common bug in the 1994 turbines. The runout is caused by uneven cooling contraction of the rotor shaft during brief stops. Turn on the auxiliary barring gear to rotate the shaft slowly at 2 RPM for 4 hours; this will thermal-normalize the shaft and resolve the runout.',
+          answerType: 'retired_expert',
+          verified: true,
+          helpfulCount: 14,
+          source: 'Legacy Operating Bulletins - Jamshedpur, 1996'
+        }
+      ]
+    };
+    setKnowledgeAnswers(initialAnswers);
+
+    setPreservedKnowledge([
+      { id: 1, title: 'Standard Boiler Valve Override Procedure', dept: 'Maintenance', views: 320, author: 'Devendra Prasad', content: 'Pull yellow-coded override lever downwards and rotate 90 degrees clockwise.' },
+      { id: 2, title: 'Modbus Gateway Telemetry Configuration Guidelines', dept: 'R&D / IT', views: 180, author: 'Arjun Mehta', content: 'Configure Baud rate to 9600 and check parity bit overrides.' }
+    ]);
+  }, []);
 
   // Load missions when profile role changes
   useEffect(() => {
@@ -3568,7 +3645,13 @@ export default function App() {
       activeMissions,
       completeMission,
       streakDays,
-      floatingXp
+      floatingXp,
+      knowledgeQuestions,
+      setKnowledgeQuestions,
+      knowledgeAnswers,
+      setKnowledgeAnswers,
+      preservedKnowledge,
+      setPreservedKnowledge
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
         <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>

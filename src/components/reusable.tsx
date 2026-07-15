@@ -442,21 +442,31 @@ export function StatusBadge({ status }: { status: string }) {
 // ----------------------------------------------------
 // 13. ANSWER TYPE BADGE
 // ----------------------------------------------------
-export function AnswerTypeBadge({ type }: { type: 'standard' | 'expert' | 'verified' }) {
+export function AnswerTypeBadge({ type }: { type: 'standard' | 'expert' | 'verified' | 'ai_generated' | 'expert_verified' | 'based_on_sop' | 'senior_employee' | 'retired_expert' }) {
   const labels = {
     standard: 'Peer Answer',
     expert: 'Expert Response',
-    verified: 'Verified Solution'
+    verified: 'Verified Solution',
+    ai_generated: 'AI Generated 🤖',
+    expert_verified: 'Expert Verified ✓',
+    based_on_sop: 'Based on SOP 📋',
+    senior_employee: 'Senior Employee Answer 🛠️',
+    retired_expert: 'Retired Expert Insight 💡'
   };
   const colors = {
     standard: 'bg-muted text-muted-foreground border-border',
     expert: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-    verified: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+    verified: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    ai_generated: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
+    expert_verified: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    based_on_sop: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    senior_employee: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    retired_expert: 'bg-orange-500/10 text-orange-400 border-orange-500/20'
   };
 
   return (
-    <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${colors[type]}`}>
-      {labels[type]}
+    <span className={`px-2 py-0.5 rounded-md border text-[9px] font-bold ${colors[type] || colors.standard}`}>
+      {labels[type] || type}
     </span>
   );
 }
@@ -554,6 +564,17 @@ export function SkeletonLoader({ className = '' }: { className?: string }) {
         <div className="h-3 bg-muted rounded w-5/6" />
         <div className="h-3 bg-muted rounded w-2/3" />
       </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+// 18. REUSABLE CARD
+// ----------------------------------------------------
+export function Card({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
+  return (
+    <div onClick={onClick} className={`bg-card border border-border rounded-2xl p-5 ${className}`}>
+      {children}
     </div>
   );
 }
