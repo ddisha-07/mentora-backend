@@ -12,12 +12,27 @@ import {
   Edit2, Camera, Mail,
   SkipForward, SkipBack, Pause, Circle,
   Send, Bot, RefreshCw,
-  Flame, Map, UserCheck, Sun, Moon
+  Flame, Map, UserCheck, Sun, Moon,
+  Video, Gift // Added for Phase 1
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer,
   Tooltip, RadialBarChart, RadialBar
 } from "recharts";
+
+// Phase 1 Imports
+import { UserRole } from "./src/types";
+import { ROLES_CONFIG, canAccessFeature } from "./src/config/roles";
+import { mockService, MOCK_USERS } from "./src/services/mockData";
+import { RoleBadge, XPBadge, StreakIndicator, MissionCard, StatCard as ReusableStatCard } from "./src/components/reusable";
+import LearnPage from "./src/pages/LearnPage";
+import KnowledgePage from "./src/pages/KnowledgePage";
+import KnowledgeExchangePage from "./src/pages/KnowledgeExchangePage";
+import TrainingPage from "./src/pages/TrainingPage";
+import AIInMyWorkPage from "./src/pages/AIInMyWorkPage";
+import LeaderboardPage from "./src/pages/LeaderboardPage";
+import RewardsPage from "./src/pages/RewardsPage";
+import SkillPassportPage from "./src/pages/SkillPassportPage";
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
@@ -27,6 +42,7 @@ const useTheme = () => useContext(ThemeCtx);
 export type AppContextType = {
   user: any;
   profile: any;
+  setProfile: React.Dispatch<React.SetStateAction<any>>;
   courses: any[];
   enrollments: any[];
   selectedCourseId: number | null;
@@ -50,7 +66,9 @@ const useApp = () => {
 type Page =
   | "landing" | "login" | "dashboard" | "courses" | "course-detail"
   | "lesson" | "ai-chat" | "quiz" | "quiz-results" | "certificates"
-  | "profile" | "settings" | "announcements";
+  | "profile" | "settings" | "announcements"
+  | "learn" | "knowledge" | "knowledge-exchange" | "training"
+  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const COURSES = [
@@ -1104,21 +1122,37 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
   activePage: Page; onNavigate: (p: Page) => void; collapsed: boolean; onToggle: () => void;
 }) {
   const { user, profile, enrollments, signOut } = useApp();
-  const navItems = [
-    { page: "dashboard" as Page, icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-    { page: "courses" as Page, icon: <BookOpen size={18} />, label: "My Learning" },
-    { page: "courses" as Page, icon: <GraduationCap size={18} />, label: "Courses", alt: true },
-    { page: "certificates" as Page, icon: <Award size={18} />, label: "Certificates" },
-    { page: "ai-chat" as Page, icon: <Bot size={18} />, label: "AI Assistant", accent: true },
-    { page: "announcements" as Page, icon: <Megaphone size={18} />, label: "Announcements" },
+
+  // Unified active user profile (fallback for type safety)
+  const activeProfile = profile || {
+    name: user?.email?.split('@')[0] || "Learner",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+    role: "JUNIOR_EMPLOYEE" as UserRole
+  };
+
+  const allNavItems = [
+    { page: "dashboard" as Page, icon: <LayoutDashboard size={18} />, label: "Home", feature: "Home" },
+    { page: "learn" as Page, icon: <BookOpen size={18} />, label: "Learn", feature: "Learn" },
+    { page: "knowledge" as Page, icon: <Database size={18} />, label: "Knowledge Hub", feature: "Knowledge Hub" },
+    { page: "knowledge-exchange" as Page, icon: <HelpCircle size={18} />, label: "Knowledge Exchange", feature: "Knowledge Exchange" },
+    { page: "training" as Page, icon: <Video size={18} />, label: "Training", feature: "Training" },
+    { page: "ai-in-my-work" as Page, icon: <Sparkles size={18} />, label: "AI in My Work", feature: "AI in My Work" },
+    { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard", feature: "Leaderboard" },
+    { page: "rewards" as Page, icon: <Gift size={18} />, label: "Rewards", feature: "Rewards" },
+    { page: "skill-passport" as Page, icon: <Award size={18} />, label: "Skill Passport", feature: "Skill Passport" },
+    { page: "ai-chat" as Page, icon: <Bot size={18} />, label: "AI Assistant", feature: "Home", accent: true }
   ];
+
+  const userRole = activeProfile.role as UserRole;
+  const navItems = allNavItems.filter(item => canAccessFeature(userRole, item.feature));
+
   const bottomItems = [
     { page: "profile" as Page, icon: <User size={18} />, label: "Profile" },
     { page: "settings" as Page, icon: <Settings size={18} />, label: "Settings" },
   ];
 
-  const NavItem = ({ item }: { item: typeof navItems[0] }) => {
-    const isActive = activePage === item.page && !item.alt;
+  const NavItem = ({ item }: { item: typeof allNavItems[0] }) => {
+    const isActive = activePage === item.page;
     return (
       <button onClick={() => onNavigate(item.page)}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? "bg-primary/10 text-primary" : item.accent ? "text-primary/70 hover:text-primary hover:bg-primary/5" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}>
@@ -1161,7 +1195,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
         </button>
       )}
 
-      <nav className="flex-1 p-3 space-y-0.5">
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item, i) => <NavItem key={i} item={item} />)}
       </nav>
 
@@ -1178,10 +1212,12 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
         <div className="p-3 pb-4">
           <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-2 mb-2">
-              <img src={profile?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&auto=format"} alt="User" className="w-7 h-7 rounded-full object-cover bg-muted" />
-              <div>
-                <p className="text-xs font-medium leading-none truncate max-w-[120px]">{profile?.full_name || user?.email?.split('@')[0] || "Student"}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider">{profile?.role || "student"}</p>
+              <img src={activeProfile.avatar || activeProfile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&auto=format"} alt="User" className="w-7 h-7 rounded-full object-cover bg-muted" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium leading-none truncate">{activeProfile.name || activeProfile.full_name}</p>
+                <p className="text-[9px] text-muted-foreground mt-1 uppercase tracking-wider truncate">
+                  {ROLES_CONFIG[userRole]?.displayName || userRole}
+                </p>
               </div>
             </div>
             <ProgressBar value={avgProgress} className="mt-2" />
@@ -1196,12 +1232,63 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
 // ─── Top Nav ──────────────────────────────────────────────────────────────────
 function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) => void }) {
   const { isDark, toggle } = useTheme();
-  const { profile } = useApp();
+  const { profile, setProfile } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifs, setNotifs] = useState<any[]>([]);
+
+  useEffect(() => {
+    mockService.fetchNotifications().then(data => setNotifs(data));
+  }, []);
+
+  const activeProfile = profile || {
+    name: "Learner",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+    role: "JUNIOR_EMPLOYEE" as UserRole
+  };
+
+  const getNotifIcon = (type: string) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle size={14} className="text-emerald-400" />;
+      case 'warning':
+        return <AlertTriangle size={14} className="text-amber-400" />;
+      case 'alert':
+        return <Award size={14} className="text-primary" />;
+      default:
+        return <Sparkles size={14} className="text-cyan-400" />;
+    }
+  };
+
   return (
     <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-background/80 backdrop-blur-sm flex-shrink-0">
       <h1 {...sg("text-lg font-semibold")}>{title}</h1>
       <div className="flex items-center gap-3">
+        {/* Role Selector for Development / Testing */}
+        <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2 py-1 text-xs">
+          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider hidden md:inline">Role:</span>
+          <select
+            value={activeProfile.role}
+            onChange={async (e) => {
+              const r = e.target.value as UserRole;
+              const mockUser = await mockService.fetchCurrentUser(r);
+              setProfile({
+                ...mockUser,
+                avatar_url: mockUser.avatar, // Sync compatibility with old code
+                full_name: mockUser.name
+              });
+            }}
+            className="bg-transparent text-foreground outline-none font-semibold cursor-pointer border-none p-0 pr-1 text-xs"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            <option value="SHOP_FLOOR_WORKER" className="bg-card">Shop Floor Worker</option>
+            <option value="JUNIOR_EMPLOYEE" className="bg-card">Junior Employee</option>
+            <option value="SENIOR_EMPLOYEE" className="bg-card">Senior Employee</option>
+            <option value="OFFICER_MANAGER" className="bg-card">Officer / Manager</option>
+            <option value="RETIRED_EMPLOYEE" className="bg-card">Retired Expert</option>
+            <option value="ADMIN" className="bg-card">Admin</option>
+          </select>
+        </div>
+
         <div className="relative hidden md:block">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input placeholder="Search courses, topics…" className="bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground w-64 outline-none focus:border-primary/50 transition-colors"
@@ -1216,33 +1303,31 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
           <button onClick={() => setNotifOpen(!notifOpen)}
             className="relative w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all">
             <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
+            {notifs.some(n => !n.read) && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />}
           </button>
           {notifOpen && (
             <div className="absolute right-0 top-12 w-80 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden">
               <div className="p-4 border-b border-border flex items-center justify-between">
                 <span {...sg("text-sm font-semibold")}>Notifications</span>
-                <span className="text-xs text-primary">Mark all read</span>
+                <span className="text-xs text-primary cursor-pointer hover:underline" onClick={() => setNotifs(prev => prev.map(n => ({ ...n, read: true })))}>Mark all read</span>
               </div>
-              {[
-                { icon: <CheckCircle size={14} className="dark:text-emerald-400 text-emerald-600" />, text: "Module 1 completed — Great job!", time: "2m ago" },
-                { icon: <Sparkles size={14} className="text-primary" />, text: "New course: Prompt Engineering 101", time: "1h ago" },
-                { icon: <Trophy size={14} className="dark:text-amber-400 text-amber-600" />, text: "Certificate earned: Leadership Excellence", time: "3h ago" },
-                { icon: <Megaphone size={14} className="text-violet-400" />, text: "Team update from L&D: Q3 Learning Goals", time: "Yesterday" },
-              ].map((n, i) => (
-                <div key={i} className="px-4 py-3 flex items-start gap-3 hover:bg-muted/60 transition-colors cursor-pointer border-b border-border/50">
-                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">{n.icon}</div>
-                  <div>
-                    <p className="text-xs text-foreground">{n.text}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{n.time}</p>
+              <div className="max-h-64 overflow-y-auto">
+                {notifs.map((n) => (
+                  <div key={n.id} className={`px-4 py-3 flex items-start gap-3 hover:bg-muted/60 transition-colors cursor-pointer border-b border-border/50 ${!n.read ? 'bg-primary/2' : ''}`}>
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">{getNotifIcon(n.type)}</div>
+                    <div>
+                      <p className="text-xs text-foreground font-medium">{n.title}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{n.message}</p>
+                      <p className="text-[9px] text-muted-foreground mt-1 font-mono">{n.timestamp}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
-        <button onClick={() => onNavigate("profile")} className="w-9 h-9 rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-all">
-          <img src={profile?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&auto=format"} alt="Profile" className="w-full h-full object-cover" />
+        <button onClick={() => onNavigate("profile")} className="w-9 h-9 rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-all flex-shrink-0">
+          <img src={activeProfile.avatar || activeProfile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&auto=format"} alt="Profile" className="w-full h-full object-cover" />
         </button>
       </div>
     </header>
@@ -1253,6 +1338,26 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
 function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const { isDark } = useTheme();
   const { profile, courses, enrollments, setSelectedCourseId } = useApp();
+  const [activeMissions, setActiveMissions] = useState<any[]>([]);
+
+  const activeProfile = profile || {
+    name: "Learner",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+    role: "JUNIOR_EMPLOYEE" as UserRole,
+    designation: "Associate Software Engineer",
+    department: "Software Engineering",
+    plant: "Bangalore HQ",
+    currentStreak: 12,
+    xp: 1890,
+    knowledgeCredits: 40,
+    mentoraCredits: 180
+  };
+
+  useEffect(() => {
+    mockService.fetchMissions(activeProfile.role as UserRole).then(data => {
+      setActiveMissions(data);
+    });
+  }, [activeProfile.role]);
 
   // Find courses that are currently in progress for this user
   const inProgress = enrollments
@@ -1277,7 +1382,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     } else if (enrollments.length > 0) {
       handleContinue(enrollments[0].course_id);
     } else {
-      onNavigate("courses");
+      onNavigate("learn");
     }
   };
 
@@ -1288,51 +1393,89 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="absolute right-0 top-0 bottom-0 w-64 opacity-20 pointer-events-none">
           <NeuralNetSVG className="w-full h-full" />
         </div>
-        <div className="relative z-10">
-          <p className="text-muted-foreground text-sm mb-1">Good morning,</p>
-          <h2 {...sg("text-2xl font-bold mb-2")}>{profile?.full_name || "Student"} 👋</h2>
-          <p className="text-muted-foreground text-sm mb-4">You're on a 12-day learning streak. Keep it up!</p>
-          <div className="flex items-center gap-4">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p className="text-muted-foreground text-sm mb-1">Good morning,</p>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h2 {...sg("text-2xl font-bold")}>{activeProfile.name || activeProfile.full_name} 👋</h2>
+              <RoleBadge role={activeProfile.role as UserRole} />
+            </div>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              {activeProfile.designation} &bull; {activeProfile.department} &bull; {activeProfile.plant}
+            </p>
+            <p className="text-muted-foreground text-[10px] mt-2">
+              Streak: {activeProfile.currentStreak || 0} days &bull; XP: {activeProfile.xp || 0} &bull; KC: {activeProfile.knowledgeCredits || 0}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
             <CyanButton size="sm" onClick={handleContinueLatest}>Continue Learning</CyanButton>
-            <CyanButton size="sm" outline onClick={() => onNavigate("courses")}>Browse Courses</CyanButton>
+            <CyanButton size="sm" outline onClick={() => onNavigate("learn")}>Learning Hub</CyanButton>
           </div>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Courses enrolled" value={enrollments.length.toString()} delta="+1 this month" icon={<BookOpen size={18} />} />
-        <StatCard label="Hours learned" value="148h" delta="+16.5h" icon={<Clock size={18} />} />
-        <StatCard label="Certificates" value={completedCount.toString()} delta="+1 new" icon={<Award size={18} />} />
-        <StatCard label="Skill points" value="2,840" delta="+340" icon={<Zap size={18} />} />
+        <ReusableStatCard label="Courses Enrolled" value={enrollments.length} icon={<BookOpen size={18} />} />
+        <ReusableStatCard label="Daily Streak" value={`${activeProfile.currentStreak || 0} Days`} icon={<Flame size={18} className="text-orange-400 fill-orange-400" />} />
+        <ReusableStatCard label="Mentora Credits" value={`${activeProfile.mentoraCredits || 0} MC`} icon={<Award size={18} />} />
+        <ReusableStatCard label="Knowledge Credits" value={`${activeProfile.knowledgeCredits || 0} KC`} icon={<Award size={18} className="text-cyan-400" />} />
       </div>
 
       {/* Main grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Continue Learning */}
-        <div className="lg:col-span-2 space-y-4">
-          <h3 {...sg("text-base font-semibold")}>Continue Learning</h3>
-          {inProgress.length === 0 ? (
-            <Card className="p-6 text-center text-muted-foreground text-sm">
-              <BookOpen size={30} className="mx-auto mb-2 text-border" />
-              No courses in progress. <button onClick={() => onNavigate("courses")} className="text-primary hover:underline">Enroll in a course</button> to start learning!
-            </Card>
-          ) : (
-            inProgress.map((course) => (
-              <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer" onClick={() => handleContinue(course.id)}>
-                <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
-                <div className="flex-1 min-w-0">
-                  <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{course.instructor}</p>
-                  <div className="mt-2">
-                    <ProgressBar value={course.progress} />
-                    <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
+        <div className="lg:col-span-2 space-y-6">
+          {/* Active Missions */}
+          <div className="space-y-4">
+            <h3 {...sg("text-base font-semibold")}>Daily Role Missions</h3>
+            {activeMissions.length === 0 ? (
+              <Card className="p-6 text-center text-muted-foreground text-sm">
+                No active missions for your role today. Good job keeping up!
               </Card>
-            ))
-          )}
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {activeMissions.slice(0, 2).map((m) => (
+                  <MissionCard
+                    key={m.id}
+                    title={m.title}
+                    description={m.description}
+                    rewardType={m.rewardType}
+                    rewardAmount={m.rewardAmount}
+                    estimatedTime={m.estimatedTime}
+                    status={m.status}
+                    dueDate={m.dueDate}
+                    onStart={() => alert(`Started mission: ${m.title}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <h3 {...sg("text-base font-semibold")}>Continue Learning</h3>
+            {inProgress.length === 0 ? (
+              <Card className="p-6 text-center text-muted-foreground text-sm">
+                <BookOpen size={30} className="mx-auto mb-2 text-border" />
+                No courses in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline">Enroll in a course</button> to start learning!
+              </Card>
+            ) : (
+              inProgress.map((course) => (
+                <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer" onClick={() => handleContinue(course.id)}>
+                  <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
+                  <div className="flex-1 min-w-0">
+                    <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{course.instructor}</p>
+                    <div className="mt-2">
+                      <ProgressBar value={course.progress} />
+                      <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
+                </Card>
+              ))
+            )}
+          </div>
 
           {/* Learning Chart */}
           <Card className="p-5 mt-4">
@@ -2825,12 +2968,29 @@ const PAGE_TITLES: Record<string, string> = {
   profile: "Profile",
   settings: "Settings",
   announcements: "Announcements",
+  learn: "Learning Hub",
+  knowledge: "Knowledge Hub",
+  "knowledge-exchange": "Knowledge Exchange",
+  training: "Training Calendar",
+  "ai-in-my-work": "AI in My Work",
+  leaderboard: "Leaderboard",
+  rewards: "Rewards Store",
+  "skill-passport": "Skill Passport"
 };
 
 function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { setSelectedCourseId, profile, courses, enrollments } = useApp();
 
   const renderPage = () => {
+    const handleCourseClick = (courseId: number) => {
+      setSelectedCourseId(courseId);
+      onNavigate("course-detail");
+    };
+
+    const activeProfile = profile || MOCK_USERS.JUNIOR_EMPLOYEE;
+    const userRole = activeProfile.role as UserRole;
+
     switch (page) {
       case "dashboard": return <DashboardPage onNavigate={onNavigate} />;
       case "courses": return <CourseCatalogPage onNavigate={onNavigate} />;
@@ -2843,6 +3003,32 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
       case "profile": return <ProfilePage onNavigate={onNavigate} />;
       case "settings": return <SettingsPage />;
       case "announcements": return <AnnouncementsPage />;
+      
+      // Phase 1 Pages
+      case "learn":
+        return (
+          <LearnPage
+            courses={courses}
+            enrollments={enrollments}
+            onNavigateCourse={handleCourseClick}
+            onNavigateCertificates={() => onNavigate("skill-passport")}
+          />
+        );
+      case "knowledge":
+        return <KnowledgePage />;
+      case "knowledge-exchange":
+        return <KnowledgeExchangePage />;
+      case "training":
+        return <TrainingPage />;
+      case "ai-in-my-work":
+        return <AIInMyWorkPage role={userRole} />;
+      case "leaderboard":
+        return <LeaderboardPage />;
+      case "rewards":
+        return <RewardsPage mentoraCredits={activeProfile.mentoraCredits || activeProfile.mentora_credits || 0} />;
+      case "skill-passport":
+        return <SkillPassportPage userProfile={activeProfile} />;
+      
       default: return <DashboardPage onNavigate={onNavigate} />;
     }
   };
@@ -2889,7 +3075,31 @@ export default function App() {
   const appPages: Page[] = [
     "dashboard", "courses", "course-detail", "lesson", "ai-chat",
     "quiz", "quiz-results", "certificates", "profile", "settings", "announcements",
+    "learn", "knowledge", "knowledge-exchange", "training", "ai-in-my-work",
+    "leaderboard", "rewards", "skill-passport"
   ];
+
+  // Synchronize page state with URL pathname (clean hashless routing)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.replace("/", "");
+      const matchedPage = path === "" ? "landing" : path;
+      if (appPages.includes(matchedPage as Page) || matchedPage === "landing" || matchedPage === "login") {
+        setPage(matchedPage as Page);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigateTo = (newPage: Page) => {
+    setPage(newPage);
+    const path = newPage === "landing" ? "/" : `/${newPage}`;
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, "", path);
+    }
+  };
 
   const fetchProfileAndData = async (userId: string) => {
     try {
@@ -2900,19 +3110,55 @@ export default function App() {
         .eq("id", userId)
         .maybeSingle();
 
+      let finalProfile: any;
+
       if (!profErr && profData) {
-        setProfile(profData);
-      } else {
-        // Create a temporary fallback profile if database trigger hasn't finished yet
-        setProfile({
+        // Map database fields to our core User model from types
+        finalProfile = {
           id: userId,
-          full_name: user?.email?.split("@")[0] || "Student",
-          username: user?.email?.split("@")[0] || "student",
-          avatar_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
-          email: user?.email,
-          role: "student"
-        });
+          employeeId: profData.employee_id || "EMP-" + userId.slice(0, 4).toUpperCase(),
+          name: profData.full_name || user?.email?.split("@")[0] || "Learner",
+          email: user?.email || "",
+          avatar: profData.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+          role: (profData.role?.toUpperCase() as UserRole) || "JUNIOR_EMPLOYEE",
+          department: profData.department || "Operations",
+          plant: profData.plant || "Pune Plant 1",
+          designation: profData.designation || "Specialist",
+          yearsOfExperience: profData.years_of_experience || 2,
+          expertise: profData.expertise || ["Operations"],
+          skillLevel: profData.skill_level || "Level 1",
+          xp: profData.xp || 1890,
+          knowledgeCredits: profData.knowledge_credits || 40,
+          mentoraCredits: profData.mentora_credits || 180,
+          currentStreak: profData.current_streak || 12,
+          longestStreak: profData.longest_streak || 12,
+          leaderboardRank: profData.leaderboard_rank || 42
+        };
+      } else {
+        // Create a temporary fallback profile conforming to the User interface
+        finalProfile = {
+          id: userId,
+          employeeId: "EMP-" + userId.slice(0, 4).toUpperCase(),
+          name: user?.email?.split("@")[0] || "Learner",
+          email: user?.email || "",
+          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+          role: "JUNIOR_EMPLOYEE" as UserRole,
+          department: "Software Engineering",
+          plant: "Bangalore HQ",
+          designation: "Associate Software Engineer",
+          yearsOfExperience: 2,
+          expertise: ["React", "TypeScript", "Node.js"],
+          skillLevel: "Level 1 - Junior Developer",
+          xp: 1890,
+          knowledgeCredits: 40,
+          mentoraCredits: 180,
+          currentStreak: 12,
+          longestStreak: 12,
+          leaderboardRank: 42
+        };
       }
+
+      setProfile(finalProfile);
 
       // 2. Fetch Enrollments
       const { data: enrollmentsData, error: enrollmentsErr } = await supabase
@@ -2959,7 +3205,19 @@ export default function App() {
           setUser(currentUser);
           if (currentUser) {
             await fetchProfileAndData(currentUser.id);
-            setPage("dashboard");
+            const path = window.location.pathname.replace("/", "");
+            if (appPages.includes(path as Page)) {
+              setPage(path as Page);
+            } else {
+              navigateTo("dashboard");
+            }
+          } else {
+            const path = window.location.pathname.replace("/", "");
+            if (path === "login") {
+              setPage("login");
+            } else {
+              setPage("landing");
+            }
           }
         }
       } catch (err) {
@@ -2980,11 +3238,12 @@ export default function App() {
       if (currentUser) {
         await fetchProfileAndData(currentUser.id);
         if (event === "SIGNED_IN") {
-          setPage("dashboard");
+          navigateTo("dashboard");
         }
       } else {
         setProfile(null);
         setEnrollments([]);
+        navigateTo("landing");
       }
     });
 
@@ -3071,7 +3330,7 @@ export default function App() {
       setUser(null);
       setProfile(null);
       setEnrollments([]);
-      setPage("landing");
+      navigateTo("landing");
     } catch (err) {
       console.error("Error signing out:", err);
     }
@@ -3090,6 +3349,7 @@ export default function App() {
     <AppCtx.Provider value={{
       user,
       profile,
+      setProfile,
       courses,
       enrollments,
       selectedCourseId,
@@ -3110,9 +3370,9 @@ export default function App() {
             ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
             * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
           `}</style>
-          {page === "landing" && <LandingPage onNavigate={setPage} />}
-          {page === "login" && <LoginPage onNavigate={setPage} />}
-          {appPages.includes(page) && <AppLayout page={page} onNavigate={setPage} />}
+          {page === "landing" && <LandingPage onNavigate={navigateTo} />}
+          {page === "login" && <LoginPage onNavigate={navigateTo} />}
+          {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
         </div>
       </ThemeCtx.Provider>
     </AppCtx.Provider>
