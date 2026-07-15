@@ -57,7 +57,7 @@ export const ROLES_CONFIG: Record<UserRole, RoleMetadata> = {
       'moderate_questions',
       'view_analytics',
     ],
-    availableFeatures: ['Home', 'Learn', 'Knowledge Hub', 'Knowledge Exchange', 'Training', 'Leaderboard', 'Rewards', 'Skill Passport', 'AI in My Work'],
+    availableFeatures: ['Home', 'Learn', 'Knowledge Hub', 'Knowledge Exchange', 'Training', 'Leaderboard', 'Rewards', 'Skill Passport', 'AI in My Work', 'Admin Console'],
     missionTypes: ['Team Leadership', 'Policy Update'],
     learningAccess: ['Management & Strategy', 'Full Catalog'],
     knowledgeContributionAccess: true,

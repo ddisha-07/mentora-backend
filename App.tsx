@@ -34,6 +34,7 @@ import LeaderboardPage from "./src/pages/LeaderboardPage";
 import RewardsPage from "./src/pages/RewardsPage";
 import SkillPassportPage from "./src/pages/SkillPassportPage";
 import SavedPage from "./src/pages/SavedPage";
+import AdminPage from "./src/pages/AdminPage";
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
@@ -89,7 +90,7 @@ type Page =
   | "lesson" | "ai-chat" | "quiz" | "quiz-results" | "certificates"
   | "profile" | "settings" | "announcements"
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
-  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved";
+  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const COURSES = [
@@ -1162,6 +1163,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
     { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard", feature: "Leaderboard" },
     { page: "rewards" as Page, icon: <Gift size={18} />, label: "Rewards", feature: "Rewards" },
     { page: "skill-passport" as Page, icon: <Award size={18} />, label: "Skill Passport", feature: "Skill Passport" },
+    { page: "admin" as Page, icon: <Shield size={18} />, label: "Admin Console", feature: "Admin Console" },
     { page: "ai-chat" as Page, icon: <Bot size={18} />, label: "AI Assistant", feature: "Home", accent: true }
   ];
 
@@ -3382,7 +3384,8 @@ const PAGE_TITLES: Record<string, string> = {
   leaderboard: "Leaderboard",
   rewards: "Rewards Store",
   "skill-passport": "Skill Passport",
-  saved: "Saved Items"
+  saved: "Saved Items",
+  admin: "Admin Console"
 };
 
 function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
@@ -3438,6 +3441,8 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
         return <SkillPassportPage userProfile={activeProfile} />;
       case "saved":
         return <SavedPage onNavigate={onNavigate} />;
+      case "admin":
+        return <AdminPage />;
       
       default: return <DashboardPage onNavigate={onNavigate} />;
     }
@@ -3645,7 +3650,7 @@ export default function App() {
     "dashboard", "courses", "course-detail", "lesson", "ai-chat",
     "quiz", "quiz-results", "certificates", "profile", "settings", "announcements",
     "learn", "knowledge", "knowledge-exchange", "training", "ai-in-my-work",
-    "leaderboard", "rewards", "skill-passport", "saved"
+    "leaderboard", "rewards", "skill-passport", "saved", "admin"
   ];
 
   // Synchronize page state with URL pathname (clean hashless routing)
