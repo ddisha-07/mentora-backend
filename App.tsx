@@ -75,6 +75,8 @@ export type AppContextType = {
   setSavedItems: React.Dispatch<React.SetStateAction<any[]>>;
   notifsState: any[];
   setNotifsState: React.Dispatch<React.SetStateAction<any[]>>;
+  page: Page;
+  setPage: React.Dispatch<React.SetStateAction<Page>>;
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
@@ -1315,6 +1317,26 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
     setNotifsState(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
+  const handleNotifClick = (n: any) => {
+    handleMarkNotifRead(n.id);
+    setNotifOpen(false);
+    const msg = n.message.toLowerCase();
+    const title = n.title.toLowerCase();
+    if (title.includes("mission") || msg.includes("mission")) {
+      onNavigate("dashboard");
+    } else if (title.includes("session") || title.includes("training") || msg.includes("training")) {
+      onNavigate("training");
+    } else if (title.includes("course") || title.includes("skill") || msg.includes("course")) {
+      onNavigate("learn");
+    } else if (title.includes("leaderboard") || msg.includes("leaderboard") || msg.includes("rank")) {
+      onNavigate("leaderboard");
+    } else if (title.includes("answer") || title.includes("verified") || msg.includes("q&a") || msg.includes("question")) {
+      onNavigate("knowledge-exchange");
+    } else if (title.includes("credits") || title.includes("transfer") || msg.includes("credits")) {
+      onNavigate("rewards");
+    }
+  };
+
   const handleMarkAllNotifsRead = () => {
     setNotifsState(prev => prev.map(n => ({ ...n, read: true })));
   };
@@ -1421,7 +1443,7 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
                 {notifsState.map((n) => (
                   <div
                     key={n.id}
-                    onClick={() => handleMarkNotifRead(n.id)}
+                    onClick={() => handleNotifClick(n)}
                     className={`px-4 py-3 flex items-start gap-3 hover:bg-muted/60 transition-colors cursor-pointer border-b border-border/50 ${!n.read ? 'bg-primary/5 font-bold border-l-2 border-l-primary' : ''}`}
                   >
                     <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">{getNotifIcon(n.type)}</div>
@@ -1687,6 +1709,64 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               ))}
             </div>
           </div>
+
+          {/* Mentora Knowledge Loop */}
+          <Card className="p-6 space-y-6 bg-gradient-to-br from-card to-card/50 border border-border/80">
+            <div>
+              <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                🔄 Mentora Knowledge Loop
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                How information flows dynamically between employees, AI, and experienced retired experts at Tata Steel.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-7 gap-3 relative pt-2">
+              {[
+                { step: '1', title: 'Learn', desc: 'Acquire new skills & SOP courses', color: 'border-blue-500/30 text-blue-400 bg-blue-500/5' },
+                { step: '2', title: 'Ask', desc: 'Query Kai AI chatbot & SOP vault', color: 'border-cyan-500/30 text-cyan-400 bg-cyan-500/5' },
+                { step: '3', title: 'Share', desc: 'Escalate complex gaps to forum', color: 'border-amber-500/30 text-amber-400 bg-amber-500/5' },
+                { step: '4', title: 'Verify', desc: 'Senior/retired experts check answers', color: 'border-purple-500/30 text-purple-400 bg-purple-500/5' },
+                { step: '5', title: 'Preserve', desc: 'Solutions saved into legacy SOPs', color: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5' },
+                { step: '6', title: 'Improve', desc: 'Plant safety & metrics increase', color: 'border-rose-500/30 text-rose-400 bg-rose-500/5' },
+                { step: '7', title: 'Learn', desc: 'Cycle loops back to employee base', color: 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' }
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`border ${item.color} p-3 rounded-2xl flex flex-col justify-between h-32 transition-all hover:scale-[1.02] hover:-translate-y-1 relative`}
+                >
+                  <div>
+                    <span className="text-[10px] font-black uppercase opacity-60 block">Step {item.step}</span>
+                    <h4 className="text-xs font-black mt-1 uppercase tracking-wider">{item.title}</h4>
+                  </div>
+                  <p className="text-[9px] leading-normal opacity-85 mt-2">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Visual indicator of loop */}
+            <div className="flex flex-wrap items-center justify-between bg-background/55 border border-border p-3.5 rounded-xl text-[10px] text-muted-foreground font-semibold gap-3 leading-relaxed">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <span>Employees Learn &amp; Query</span>
+              </div>
+              <span>&rarr;</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span>AI Ingests &amp; Escalates</span>
+              </div>
+              <span>&rarr;</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                <span>Experts Review &amp; Verify</span>
+              </div>
+              <span>&rarr;</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Company Archives &amp; Preserves</span>
+              </div>
+            </div>
+          </Card>
         </div>
 
         {/* Right column */}
@@ -3947,7 +4027,9 @@ export default function App() {
       savedItems,
       setSavedItems,
       notifsState,
-      setNotifsState
+      setNotifsState,
+      page,
+      setPage
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
         <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>

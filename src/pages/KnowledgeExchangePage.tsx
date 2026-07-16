@@ -15,7 +15,9 @@ export default function KnowledgeExchangePage() {
     knowledgeAnswers,
     setKnowledgeAnswers,
     preservedKnowledge,
-    setPreservedKnowledge
+    setPreservedKnowledge,
+    savedItems,
+    setSavedItems
   } = useApp();
 
   const activeProfile = profile || {
@@ -42,7 +44,10 @@ export default function KnowledgeExchangePage() {
   // Q&A list & thread selection
   const [selectedQuestion, setSelectedQuestion] = useState<KnowledgeQuestion | null>(null);
   const [answers, setAnswers] = useState<KnowledgeAnswer[]>([]);
-  const [savedQuestionIds, setSavedQuestionIds] = useState<number[]>([402]); // Initial mock bookmark
+  
+  const savedQuestionIds = (savedItems || [])
+    .filter(x => x.type === 'question')
+    .map(x => Number(x.id)); // Initial mock bookmark
 
   // Legacy directory state
   const [legacySearch, setLegacySearch] = useState('');
@@ -118,10 +123,23 @@ export default function KnowledgeExchangePage() {
   };
 
   // Toggle bookmark / saved state
-  const toggleBookmark = (id: number) => {
-    setSavedQuestionIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+  const toggleBookmark = (q: KnowledgeQuestion) => {
+    const isSaved = (savedItems || []).some(x => Number(x.id) === Number(q.id) && x.type === 'question');
+    if (isSaved) {
+      setSavedItems(prev => prev.filter(x => !(Number(x.id) === Number(q.id) && x.type === 'question')));
+    } else {
+      setSavedItems(prev => [
+        ...prev,
+        {
+          id: q.id,
+          type: 'question',
+          title: q.title,
+          desc: q.description || `Question posted by ${q.author}.`,
+          category: 'Knowledge Exchange',
+          page: 'knowledge-exchange'
+        }
+      ]);
+    }
   };
 
   // Ask Question Submission
@@ -437,7 +455,7 @@ export default function KnowledgeExchangePage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleBookmark(q.id);
+                          toggleBookmark(q);
                         }}
                         className={`absolute top-4 right-4 text-xs ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                       >
@@ -488,7 +506,7 @@ export default function KnowledgeExchangePage() {
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-[9px] px-2 py-0.5 rounded bg-background border border-border text-muted-foreground font-semibold">{selectedQuestion.topic}</span>
                       <button
-                        onClick={() => toggleBookmark(selectedQuestion.id)}
+                        onClick={() => toggleBookmark(selectedQuestion)}
                         className={`text-xs ${savedQuestionIds.includes(selectedQuestion.id) ? 'text-primary' : 'text-muted-foreground'}`}
                       >
                         <Bookmark size={15} className={savedQuestionIds.includes(selectedQuestion.id) ? 'fill-primary' : ''} />

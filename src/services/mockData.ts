@@ -225,6 +225,18 @@ export const MOCK_MISSIONS: Mission[] = [
     estimatedTime: '40 mins',
     status: 'assigned',
     dueDate: 'Immediate'
+  },
+  {
+    id: 109,
+    title: 'Attend Live Safety Induction',
+    description: 'Join the live interactive training stream on factory floor PPE and high-pressure fire gates.',
+    type: 'TRAINING',
+    assignedRole: 'SHOP_FLOOR_WORKER',
+    rewardType: 'xp',
+    rewardAmount: 150,
+    estimatedTime: '30 mins',
+    status: 'assigned',
+    dueDate: 'Today, 2:00 PM'
   }
 ];
 

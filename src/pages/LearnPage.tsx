@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BookOpen, GraduationCap, Search, Award, TrendingUp, Sparkles, UserCheck } from 'lucide-react';
 import { CourseCard, ProgressCard, StatCard } from '../components/reusable';
 import { UserRole } from '../types';
+import { useApp } from '../../App';
 
 export default function LearnPage({
   courses,
@@ -16,6 +17,27 @@ export default function LearnPage({
   onNavigateCourse: (id: number) => void;
   onNavigateCertificates: () => void;
 }) {
+  const { savedItems, setSavedItems } = useApp();
+
+  const handleToggleBookmark = (course: any) => {
+    const isSaved = (savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course');
+    if (isSaved) {
+      setSavedItems(prev => prev.filter(x => !(Number(x.id) === Number(course.id) && x.type === 'course')));
+    } else {
+      setSavedItems(prev => [
+        ...prev,
+        {
+          id: course.id,
+          type: 'course',
+          title: course.title,
+          desc: `Course instructed by ${course.instructor || 'L&D Instructor'}.`,
+          category: 'Courses',
+          page: 'learn'
+        }
+      ]);
+    }
+  };
+
   const [activeTab, setActiveTab] = useState<'my_learning' | 'catalog'>('my_learning');
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
@@ -33,125 +55,87 @@ export default function LearnPage({
 
   // Map progress to course data
   const coursesWithProgress = courses.map(c => {
-    const e = enrollments.find(env => Number(env.course_id) === Number(c.id));
-    return { ...c, progress: e ? e.progress : 0, enrolled: !!e };
+    const enrollment = enrollments.find(e => Number(e.course_id) === Number(c.id));
+    return {
+      ...c,
+      enrolled: !!enrollment,
+      progress: enrollment ? enrollment.progress : 0
+    };
   });
 
-  // ==========================================
-  // SECTIONING & RECOMMENDATION LOGIC (PHASE 2)
-  // ==========================================
+  // Split into categories
+  const enrolledCourses = coursesWithProgress.filter(c => c.enrolled);
+  const continueLearning = enrolledCourses.filter(c => c.progress > 0 && c.progress < 100);
+  const completedCourses = enrolledCourses.filter(c => c.progress === 100);
 
-  // 1. Continue Learning: progress > 0 and < 100
-  const continueLearning = coursesWithProgress.filter(c => c.enrolled && c.progress > 0 && c.progress < 100);
-
-  // 2. Recommended for You: based on Department
+  // Recommendation engine
   const recommendedForYou = coursesWithProgress.filter(c => {
     if (c.progress === 100) return false;
-    const dept = userDept.toLowerCase();
-    if (dept.includes('software') || dept.includes('it')) {
-      return c.category === 'AI & ML' || c.category === 'Cloud & DevOps' || c.category === 'Data Science';
-    }
-    if (dept.includes('robotics') || dept.includes('automation')) {
-      return c.category === 'Cloud & DevOps' || c.category === 'AI & ML' || c.category === 'Security';
-    }
-    if (dept.includes('hr') || dept.includes('training') || dept.includes('corporate')) {
-      return c.category === 'Leadership' || c.category === 'Product';
-    }
-    // Fallback: Operational/Safety for plant workers
-    return c.category === 'Security' || c.category === 'Leadership';
+    return c.category === 'AI & ML' || c.category === 'Data Science';
   });
 
-  // 3. Based on Your Role
   const basedOnYourRole = coursesWithProgress.filter(c => {
     if (c.progress === 100) return false;
-    switch (userRole) {
-      case 'SHOP_FLOOR_WORKER':
-        return c.category === 'Security' || c.title.toLowerCase().includes('safety');
-      case 'JUNIOR_EMPLOYEE':
-        return c.difficulty === 'Beginner' || c.category === 'Data Science' || c.category === 'AI & ML';
-      case 'SENIOR_EMPLOYEE':
-        return c.difficulty === 'Advanced' || c.category === 'AI & ML' || c.category === 'Cloud & DevOps';
-      case 'OFFICER_MANAGER':
-        return c.category === 'Leadership' || c.category === 'Product';
-      case 'RETIRED_EMPLOYEE':
-        return c.category === 'Leadership' || c.title.toLowerCase().includes('turbine') || c.title.toLowerCase().includes('valve');
-      default:
-        return true;
+    if (userRole === 'SHOP_FLOOR_WORKER') {
+      return c.category === 'Security' || c.title.toLowerCase().includes('safety');
     }
+    return c.category === 'Leadership' || c.category === 'Product';
   });
 
-  // 4. Trending in Your Department: Highest rated non-completed
-  const trendingInDepartment = coursesWithProgress
-    .filter(c => c.progress < 100)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 2);
+  const trendingInDepartment = coursesWithProgress.filter(c => {
+    if (c.progress === 100) return false;
+    const dept = userDept.toLowerCase();
+    if (dept.includes('software') || dept.includes('it') || dept.includes('r&d')) {
+      return c.category === 'Cloud & DevOps' || c.category === 'AI & ML';
+    }
+    return c.category === 'Security' || c.title.toLowerCase().includes('operational');
+  });
 
-  // 5. AI & ML Skills: Category AI & ML
   const aiMLSkills = coursesWithProgress.filter(c => c.category === 'AI & ML');
 
-  // 6. Completed
-  const completedCourses = coursesWithProgress.filter(c => c.enrolled && c.progress === 100);
-
-  // Catalog tab filtering
+  // Filter Catalog
   const filteredCatalog = coursesWithProgress.filter(c => {
-    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) || c.instructor.toLowerCase().includes(search.toLowerCase());
-    const matchCat = activeCategory === 'All' || c.category === activeCategory;
-    return matchSearch && matchCat;
+    const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) ||
+                          c.instructor.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = activeCategory === 'All' || c.category === activeCategory;
+    return matchesSearch && matchesCategory;
   });
 
-  const enrolledCourses = coursesWithProgress.filter(c => c.enrolled);
-  const avgProgress = enrolledCourses.length > 0
-    ? Math.round(enrolledCourses.reduce((acc, curr) => acc + (curr.progress || 0), 0) / enrolledCourses.length)
-    : 0;
-
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Learning Hub</h2>
-          <p className="text-muted-foreground text-sm">Expand your expertise through courses and structured skill paths.</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setActiveTab('my_learning')}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'my_learning' ? 'bg-primary text-white' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}
-          >
-            My Learning
-          </button>
-          <button
-            onClick={() => setActiveTab('catalog')}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'catalog' ? 'bg-primary text-white' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}
-          >
-            Browse Catalog
-          </button>
-        </div>
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Overview stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard title="Enrolled Courses" value={enrolledCourses.length} change="Active Paths" type="courses" />
+        <StatCard title="In Progress" value={continueLearning.length} change="Learning" type="progress" />
+        <StatCard title="Completed" value={completedCourses.length} change="Certifications" type="completions" />
+        <StatCard
+          title="Skill Passport"
+          value="8 Skills"
+          change="Verify Skills"
+          type="achievements"
+          onAction={onNavigateCertificates}
+          className="cursor-pointer hover:border-primary/20 transition-all"
+        />
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-border gap-2 pb-px">
+        <button
+          onClick={() => setActiveTab('my_learning')}
+          className={`px-4 py-2 text-xs font-bold transition-all border-b-2 -mb-px ${activeTab === 'my_learning' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          My Learning
+        </button>
+        <button
+          onClick={() => setActiveTab('catalog')}
+          className={`px-4 py-2 text-xs font-bold transition-all border-b-2 -mb-px ${activeTab === 'catalog' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          Course Catalog
+        </button>
       </div>
 
       {activeTab === 'my_learning' ? (
-        <div className="space-y-8">
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <StatCard
-              label="Active Courses"
-              value={enrolledCourses.filter(c => c.progress < 100).length}
-              icon={<BookOpen size={20} />}
-            />
-            <ProgressCard
-              title="Average Progress"
-              value={avgProgress}
-              description={`${completedCourses.length} completed courses`}
-            />
-            <StatCard
-              label="Earned Certifications"
-              value={completedCourses.length}
-              delta="View passport"
-              icon={<Award size={20} />}
-              onAction={onNavigateCertificates}
-              className="cursor-pointer hover:border-primary/20 transition-all"
-            />
-          </div>
-
+        <div className="space-y-6">
           {/* 1. Continue Learning */}
           {continueLearning.length > 0 && (
             <div className="space-y-4">
@@ -169,6 +153,8 @@ export default function LearnPage({
                     thumbnail={course.thumbnail}
                     category={course.category}
                     onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
                   />
                 ))}
               </div>
@@ -192,6 +178,8 @@ export default function LearnPage({
                     thumbnail={course.thumbnail}
                     category={course.category}
                     onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
                   />
                 ))}
               </div>
@@ -215,6 +203,8 @@ export default function LearnPage({
                     thumbnail={course.thumbnail}
                     category={course.category}
                     onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
                   />
                 ))}
               </div>
@@ -238,6 +228,8 @@ export default function LearnPage({
                     thumbnail={course.thumbnail}
                     category={course.category}
                     onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
                   />
                 ))}
               </div>
@@ -261,6 +253,8 @@ export default function LearnPage({
                     thumbnail={course.thumbnail}
                     category={course.category}
                     onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
                   />
                 ))}
               </div>
@@ -284,6 +278,8 @@ export default function LearnPage({
                     thumbnail={course.thumbnail}
                     category={course.category}
                     onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
                   />
                 ))}
               </div>
@@ -349,6 +345,8 @@ export default function LearnPage({
                   thumbnail={course.thumbnail}
                   category={course.category}
                   onNavigate={() => onNavigateCourse(course.id)}
+                  isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                  onBookmarkToggle={() => handleToggleBookmark(course)}
                 />
               ))}
             </div>

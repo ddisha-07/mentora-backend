@@ -377,6 +377,43 @@ export default function AdminPage() {
               ))}
             </div>
           </Card>
+
+          <Card className="p-5 space-y-5 col-span-1 md:col-span-2">
+            <div>
+              <h3 className="text-sm font-black uppercase tracking-wider text-foreground">Kai AI assistant conversation log</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Recent system prompts and queries processed by department.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="border-b border-border/50 text-muted-foreground uppercase font-black tracking-wider text-[10px]">
+                    <th className="py-2.5">Query</th>
+                    <th className="py-2.5">Department</th>
+                    <th className="py-2.5">Category</th>
+                    <th className="py-2.5">Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {[
+                    { query: 'How to bypass secondary coolant pump during override?', dept: 'Maintenance', cat: 'SOP Lookup', time: '5 mins ago' },
+                    { query: 'Blast Furnace 3 temp sensor alarm guidelines', dept: 'Manufacturing', cat: 'Technical Operations', time: '14 mins ago' },
+                    { query: 'Lockout tagout key management protocols', dept: 'Safety', cat: 'Safety Guidelines', time: '40 mins ago' },
+                    { query: 'Verify weld quality tolerance limits on steel coils', dept: 'Quality Control', cat: 'Technical Operations', time: '1 hr ago' },
+                    { query: 'Check current Jamshedpur warehouse inventory level', dept: 'Supply Chain', cat: 'SOP Lookup', time: '2 hrs ago' },
+                    { query: 'Retired employee pension transfer verification process', dept: 'Human Resources', cat: 'Gamification & Rewards', time: '4 hrs ago' },
+                    { query: 'L&D budget allocations for FY2026 course seedings', dept: 'Finance', cat: 'Technical Operations', time: '1 day ago' }
+                  ].map((row, i) => (
+                    <tr key={i} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 font-medium text-foreground">{row.query}</td>
+                      <td className="py-2.5"><span className="px-2 py-0.5 rounded bg-background border border-border text-muted-foreground text-[10px] font-semibold">{row.dept}</span></td>
+                      <td className="py-2.5 text-muted-foreground">{row.cat}</td>
+                      <td className="py-2.5 font-mono text-muted-foreground">{row.time}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
       )}
     </div>

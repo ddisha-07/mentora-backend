@@ -5,7 +5,30 @@ import { Card } from '../components/reusable';
 
 export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) => void }) {
   const [search, setSearch] = useState('');
-  const { preservedKnowledge } = useApp();
+  const { preservedKnowledge, savedItems, setSavedItems } = useApp();
+
+  const handleToggleBookmark = (article: any) => {
+    const isSaved = (savedItems || []).some(x => x.id === article.id && x.type === 'sop');
+    if (isSaved) {
+      setSavedItems(prev => prev.filter(x => !(x.id === article.id && x.type === 'sop')));
+    } else {
+      setSavedItems(prev => [
+        ...prev,
+        {
+          id: article.id,
+          type: 'sop',
+          title: article.title,
+          desc: `Official document by ${article.author}.`,
+          category: 'SOPs',
+          page: 'knowledge'
+        }
+      ]);
+    }
+  };
+
+  const isBookmarked = (article: any) => {
+    return (savedItems || []).some(x => x.id === article.id && x.type === 'sop');
+  };
 
   const baseArticles = [
     { id: 1, title: 'Standard Boiler Valve Override Procedure', dept: 'Maintenance', views: 320, author: 'Devendra Prasad', content: 'Manual mechanical lock overrides: isolation of breaker panel 4B is required before using the override lever beneath the pressure gauge.' },
@@ -109,6 +132,16 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
                     <span>{article.views} views</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleBookmark(article);
+                      }}
+                      className="p-1.5 rounded-lg bg-background border border-border/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all"
+                      title="Bookmark Article"
+                    >
+                      <Bookmark size={12} className={isBookmarked(article) ? "fill-primary text-primary" : ""} />
+                    </button>
                   </div>
                 </div>
 

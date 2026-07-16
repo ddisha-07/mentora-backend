@@ -12,7 +12,8 @@ import {
   Zap,
   BookOpen,
   HelpCircle,
-  ShieldAlert
+  ShieldAlert,
+  Bookmark
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { ROLES_CONFIG } from '../config/roles';
@@ -227,7 +228,9 @@ export function CourseCard({
   progress,
   thumbnail,
   category,
-  onNavigate
+  onNavigate,
+  isBookmarked,
+  onBookmarkToggle
 }: {
   title: string;
   duration: string;
@@ -236,11 +239,13 @@ export function CourseCard({
   thumbnail: string;
   category: string;
   onNavigate?: () => void;
+  isBookmarked?: boolean;
+  onBookmarkToggle?: () => void;
 }) {
   return (
     <div
       onClick={onNavigate}
-      className={`bg-card border border-border rounded-2xl overflow-hidden group transition-all duration-300 ${onNavigate ? 'cursor-pointer hover:border-primary/30' : ''}`}
+      className={`bg-card border border-border rounded-2xl overflow-hidden group transition-all duration-300 relative ${onNavigate ? 'cursor-pointer hover:border-primary/30' : ''}`}
     >
       <div className="h-40 overflow-hidden relative">
         <img
@@ -251,6 +256,17 @@ export function CourseCard({
         <div className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-md text-[10px] font-bold text-foreground">
           {category}
         </div>
+        {onBookmarkToggle && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBookmarkToggle();
+            }}
+            className="absolute top-3 right-3 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all z-10"
+          >
+            <Bookmark size={12} className={isBookmarked ? "fill-primary text-primary" : ""} />
+          </button>
+        )}
       </div>
       <div className="p-5">
         <h4 className="text-sm font-bold text-foreground mb-1 leading-snug group-hover:text-primary transition-colors line-clamp-2">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Video, Calendar, PlusCircle, Search, Clock, Users, ArrowLeft, Play, FileText,
-  CheckCircle, ArrowRight, MessageSquare, Award, ThumbsUp, Send, Check, AlertCircle, Sparkles, HelpCircle, X
+  CheckCircle, ArrowRight, MessageSquare, Award, ThumbsUp, Send, Check, AlertCircle, Sparkles, HelpCircle, X, Bookmark
 } from 'lucide-react';
 import { useApp } from '../../App';
 import { Card } from '../components/reusable';
@@ -24,7 +24,31 @@ interface TrainingSession {
 }
 
 export default function TrainingPage() {
-  const { profile } = useApp();
+  const { profile, savedItems, setSavedItems } = useApp();
+
+  const handleToggleBookmark = (session: TrainingSession) => {
+    const isSaved = (savedItems || []).some(x => Number(x.id) === Number(session.id) && x.type === 'recording');
+    if (isSaved) {
+      setSavedItems(prev => prev.filter(x => !(Number(x.id) === Number(session.id) && x.type === 'recording')));
+    } else {
+      setSavedItems(prev => [
+        ...prev,
+        {
+          id: session.id,
+          type: 'recording',
+          title: session.title,
+          desc: `Training recording by ${session.trainer || 'L&D Trainer'}.`,
+          category: 'Recordings',
+          page: 'training'
+        }
+      ]);
+    }
+  };
+
+  const isBookmarked = (session: TrainingSession) => {
+    return (savedItems || []).some(x => Number(x.id) === Number(session.id) && x.type === 'recording');
+  };
+
   const activeProfile = profile || {
     name: 'Learner',
     role: 'JUNIOR_EMPLOYEE' as UserRole,
@@ -260,6 +284,18 @@ export default function TrainingPage() {
                   <div className="absolute top-0 right-0 bg-rose-500 text-white px-3 py-1 rounded-bl text-[9px] font-bold uppercase tracking-widest animate-pulse">
                     🔴 Live Session
                   </div>
+                )}
+                {session.recordingAvailable && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleBookmark(session);
+                    }}
+                    className="absolute top-4 right-4 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all z-10"
+                    title="Bookmark Recording"
+                  >
+                    <Bookmark size={13} className={isBookmarked(session) ? "fill-primary text-primary" : ""} />
+                  </button>
                 )}
 
                 <div className="space-y-3">

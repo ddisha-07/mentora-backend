@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Sparkles, ShieldCheck, Cpu, Play, CheckCircle, RefreshCw, BarChart2,
-  FileText, Activity, AlertTriangle, BookOpen, MessageSquare, Layers, HelpCircle
+  FileText, Activity, AlertTriangle, BookOpen, MessageSquare, Layers, HelpCircle, Bookmark
 } from 'lucide-react';
 import { useApp } from '../../App';
 import { Card } from '../components/reusable';
@@ -20,7 +20,30 @@ interface UseCase {
 }
 
 export default function AIInMyWorkPage() {
-  const { profile, setPage } = useApp();
+  const { profile, setPage, savedItems, setSavedItems } = useApp();
+
+  const handleToggleBookmark = (uc: UseCase) => {
+    const isSaved = (savedItems || []).some(x => x.id === uc.id && x.type === 'ai_usecase');
+    if (isSaved) {
+      setSavedItems(prev => prev.filter(x => !(x.id === uc.id && x.type === 'ai_usecase')));
+    } else {
+      setSavedItems(prev => [
+        ...prev,
+        {
+          id: uc.id,
+          type: 'ai_usecase',
+          title: uc.title,
+          desc: uc.shortDesc,
+          category: 'AI Use Cases',
+          page: 'ai-in-my-work'
+        }
+      ]);
+    }
+  };
+
+  const isBookmarked = (uc: UseCase) => {
+    return (savedItems || []).some(x => x.id === uc.id && x.type === 'ai_usecase');
+  };
 
   const activeProfile = profile || {
     name: 'Learner',
@@ -250,8 +273,19 @@ Action: Proceed to cooling cycles.`);
                   setSelectedUseCase(uc);
                   setSimOutput('Adjust variables to trigger real-time AI modeling...');
                 }}
-                className={`bg-card border rounded-2xl p-5 hover:border-primary/20 transition-all cursor-pointer flex flex-col justify-between h-40 ${selectedUseCase?.id === uc.id ? 'border-primary/50' : 'border-border'}`}
+                className={`bg-card border rounded-2xl p-5 hover:border-primary/20 transition-all cursor-pointer flex flex-col justify-between h-40 relative ${selectedUseCase?.id === uc.id ? 'border-primary/50' : 'border-border'}`}
               >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleBookmark(uc);
+                  }}
+                  className="absolute top-4 right-4 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all z-10"
+                  title="Bookmark Use Case"
+                >
+                  <Bookmark size={12} className={isBookmarked(uc) ? "fill-primary text-primary" : ""} />
+                </button>
+
                 <div className="space-y-2">
                   <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                     <Cpu size={15} className="text-primary" /> {uc.title}
