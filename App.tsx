@@ -1139,8 +1139,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
     { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard", feature: "Leaderboard" },
     { page: "rewards" as Page, icon: <Gift size={18} />, label: "Rewards", feature: "Rewards" },
     { page: "skill-passport" as Page, icon: <Award size={18} />, label: "Skill Passport", feature: "Skill Passport" },
-    { page: "admin" as Page, icon: <Shield size={18} />, label: "Admin Console", feature: "Admin Console" },
-    { page: "ai-chat" as Page, icon: <Bot size={18} />, label: "AI Assistant", feature: "Home", accent: true }
+    { page: "admin" as Page, icon: <Shield size={18} />, label: "Admin Console", feature: "Admin Console" }
   ];
 
   const userRole = activeProfile.role as UserRole;
