@@ -583,7 +583,7 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <div onClick={() => onNavigate("landing")} className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <img src="/logo.png" alt="Mentora Logo" className="w-4.5 h-4.5 object-contain brightness-0 invert" />
             </div>
@@ -1000,7 +1000,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <div className="hidden lg:flex lg:w-1/2 bg-secondary border-r border-border flex-col items-center justify-center p-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="relative z-10 text-center">
-          <div className="flex items-center justify-center gap-2 mb-12">
+          <div onClick={() => onNavigate("landing")} className="flex items-center justify-center gap-2 mb-12 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <img src="/logo.png" alt="Mentora Logo" className="w-5.5 h-5.5 object-contain brightness-0 invert" />
             </div>
@@ -1032,7 +1032,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-10">
+          <div onClick={() => onNavigate("landing")} className="lg:hidden flex items-center gap-2 mb-10 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <img src="/logo.png" alt="Mentora Logo" className="w-4.5 h-4.5 object-contain brightness-0 invert" />
             </div>
@@ -1157,7 +1157,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
       {/* Logo */}
       <div className={`h-16 flex items-center border-b border-border px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
         {!collapsed && (
-          <div className="flex items-center gap-2">
+          <div onClick={() => onNavigate("landing")} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
             </div>
@@ -1165,7 +1165,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
           </div>
         )}
         {collapsed && (
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+          <div onClick={() => onNavigate("landing")} className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
             <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
           </div>
         )}
