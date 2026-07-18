@@ -11,7 +11,7 @@ import {
   Monitor, Bookmark, Building2,
   Edit2, Camera, Mail,
   SkipForward, SkipBack, Pause, Circle,
-  Send, Bot, RefreshCw,
+  Send, Bot, RefreshCw, Minus,
   Flame, Map, UserCheck, Sun, Moon,
   Video, Gift // Added for Phase 1
 } from "lucide-react";
@@ -1460,6 +1460,50 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   const [selectedMission, setSelectedMission] = useState<any | null>(null);
 
+  const [chatOpen, setChatOpen] = useState(false);
+  const [miniMessages, setMiniMessages] = useState<any[]>([
+    {
+      role: 'ai',
+      content: `Hello! I'm **Kai**, your intelligent learning and operational assistant. Ask me anything about your current courses, safety procedures, or operational SOPs!`
+    }
+  ]);
+  const [miniInput, setMiniInput] = useState('');
+  const [miniTyping, setMiniTyping] = useState(false);
+  const miniMessagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatOpen) {
+      miniMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [miniMessages, chatOpen]);
+
+  const sendMiniMessage = () => {
+    if (!miniInput.trim()) return;
+    const text = miniInput;
+    setMiniMessages(prev => [...prev, { role: 'user', content: text }]);
+    setMiniInput('');
+    setMiniTyping(true);
+
+    setTimeout(() => {
+      setMiniTyping(false);
+      
+      const query = text.toLowerCase();
+      let reply = "I'm looking up that information in the Mentora SOP vault. Could you clarify which plant node or equipment number this relates to?";
+      
+      if (query.includes("valve") || query.includes("boiler")) {
+        reply = "For boiler operations, isolation of breaker panel 4B is required before using the override lever beneath the pressure gauge. Please refer to **SOP-14.2: Lockout/Tagout overrides**.";
+      } else if (query.includes("modbus") || query.includes("telemetry")) {
+        reply = "To configure Modbus register mappings, use RS-485 interfaces with Baud rate 9600 and check parity bit overrides. Refer to **SOP-202: Boiler room evacuations**.";
+      } else if (query.includes("safety") || query.includes("loto")) {
+        reply = "Centralized LOTO safety regulations require placement of red padlocks on isolation switch handles. Refer to **SOP-104: Sensor calibration safety specs**.";
+      } else if (query.includes("hello") || query.includes("hi")) {
+        reply = "Hi there! I am Kai. How can I help you optimize operations or study today?";
+      }
+
+      setMiniMessages(prev => [...prev, { role: 'ai', content: reply }]);
+    }, 1000);
+  };
+
   const activeProfile = profile || {
     name: "Learner",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
@@ -1906,6 +1950,78 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           </div>
         </div>
       )}
+
+      {/* Floating Minimized Chatbot */}
+      <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-end">
+        {chatOpen ? (
+          <div className="bg-card border border-border shadow-2xl rounded-2xl w-80 md:w-96 h-112 flex flex-col overflow-hidden mb-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+            {/* Header */}
+            <div className="bg-primary/10 border-b border-border/80 px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Bot size={14} className="text-primary" />
+                </div>
+                <span className="text-xs font-bold text-foreground">Kai AI Chat Assistant</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setChatOpen(false)}
+                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                  title="Minimize"
+                >
+                  <Minus size={14} />
+                </button>
+              </div>
+            </div>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+              {miniMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-muted/80 text-foreground'}`}>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))}
+              {miniTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-muted/80 rounded-2xl px-3 py-2 text-xs flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
+              <div ref={miniMessagesEndRef} />
+            </div>
+            {/* Input */}
+            <div className="p-3 border-t border-border/80 flex gap-2">
+              <input
+                placeholder="Ask Kai a real-time question..."
+                value={miniInput}
+                onChange={e => setMiniInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') sendMiniMessage();
+                }}
+                className="bg-muted border border-border rounded-xl px-3 py-2 text-xs flex-1 outline-none focus:border-primary/50 text-foreground"
+              />
+              <button
+                onClick={sendMiniMessage}
+                className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary/95 transition-all"
+              >
+                <Send size={12} fill="white" />
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-xl hover:bg-primary/95 transition-all duration-300 hover:scale-105"
+          title="Kai AI Assistant"
+        >
+          {chatOpen ? <Minus size={20} /> : <Bot size={22} />}
+        </button>
+      </div>
     </div>
   );
 }
@@ -3522,6 +3638,13 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
 export default function App() {
   const [page, setPage] = useState<Page>("landing");
   const [isDark, setIsDark] = useState(true);
+
+  // Redirect chatbot requests to external deployment
+  useEffect(() => {
+    if (page === "ai-chat") {
+      window.location.href = "https://mentora-kai.vercel.app/";
+    }
+  }, [page]);
 
   // Synchronize theme class with html element
   useEffect(() => {
