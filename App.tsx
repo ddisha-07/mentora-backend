@@ -862,32 +862,6 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-28 px-6 lg:px-10 bg-surface">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p {...cr("text-primary text-2xl mb-1")}>Testimonials</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Loved by <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0" }}>learning leaders</span></h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((t) => (
-              <Card key={t.name} className="p-6">
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => <Star key={i} size={14} className="text-amber-400 fill-amber-400" />)}
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-6">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover bg-muted" />
-                  <div>
-                    <p className="text-sm font-medium">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* FAQ */}
       <section className="py-28 px-6 lg:px-10">
