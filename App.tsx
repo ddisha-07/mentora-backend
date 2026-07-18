@@ -1506,12 +1506,12 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     designation: "Associate Software Engineer",
     department: "Software Engineering",
     plant: "Bangalore HQ",
-    currentStreak: 12,
-    longestStreak: 12,
-    xp: 1890,
-    knowledgeCredits: 40,
-    mentoraCredits: 180,
-    leaderboardRank: 7
+    currentStreak: 0,
+    longestStreak: 0,
+    xp: 0,
+    knowledgeCredits: 0,
+    mentoraCredits: 0,
+    leaderboardRank: 0
   };
 
   const todayMission = activeMissions.find(m => m.status !== 'completed');
@@ -2798,10 +2798,10 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     department: "Software Engineering",
     plant: "Jamshedpur HQ",
     designation: "Associate Engineer",
-    xp: 1240,
-    currentStreak: 12,
-    knowledgeCredits: 40,
-    mentoraCredits: 180
+    xp: 0,
+    currentStreak: 0,
+    knowledgeCredits: 0,
+    mentoraCredits: 0
   };
 
   const enrolledCourses = enrollments.map(e => {
@@ -3588,15 +3588,15 @@ export default function App() {
           department: profData.department || "Operations",
           plant: profData.plant || "Pune Plant 1",
           designation: profData.designation || "Specialist",
-          yearsOfExperience: profData.years_of_experience || 2,
+          yearsOfExperience: profData.years_of_experience !== undefined ? profData.years_of_experience : 0,
           expertise: profData.expertise || ["Operations"],
           skillLevel: profData.skill_level || "Level 1",
-          xp: profData.xp || 1890,
-          knowledgeCredits: profData.knowledge_credits || 40,
-          mentoraCredits: profData.mentora_credits || 180,
-          currentStreak: profData.current_streak || 12,
-          longestStreak: profData.longest_streak || 12,
-          leaderboardRank: profData.leaderboard_rank || 42
+          xp: profData.xp !== undefined ? profData.xp : 0,
+          knowledgeCredits: profData.knowledge_credits !== undefined ? profData.knowledge_credits : 0,
+          mentoraCredits: profData.mentora_credits !== undefined ? profData.mentora_credits : 0,
+          currentStreak: profData.current_streak !== undefined ? profData.current_streak : 0,
+          longestStreak: profData.longest_streak !== undefined ? profData.longest_streak : 0,
+          leaderboardRank: profData.leaderboard_rank !== undefined ? profData.leaderboard_rank : 0
         };
       } else {
         // Create a temporary fallback profile conforming to the User interface
@@ -3610,15 +3610,15 @@ export default function App() {
           department: "Software Engineering",
           plant: "Bangalore HQ",
           designation: "Associate Software Engineer",
-          yearsOfExperience: 2,
+          yearsOfExperience: 0,
           expertise: ["React", "TypeScript", "Node.js"],
           skillLevel: "Level 1 - Junior Developer",
-          xp: 1890,
-          knowledgeCredits: 40,
-          mentoraCredits: 180,
-          currentStreak: 12,
-          longestStreak: 12,
-          leaderboardRank: 42
+          xp: 0,
+          knowledgeCredits: 0,
+          mentoraCredits: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          leaderboardRank: 0
         };
       }
 
