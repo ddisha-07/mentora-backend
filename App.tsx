@@ -11,7 +11,7 @@ import {
   Monitor, Bookmark, Building2,
   Edit2, Camera, Mail,
   SkipForward, SkipBack, Pause, Circle,
-  Send, Bot, RefreshCw, Minus,
+  Send, Bot, RefreshCw, Minus, Menu,
   Flame, Map, UserCheck, Sun, Moon,
   Video, Gift // Added for Phase 1
 } from "lucide-react";
@@ -670,7 +670,7 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
         {/* ── Course preview cards floating at the bottom ── */}
         <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {/* Card 1 — workshop card */}
             <div
               className="rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
@@ -1229,7 +1229,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
 }
 
 // ─── Top Nav ──────────────────────────────────────────────────────────────────
-function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) => void }) {
+function TopNav({ title, onNavigate, onToggleMobileMenu }: { title: string; onNavigate: (p: Page) => void; onToggleMobileMenu?: () => void }) {
   const { isDark, toggle } = useTheme();
   const { profile, setProfile, notifsState, setNotifsState } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -1315,8 +1315,18 @@ function TopNav({ title, onNavigate }: { title: string; onNavigate: (p: Page) =>
   };
 
   return (
-    <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-background/80 backdrop-blur-sm flex-shrink-0">
-      <h1 {...sg("text-lg font-semibold")}>{title}</h1>
+    <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-background/80 backdrop-blur-sm flex-shrink-0 gap-4">
+      <div className="flex items-center gap-3">
+        {onToggleMobileMenu && (
+          <button
+            onClick={onToggleMobileMenu}
+            className="md:hidden p-2 -ml-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+          >
+            <Menu size={16} />
+          </button>
+        )}
+        <h1 {...sg("text-lg font-semibold truncate")}>{title}</h1>
+      </div>
       <div className="flex items-center gap-3">
         {/* Role Selector for Development / Testing */}
         <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2 py-1 text-xs">
@@ -3206,6 +3216,7 @@ const PAGE_TITLES: Record<string, string> = {
 
 function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { setSelectedCourseId, profile, courses, enrollments } = useApp();
 
   const renderPage = () => {
@@ -3268,9 +3279,48 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      <Sidebar activePage={page} onNavigate={onNavigate} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex h-full flex-shrink-0">
+        <Sidebar activePage={page} onNavigate={onNavigate} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      </div>
+
+      {/* Mobile Drawer Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-200"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Drawer Content */}
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-sidebar border-r border-sidebar-border animate-in slide-in-from-left duration-200">
+            {/* Close button inside drawer */}
+            <div className="absolute top-4 right-4 z-50">
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground transition-all"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {/* Render Sidebar inside drawer */}
+            <div className="flex-1 flex flex-col overflow-y-auto">
+              <Sidebar
+                activePage={page}
+                onNavigate={(p) => {
+                  onNavigate(p);
+                  setMobileMenuOpen(false);
+                }}
+                collapsed={false}
+                onToggle={() => {}}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <TopNav title={PAGE_TITLES[page] ?? "Mentora"} onNavigate={onNavigate} />
+        <TopNav title={PAGE_TITLES[page] ?? "Mentora"} onNavigate={onNavigate} onToggleMobileMenu={() => setMobileMenuOpen(true)} />
         <main className={`flex-1 ${isFullHeight ? "overflow-hidden flex flex-col" : "overflow-y-auto"}`}>
           {renderPage()}
         </main>
