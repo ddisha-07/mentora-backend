@@ -2788,6 +2788,34 @@ function CertificatesPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 // ─── Profile Page ─────────────────────────────────────────────────────────────
 function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const { isDark } = useTheme();
+  const { profile, user, enrollments, courses } = useApp();
+
+  const activeProfile = profile || {
+    name: user?.email?.split('@')[0] || "Learner",
+    email: user?.email || "learner@tata.com",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+    role: "JUNIOR_EMPLOYEE",
+    department: "Software Engineering",
+    plant: "Jamshedpur HQ",
+    designation: "Associate Engineer",
+    xp: 1240,
+    currentStreak: 12,
+    knowledgeCredits: 40,
+    mentoraCredits: 180
+  };
+
+  const enrolledCourses = enrollments.map(e => {
+    const course = courses.find(c => Number(c.id) === Number(e.course_id));
+    if (!course) return null;
+    return {
+      ...course,
+      progress: e.progress
+    };
+  }).filter(Boolean);
+
+  const completedCount = enrolledCourses.filter((e: any) => e.progress === 100).length;
+  const activeCount = enrolledCourses.filter((e: any) => e.progress > 0 && e.progress < 100).length;
+
   const skills = [
     { name: "Machine Learning", level: 78, color: "#F72585" },
     { name: "Python", level: 92, color: "#10B981" },
@@ -2806,22 +2834,22 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
         <div className="flex items-start gap-6 relative z-10">
           <div className="relative flex-shrink-0">
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&auto=format"
-              alt="Alex Johnson" className="w-20 h-20 rounded-2xl object-cover bg-muted" />
+            <img src={activeProfile.avatar}
+              alt={activeProfile.name} className="w-20 h-20 rounded-2xl object-cover bg-muted" />
             <button className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-primary flex items-center justify-center">
               <Camera size={12} className="text-white" />
             </button>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
-              <h2 {...sg("text-2xl font-bold")}>Alex Johnson</h2>
-              <Badge color="cyan">ML Engineer</Badge>
+              <h2 {...sg("text-2xl font-bold")}>{activeProfile.name}</h2>
+              <Badge color="cyan">{activeProfile.designation}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">Machine Learning Engineer · Acme Corporation · San Francisco, CA</p>
+            <p className="text-sm text-muted-foreground mb-3">{activeProfile.designation} · Tata Steel · {activeProfile.plant}</p>
             <div className="flex items-center gap-6 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Mail size={12} />alex.johnson@acme.com</span>
-              <span className="flex items-center gap-1"><Building2 size={12} />Engineering Department</span>
-              <span className="flex items-center gap-1"><UserCheck size={12} />Member since Jan 2024</span>
+              <span className="flex items-center gap-1"><Mail size={12} />{activeProfile.email}</span>
+              <span className="flex items-center gap-1"><Building2 size={12} />{activeProfile.department}</span>
+              <span className="flex items-center gap-1"><UserCheck size={12} />Member since Jan 2026</span>
             </div>
           </div>
           <button onClick={() => onNavigate("settings")}
@@ -2840,11 +2868,11 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <h3 {...sg("text-sm font-semibold mb-4")}>Learning Statistics</h3>
             <div className="space-y-3">
               {[
-                { label: "Total hours learned", value: "148h", icon: <Clock size={14} /> },
-                { label: "Courses completed", value: "8", icon: <CheckCircle size={14} /> },
-                { label: "Certificates earned", value: "3", icon: <Award size={14} /> },
-                { label: "Current streak", value: "12 days", icon: <Flame size={14} /> },
-                { label: "Skill points", value: "2,840", icon: <Zap size={14} /> },
+                { label: "Total hours learned", value: `${(completedCount * 18 + activeCount * 5) || 12}h`, icon: <Clock size={14} /> },
+                { label: "Courses completed", value: completedCount.toString(), icon: <CheckCircle size={14} /> },
+                { label: "Certificates earned", value: completedCount.toString(), icon: <Award size={14} /> },
+                { label: "Current streak", value: `${activeProfile.currentStreak} days`, icon: <Flame size={14} /> },
+                { label: "Skill points", value: activeProfile.xp.toLocaleString(), icon: <Zap size={14} /> },
               ].map((stat) => (
                 <div key={stat.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -2921,7 +2949,7 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <Card className="p-5">
             <h3 {...sg("text-sm font-semibold mb-4")}>Active Enrollments</h3>
             <div className="space-y-3">
-              {COURSES.filter((c) => c.progress > 0).map((course) => (
+              {enrolledCourses.filter((c: any) => c.progress > 0).map((course: any) => (
                 <div key={course.id} className="flex items-center gap-3 cursor-pointer hover:bg-muted rounded-xl p-2 -mx-2 transition-colors"
                   onClick={() => onNavigate("course-detail")}>
                   <img src={course.thumbnail} alt="" className="w-12 h-10 rounded-lg object-cover bg-muted flex-shrink-0" />
@@ -2932,6 +2960,9 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   <span {...mono("text-xs text-muted-foreground")}>{course.progress}%</span>
                 </div>
               ))}
+              {enrolledCourses.filter((c: any) => c.progress > 0).length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-4">No active enrollments found.</p>
+              )}
             </div>
           </Card>
         </div>
