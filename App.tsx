@@ -3632,6 +3632,13 @@ export default function App() {
       let finalProfile: any;
 
       if (!profErr && profData) {
+        let mappedRole = (profData.role?.toUpperCase() as UserRole) || "JUNIOR_EMPLOYEE";
+        if (mappedRole === "STUDENT" as any) mappedRole = "JUNIOR_EMPLOYEE";
+        if (mappedRole === "INSTRUCTOR" as any) mappedRole = "OFFICER_MANAGER";
+        if (!["SHOP_FLOOR_WORKER", "JUNIOR_EMPLOYEE", "SENIOR_EMPLOYEE", "OFFICER_MANAGER", "RETIRED_EMPLOYEE", "ADMIN"].includes(mappedRole)) {
+          mappedRole = "JUNIOR_EMPLOYEE";
+        }
+
         // Map database fields to our core User model from types
         finalProfile = {
           id: userId,
@@ -3639,7 +3646,7 @@ export default function App() {
           name: profData.full_name || user?.email?.split("@")[0] || "Learner",
           email: user?.email || "",
           avatar: profData.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
-          role: (profData.role?.toUpperCase() as UserRole) || "JUNIOR_EMPLOYEE",
+          role: mappedRole,
           department: profData.department || "Operations",
           plant: profData.plant || "Pune Plant 1",
           designation: profData.designation || "Specialist",
