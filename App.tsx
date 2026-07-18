@@ -2974,7 +2974,47 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 // ─── Settings Page ────────────────────────────────────────────────────────────
 function SettingsPage() {
   const { isDark, toggle } = useTheme();
+  const { profile, setProfile } = useApp();
   const [activeTab, setActiveTab] = useState("account");
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [department, setDepartment] = useState("");
+  const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      const parts = (profile.name || "").split(" ");
+      setFirstName(parts[0] || "");
+      setLastName(parts.slice(1).join(" ") || "");
+      setDesignation(profile.designation || "");
+      setDepartment(profile.department || "");
+      setEmail(profile.email || "");
+      setAvatar(profile.avatar || "");
+    }
+  }, [profile]);
+
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveChanges = async () => {
+    if (!profile) return;
+    setSaving(true);
+    const updatedName = `${firstName.trim()} ${lastName.trim()}`.trim() || profile.name;
+    const updatedProfile = {
+      ...profile,
+      name: updatedName,
+      designation: designation,
+      department: department,
+      email: email,
+      avatar: avatar
+    };
+
+    setProfile(updatedProfile);
+    alert("Profile settings saved successfully!");
+    setSaving(false);
+  };
   const [notifSettings, setNotifSettings] = useState({
     courseUpdates: true,
     aiInsights: true,
@@ -3024,27 +3064,42 @@ function SettingsPage() {
               <Card className="p-5">
                 <h3 {...sg("text-sm font-semibold mb-4")}>Personal Information</h3>
                 <div className="flex items-center gap-4 mb-6">
-                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&auto=format"
+                  <img src={avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop&auto=format"}
                     alt="Avatar" className="w-16 h-16 rounded-2xl object-cover bg-muted" />
                   <div>
-                    <CyanButton size="sm">Change photo</CyanButton>
+                    <CyanButton size="sm" onClick={() => {
+                      const newUrl = prompt("Enter new avatar image URL:", avatar);
+                      if (newUrl !== null) setAvatar(newUrl);
+                    }}>Change photo</CyanButton>
                     <p className="text-xs text-muted-foreground mt-1">JPG, PNG or GIF · max 2MB</p>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {[["First name", "Alex"], ["Last name", "Johnson"], ["Job title", "ML Engineer"], ["Department", "Engineering"]].map(([label, val]) => (
-                    <div key={label as string}>
-                      <label className="text-xs text-muted-foreground block mb-1.5">{label}</label>
-                      <Input value={val as string} onChange={() => {}} />
-                    </div>
-                  ))}
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1.5">First name</label>
+                    <Input value={firstName} onChange={(e: any) => setFirstName(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1.5">Last name</label>
+                    <Input value={lastName} onChange={(e: any) => setLastName(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1.5">Job title</label>
+                    <Input value={designation} onChange={(e: any) => setDesignation(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1.5">Department</label>
+                    <Input value={department} onChange={(e: any) => setDepartment(e.target.value)} />
+                  </div>
                   <div className="md:col-span-2">
                     <label className="text-xs text-muted-foreground block mb-1.5">Work email</label>
-                    <Input value="alex.johnson@acme.com" type="email" onChange={() => {}} icon={<Mail size={14} />} />
+                    <Input value={email} type="email" onChange={(e: any) => setEmail(e.target.value)} icon={<Mail size={14} />} />
                   </div>
                 </div>
                 <div className="mt-4 flex gap-3">
-                  <CyanButton size="sm">Save changes</CyanButton>
+                  <CyanButton size="sm" onClick={handleSaveChanges} disabled={saving}>
+                    {saving ? "Saving..." : "Save changes"}
+                  </CyanButton>
                 </div>
               </Card>
               <Card className="p-5">
