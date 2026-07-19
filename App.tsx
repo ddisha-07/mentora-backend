@@ -13,7 +13,7 @@ import {
   SkipForward, SkipBack, Pause, Circle,
   Send, Bot, RefreshCw, Minus, Menu,
   Flame, Map, UserCheck, Sun, Moon,
-  Video, Gift // Added for Phase 1
+  Video, Gift, MessageSquare // Added for Phase 1
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer,
@@ -1471,7 +1471,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [miniMessages, setMiniMessages] = useState<any[]>([
     {
       role: 'ai',
-      content: `Hello! I'm **Kai**, your intelligent learning and operational assistant. Ask me anything about your current courses, safety procedures, or operational SOPs!`
+      content: "Hi, I'm Kai, Mentora's AI assistant. How may I help you?"
     }
   ]);
   const [miniInput, setMiniInput] = useState('');
@@ -2034,7 +2034,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-xl hover:bg-primary/95 transition-all duration-300 hover:scale-105"
           title="Kai AI Assistant"
         >
-          {chatOpen ? <Minus size={20} /> : <Bot size={22} />}
+          {chatOpen ? <Minus size={20} /> : <MessageSquare size={22} />}
         </button>
       </div>
     </div>
