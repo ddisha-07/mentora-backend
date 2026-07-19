@@ -45,25 +45,25 @@
 
 .dark {
   /* ── Dark mode (Premium Midnight Aurora) ── */
-  --background: #030308;
+  --background: #020205;
   --foreground: #F8FAFC;
-  --card: #0A0A15;
+  --card: #0F0F1B;
   --card-foreground: #F8FAFC;
-  --popover: #0A0A15;
+  --popover: #0F0F1B;
   --popover-foreground: #F8FAFC;
   --primary: #F72585;
   --primary-foreground: #FFFFFF;
-  --secondary: #05050C;
+  --secondary: #070710;
   --secondary-foreground: #F8FAFC;
-  --muted: #121226;
+  --muted: #17172C;
   --muted-foreground: #94A3B8;
   --accent: #F72585;
   --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --border: transparent;
-  --input: #0A0A15;
-  --input-background: #0A0A15;
+  --input: #0A0A12;
+  --input-background: #0A0A12;
   --switch-background: #1E1B4B;
   --ring: #F72585;
   --font-weight-medium: 500;
@@ -73,15 +73,15 @@
   --chart-3: #A855F7;
   --chart-4: #F59E0B;
   --chart-5: #22C55E;
-  --sidebar: #05050C;
+  --sidebar: #070710;
   --sidebar-foreground: #F8FAFC;
   --sidebar-primary: #F72585;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #0A0A15;
+  --sidebar-accent: #0F0F1B;
   --sidebar-accent-foreground: #F8FAFC;
   --sidebar-border: transparent;
   --sidebar-ring: #F72585;
-  --surface: #06060F;
+  --surface: #0A0A12;
 }
 
 @theme inline {
@@ -153,22 +153,22 @@
 
   /* Card Accent Gradients for Visual Differentiation */
   .card-primary {
-    background: linear-gradient(135deg, rgba(247, 37, 133, 0.07) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(247, 37, 133, 0.18) 0%, var(--card) 60%) !important;
   }
   .card-cyan {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.07) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, var(--card) 60%) !important;
   }
   .card-amber {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.07) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, var(--card) 60%) !important;
   }
   .card-purple {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.07) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, var(--card) 60%) !important;
   }
   .card-green {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.07) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, var(--card) 60%) !important;
   }
   .card-blue {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.07) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, var(--card) 60%) !important;
   }
 
   /* Global input outline / border removal */
