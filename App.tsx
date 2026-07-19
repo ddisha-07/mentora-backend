@@ -1453,6 +1453,18 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     streakDays
   } = useApp();
 
+  const getMissionCardClass = (type: string) => {
+    switch (type) {
+      case 'SOP_READING': return 'card-cyan';
+      case 'QUIZ': return 'card-primary';
+      case 'LEARNING': return 'card-purple';
+      case 'KNOWLEDGE_SHARING':
+      case 'EXPERIENCE_SHARING':
+        return 'card-green';
+      default: return 'card-blue';
+    }
+  };
+
   const [selectedMission, setSelectedMission] = useState<any | null>(null);
 
   const [chatOpen, setChatOpen] = useState(false);
@@ -1566,7 +1578,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-card border border-border rounded-2xl p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="relative overflow-hidden card-primary rounded-2xl p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="absolute right-0 top-0 bottom-0 w-64 opacity-20 pointer-events-none">
           <NeuralNetSVG className="w-full h-full" />
         </div>
@@ -1645,7 +1657,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   <div
                     key={m.id}
                     onClick={() => setSelectedMission(m)}
-                    className={`bg-card border border-border hover:border-primary/20 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between h-40 ${m.status === 'completed' ? 'opacity-70 border-emerald-500/30' : ''}`}
+                    className={`hover:border-primary/20 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between h-40 ${getMissionCardClass(m.type)} ${m.status === 'completed' ? 'opacity-70 border-emerald-500/30' : ''}`}
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -1688,7 +1700,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             ) : (
               <div className="space-y-3">
                 {inProgress.map((course) => (
-                  <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer" onClick={() => handleContinue(course.id)}>
+                  <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer card-blue" onClick={() => handleContinue(course.id)}>
                     <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
                     <div className="flex-1 min-w-0">
                       <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
@@ -1724,7 +1736,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           </div>
 
           {/* Mentora Knowledge Loop */}
-          <Card className="p-6 space-y-6 bg-gradient-to-br from-card to-card/50 border border-border/80">
+          <Card className="p-6 space-y-6 card-cyan">
             <div>
               <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
                 🔄 Mentora Knowledge Loop
@@ -1785,7 +1797,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         {/* Right column */}
         <div className="space-y-4">
           {/* Streak 7-Day Tracker */}
-          <Card className="p-5 space-y-4">
+          <Card className="p-5 space-y-4 card-amber">
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Streak Tracker</h3>
               <span className="text-xs text-orange-400 font-bold flex items-center gap-0.5">
@@ -1821,7 +1833,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           </Card>
 
           {/* Skill Passport Preview */}
-          <Card className="p-5 space-y-4">
+          <Card className="p-5 space-y-4 card-purple">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Skill Passport</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
