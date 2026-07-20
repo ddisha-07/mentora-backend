@@ -795,30 +795,47 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <CyanButton onClick={() => onNavigate("login")} className="mt-8">Try AI Assistant</CyanButton>
           </div>
           <div>
-            <Card className="p-1 overflow-hidden">
-              <div className="bg-secondary rounded-xl p-4 h-80 flex flex-col">
-                <div className="flex items-center gap-2 pb-3 border-b border-border mb-4">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center"><Bot size={14} className="text-primary" /></div>
-                  <span className="text-sm font-medium">Mentora AI</span>
-                  <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400" />
+            <Card className="p-1 overflow-hidden shadow-2xl">
+              <div className="bg-[#03030A] rounded-2xl p-6 flex flex-col justify-between h-[360px] border border-border/20 relative overflow-hidden bg-gradient-to-b from-[#0A0A20]/40 to-[#020206]">
+                {/* Background glow */}
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                
+                {/* Top Header / Logo */}
+                <div className="text-center space-y-3 z-10">
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-cyan-400 via-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
+                    <Sparkles className="text-white w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">
+                      Hi <span className="italic font-serif text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Guest</span>, How can I help you today?
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Ask me anything — I'm here to guide and inspire.</p>
+                  </div>
                 </div>
-                <div className="flex-1 space-y-3 overflow-hidden">
-                  <div className="flex gap-2">
-                    <div className="w-6 h-6 rounded-full bg-muted flex-shrink-0 flex items-center justify-center text-[10px] text-muted-foreground">Y</div>
-                    <div className="bg-muted rounded-xl rounded-tl-sm px-3 py-2 text-sm text-muted-foreground max-w-xs">
-                      What's the difference between supervised and unsupervised learning?
+
+                {/* Suggested Prompts Grid */}
+                <div className="grid grid-cols-2 gap-2.5 my-4 z-10">
+                  {[
+                    { label: "EXPLAIN A CONCEPT", desc: "Can you explain how machine learning works in simple terms?" },
+                    { label: "BRAINSTORM IDEAS", desc: "Help me brainstorm creative ways to improve my study habits." },
+                    { label: "ASK ANYTHING", desc: "What are the most important skills to develop in the next decade?" },
+                    { label: "QUICK SUMMARY", desc: "Summarize the key principles of effective communication." }
+                  ].map((p, idx) => (
+                    <div key={idx} className="bg-card/40 border border-border/40 p-2.5 rounded-xl text-[10px] text-left hover:border-primary/30 transition-all cursor-pointer">
+                      <span className="text-[8px] font-extrabold text-primary tracking-wider uppercase">{p.label}</span>
+                      <p className="text-muted-foreground mt-0.5 line-clamp-2 leading-tight">{p.desc}</p>
                     </div>
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <div className="bg-primary/10 border border-primary/20 rounded-xl rounded-tr-sm px-3 py-2 text-sm text-foreground max-w-xs">
-                      <span className="font-semibold text-primary">Supervised learning</span> uses labeled data to train models, while <span className="font-semibold text-primary">unsupervised learning</span> finds hidden patterns in unlabeled data...
-                    </div>
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex-shrink-0 flex items-center justify-center"><Bot size={12} className="text-primary" /></div>
-                  </div>
-                  <div className="flex items-center gap-1 pl-8">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                  ))}
+                </div>
+
+                {/* Bottom Input Area */}
+                <div className="bg-[#0A0A15]/80 border border-border/60 rounded-xl px-3 py-2 flex items-center justify-between text-[10px] text-muted-foreground z-10">
+                  <span className="flex items-center gap-1.5">
+                    📎 Message Kai...
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="opacity-60">🎙️</span>
+                    <Send size={10} className="text-primary cursor-pointer hover:scale-105 transition-all" />
                   </div>
                 </div>
               </div>
