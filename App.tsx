@@ -555,12 +555,12 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   }, []);
 
   const features = [
-    { icon: <Brain size={22} />, title: "AI Learning Assistant", desc: "Context-aware AI that answers questions, explains concepts, and creates personalized study plans in real time." },
-    { icon: <Map size={22} />, title: "Personalized Learning Paths", desc: "Adaptive curricula built around your role, skills, and goals — evolving as you progress through the platform." },
-    { icon: <HelpCircle size={22} />, title: "Interactive Quizzes", desc: "Timed assessments with instant feedback, detailed explanations, and spaced repetition scheduling." },
-    { icon: <BarChart3 size={22} />, title: "Skill Analytics", desc: "Granular skill-gap analysis and progress heatmaps that surface exactly where to focus next." },
-    { icon: <Database size={22} />, title: "Knowledge Repository", desc: "A searchable internal knowledge base powered by AI — find answers from your organization's documentation instantly." },
-    { icon: <Award size={22} />, title: "Verified Certificates", desc: "Blockchain-backed credentials shareable on LinkedIn, automatically tied to your professional profile." },
+    { icon: <Brain size={22} />, title: "AI Learning Assistant", desc: "Context-aware AI that answers questions, explains concepts, and creates personalized study plans in real time.", color: "#38BDF8", bg: "rgba(56, 189, 248, 0.1)" },
+    { icon: <Map size={22} />, title: "Personalized Learning Paths", desc: "Adaptive curricula built around your role, skills, and goals — evolving as you progress through the platform.", color: "#34D399", bg: "rgba(52, 211, 153, 0.1)" },
+    { icon: <HelpCircle size={22} />, title: "Interactive Quizzes", desc: "Timed assessments with instant feedback, detailed explanations, and spaced repetition scheduling.", color: "#A78BFA", bg: "rgba(167, 139, 250, 0.1)" },
+    { icon: <BarChart3 size={22} />, title: "Skill Analytics", desc: "Granular skill-gap analysis and progress heatmaps that surface exactly where to focus next.", color: "#F59E0B", bg: "rgba(245, 158, 11, 0.1)" },
+    { icon: <Database size={22} />, title: "Knowledge Repository", desc: "A searchable internal knowledge base powered by AI — find answers from your organization's documentation instantly.", color: "#60A5FA", bg: "rgba(96, 165, 250, 0.1)" },
+    { icon: <Award size={22} />, title: "Verified Certificates", desc: "Blockchain-backed credentials shareable on LinkedIn, automatically tied to your professional profile.", color: "#F472B6", bg: "rgba(244, 114, 182, 0.1)" },
   ];
 
   const faqs = [
@@ -759,20 +759,23 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       <section className="py-28 px-6 lg:px-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <p {...cr("text-primary text-2xl mb-2")}>Platform Capabilities</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-4")}>Everything your team <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0" }}>needs</span> to grow</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            <p className="text-2xl mb-2" style={{ color: "#F72585", fontFamily: "'Dancing Script', cursive" }}>Platform Capabilities</p>
+            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-4 text-foreground")}>Everything your team <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0" }}>needs</span> to grow</h2>
+            <p className="text-sm text-[#94A3B8] max-w-xl mx-auto leading-relaxed">
               One platform for structured learning, informal knowledge sharing, assessments, and skill development.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f, i) => (
               <Card key={i} className="p-6 group hover:border-primary/30 transition-all duration-300">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary/15 transition-colors">
+                <div 
+                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-all duration-300"
+                  style={{ backgroundColor: f.bg, color: f.color }}
+                >
                   {f.icon}
                 </div>
-                <h3 {...sg("text-base font-semibold mb-2")}>{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <h3 className="text-base font-bold mb-2" style={{ color: f.color, fontFamily: "'Raleway', sans-serif" }}>{f.title}</h3>
+                <p className="text-xs text-[#8A8A9D] leading-relaxed">{f.desc}</p>
               </Card>
             ))}
           </div>
