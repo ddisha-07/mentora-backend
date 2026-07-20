@@ -766,18 +766,27 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((f, i) => (
-              <Card key={i} className="p-6 group hover:border-primary/30 transition-all duration-300">
-                <div 
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-all duration-300"
-                  style={{ backgroundColor: f.bg, color: f.color }}
-                >
-                  {f.icon}
-                </div>
-                <h3 className="text-base font-bold mb-2" style={{ color: f.color, fontFamily: "'Raleway', sans-serif" }}>{f.title}</h3>
-                <p className="text-xs text-[#8A8A9D] leading-relaxed">{f.desc}</p>
-              </Card>
-            ))}
+            {features.map((f, i) => {
+              const cardClass = 
+                f.color === "#38BDF8" ? "card-cyan" :
+                f.color === "#34D399" ? "card-green" :
+                f.color === "#A78BFA" ? "card-purple" :
+                f.color === "#F59E0B" ? "card-amber" :
+                f.color === "#60A5FA" ? "card-blue" : "card-primary";
+              
+              return (
+                <Card key={i} className={`p-6 group hover:border-primary/30 transition-all duration-300 ${cardClass}`}>
+                  <div 
+                    className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-all duration-300"
+                    style={{ backgroundColor: f.bg, color: f.color }}
+                  >
+                    {f.icon}
+                  </div>
+                  <h3 className="text-base font-bold mb-2" style={{ color: f.color, fontFamily: "'Raleway', sans-serif" }}>{f.title}</h3>
+                  <p className="text-xs text-[#8A8A9D] leading-relaxed">{f.desc}</p>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
