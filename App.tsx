@@ -548,7 +548,7 @@ function HeroIconBox({
   );
 }
 
-function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user: any }) {
   const { isDark, toggle } = useTheme();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -600,11 +600,20 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <button onClick={() => onNavigate("login")}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 hidden sm:block">
-              Login
-            </button>
-            <CyanButton onClick={() => onNavigate("login")} size="sm">Get started</CyanButton>
+            {user ? (
+              <button onClick={() => onNavigate("dashboard")}
+                className="text-sm font-bold text-primary hover:text-primary/95 transition-all px-4 py-2 hidden sm:block">
+                Dashboard
+              </button>
+            ) : (
+              <button onClick={() => onNavigate("login")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 hidden sm:block">
+                Login
+              </button>
+            )}
+            <CyanButton onClick={() => onNavigate(user ? "dashboard" : "login")} size="sm">
+              {user ? "Go to Dashboard" : "Get started"}
+            </CyanButton>
           </div>
         </div>
       </nav>
@@ -658,10 +667,10 @@ function LandingPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               Learn and improve your skills with interactive courses and AI-powered skill tests — built specifically for future professionals.
             </p>
             <div className="flex items-center gap-3 flex-shrink-0">
-              <CyanButton onClick={() => onNavigate("login")} size="lg">
-                Start Learning
+              <CyanButton onClick={() => onNavigate(user ? "dashboard" : "login")} size="lg">
+                {user ? "Go to Dashboard" : "Start Learning"}
               </CyanButton>
-              <CyanButton onClick={() => onNavigate("courses")} size="lg" outline>
+              <CyanButton onClick={() => onNavigate(user ? "learn" : "login")} size="lg" outline>
                 Explore Courses
               </CyanButton>
             </div>
@@ -3825,7 +3834,9 @@ export default function App() {
           if (currentUser) {
             await fetchProfileAndData(currentUser.id);
             const path = window.location.pathname.replace("/", "");
-            if (appPages.includes(path as Page)) {
+            if (path === "" || path === "landing") {
+              setPage("landing");
+            } else if (appPages.includes(path as Page)) {
               setPage(path as Page);
             } else {
               navigateTo("dashboard");
@@ -4048,7 +4059,7 @@ export default function App() {
               animation: floatUp 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
             }
           `}</style>
-          {page === "landing" && <LandingPage onNavigate={navigateTo} />}
+          {page === "landing" && <LandingPage onNavigate={navigateTo} user={user} />}
           {page === "login" && <LoginPage onNavigate={navigateTo} />}
           {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
 
