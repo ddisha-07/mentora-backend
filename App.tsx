@@ -3876,32 +3876,32 @@ export default function App() {
   useEffect(() => {
     if (user && profile) {
       const syncProfile = async () => {
-        try {
-          await supabase
-            .from("profiles")
-            .upsert({
-              id: user.id,
-              full_name: profile.name,
-              avatar_url: profile.avatar,
-              email: profile.email || user.email,
-              role: profile.role?.toLowerCase(),
-              employee_id: profile.employeeId,
-              department: profile.department,
-              plant: profile.plant,
-              designation: profile.designation,
-              years_of_experience: profile.yearsOfExperience,
-              expertise: profile.expertise,
-              skill_level: profile.skillLevel,
-              xp: profile.xp,
-              knowledge_credits: profile.knowledgeCredits,
-              mentora_credits: profile.mentoraCredits,
-              current_streak: profile.currentStreak,
-              longest_streak: profile.longestStreak,
-              leaderboard_rank: profile.leaderboardRank,
-              updated_at: new Date().toISOString()
-            });
-        } catch (err) {
-          console.error("Failed to sync profile to database:", err);
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            full_name: profile.name,
+            avatar_url: profile.avatar,
+            email: profile.email || user.email,
+            role: profile.role?.toLowerCase(),
+            employee_id: profile.employeeId,
+            department: profile.department,
+            plant: profile.plant,
+            designation: profile.designation,
+            years_of_experience: profile.yearsOfExperience,
+            expertise: profile.expertise,
+            skill_level: profile.skillLevel,
+            xp: profile.xp,
+            knowledge_credits: profile.knowledgeCredits,
+            mentora_credits: profile.mentoraCredits,
+            current_streak: profile.currentStreak,
+            longest_streak: profile.longestStreak,
+            leaderboard_rank: profile.leaderboardRank,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", user.id);
+
+        if (error) {
+          console.error("Failed to sync profile to database:", error.message);
         }
       };
       syncProfile();
