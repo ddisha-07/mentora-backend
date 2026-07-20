@@ -3469,6 +3469,45 @@ export default function App() {
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Local onboarding state
+  const [onboardFirst, setOnboardFirst] = useState("");
+  const [onboardLast, setOnboardLast] = useState("");
+  const [onboardTitle, setOnboardTitle] = useState("");
+  const [onboardDept, setOnboardDept] = useState("");
+  const [onboardPlant, setOnboardPlant] = useState("");
+  const [onboardSaving, setOnboardSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile && (!profile.name || !profile.designation || !profile.department || !profile.plant)) {
+      const nameParts = (profile.name || "").split(" ");
+      setOnboardFirst(nameParts[0] || "");
+      setOnboardLast(nameParts.slice(1).join(" ") || "");
+      setOnboardTitle(profile.designation || "");
+      setOnboardDept(profile.department || "");
+      setOnboardPlant(profile.plant || "");
+    }
+  }, [profile]);
+
+  const handleOnboardSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onboardFirst.trim() || !onboardLast.trim() || !onboardTitle.trim() || !onboardDept.trim() || !onboardPlant.trim()) {
+      alert("Please fill in all details.");
+      return;
+    }
+    setOnboardSaving(true);
+    const fullName = `${onboardFirst.trim()} ${onboardLast.trim()}`;
+    const updatedProfile = {
+      ...profile,
+      name: fullName,
+      designation: onboardTitle.trim(),
+      department: onboardDept.trim(),
+      plant: onboardPlant.trim()
+    };
+    
+    setProfile(updatedProfile);
+    setOnboardSaving(false);
+  };
+
   // Phase 2 State
   const [activeMissions, setActiveMissions] = useState<any[]>([]);
   const [floatingXp, setFloatingXp] = useState<{ id: number; amount: number; x: number; y: number }[]>([]);
@@ -3680,13 +3719,13 @@ export default function App() {
         finalProfile = {
           id: userId,
           employeeId: profData.employee_id || "EMP-" + userId.slice(0, 4).toUpperCase(),
-          name: profData.full_name || user?.email?.split("@")[0] || "Learner",
+          name: profData.full_name || "",
           email: user?.email || "",
           avatar: profData.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
           role: mappedRole,
-          department: profData.department || "Operations",
-          plant: profData.plant || "Pune Plant 1",
-          designation: profData.designation || "Specialist",
+          department: profData.department || "",
+          plant: profData.plant || "",
+          designation: profData.designation || "",
           yearsOfExperience: profData.years_of_experience !== undefined ? profData.years_of_experience : 0,
           expertise: profData.expertise || ["Operations"],
           skillLevel: profData.skill_level || "Level 1",
@@ -3702,13 +3741,13 @@ export default function App() {
         finalProfile = {
           id: userId,
           employeeId: "EMP-" + userId.slice(0, 4).toUpperCase(),
-          name: user?.email?.split("@")[0] || "Learner",
+          name: "",
           email: user?.email || "",
           avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
           role: "JUNIOR_EMPLOYEE" as UserRole,
-          department: "Software Engineering",
-          plant: "Bangalore HQ",
-          designation: "Associate Software Engineer",
+          department: "",
+          plant: "",
+          designation: "",
           yearsOfExperience: 0,
           expertise: ["React", "TypeScript", "Node.js"],
           skillLevel: "Level 1 - Junior Developer",
@@ -3995,6 +4034,91 @@ export default function App() {
           {page === "landing" && <LandingPage onNavigate={navigateTo} />}
           {page === "login" && <LoginPage onNavigate={navigateTo} />}
           {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
+
+          {/* Onboarding Profile Modal */}
+          {user && profile && (!profile.name || !profile.designation || !profile.department || !profile.plant) && (
+            <div className="fixed inset-0 bg-background/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+              <div className="bg-card border border-border rounded-2xl w-full max-w-lg p-6 md:p-8 space-y-6 relative overflow-hidden shadow-2xl card-primary">
+                <div className="space-y-2 text-center">
+                  <span className="text-xs text-primary font-bold tracking-wider uppercase">Profile Setup</span>
+                  <h3 className="text-2xl font-bold text-foreground">Welcome to Mentora!</h3>
+                  <p className="text-sm text-muted-foreground">Please fill in your details to set up your learning account and customize your dashboard.</p>
+                </div>
+
+                <form onSubmit={handleOnboardSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">First Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Disha"
+                        value={onboardFirst}
+                        onChange={e => setOnboardFirst(e.target.value)}
+                        className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:border-primary/50"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Last Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Shree"
+                        value={onboardLast}
+                        onChange={e => setOnboardLast(e.target.value)}
+                        className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:border-primary/50"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase">Job Title / Designation</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Junior Employee / Plant Technician"
+                      value={onboardTitle}
+                      onChange={e => setOnboardTitle(e.target.value)}
+                      className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:border-primary/50"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Department</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Operations / Quality Assurance"
+                        value={onboardDept}
+                        onChange={e => setOnboardDept(e.target.value)}
+                        className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:border-primary/50"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Plant Location / HQ</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Pune Plant 1 / Bangalore HQ"
+                        value={onboardPlant}
+                        onChange={e => setOnboardPlant(e.target.value)}
+                        className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:border-primary/50"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={onboardSaving}
+                    className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-3 rounded-xl text-sm transition-all active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-6 cursor-pointer text-center"
+                  >
+                    {onboardSaving ? "Saving..." : "Save & Continue to Dashboard"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* Floating XP Labels Container */}
           {floatingXp.map(item => (
