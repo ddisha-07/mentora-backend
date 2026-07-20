@@ -1443,6 +1443,23 @@ function TopNav({ title, onNavigate, onToggleMobileMenu }: { title: string; onNa
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const { isDark } = useTheme();
+  
+  const getGreeting = () => {
+    const hrs = new Date().getHours();
+    if (hrs < 12) return "Good Morning";
+    if (hrs < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const getFirstName = (name: string) => {
+    if (!name) return "Learner";
+    const raw = name.split("@")[0].split(" ")[0];
+    if (/^[a-zA-Z]/.test(raw)) {
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    }
+    return raw;
+  };
+
   const {
     profile,
     courses,
@@ -1586,7 +1603,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <div>
             <span className="text-xs text-primary font-bold tracking-wider uppercase">Welcome Back</span>
             <h2 {...sg("text-2xl md:text-3xl font-extrabold text-foreground mt-1")}>
-              Good Morning, {activeProfile.name || activeProfile.full_name} 👋
+              {getGreeting()} {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
             </h2>
             <p className="text-muted-foreground text-sm mt-1">Your Mentora journey continues.</p>
           </div>
