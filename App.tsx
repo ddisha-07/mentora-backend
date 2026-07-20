@@ -378,23 +378,18 @@ function clamp(val: number, min: number, max: number) {
 
 // ─── Primitive Components ─────────────────────────────────────────────────────
 
-function CyanButton({ children, onClick, className = "", outline = false, size = "md" }: {
-  children: React.ReactNode; onClick?: () => void; className?: string; outline?: boolean; size?: "sm" | "md" | "lg";
+function CyanButton({ children, onClick, className = "", outline = false, size = "md", disabled = false }: {
+  children: React.ReactNode; onClick?: () => void; className?: string; outline?: boolean; size?: "sm" | "md" | "lg"; disabled?: boolean;
 }) {
-  const pad = size === "sm" ? "px-4 py-1.5 text-sm" : size === "lg" ? "px-8 py-4 text-base" : "px-6 py-2.5 text-sm";
-  if (outline) {
-    return (
-      <button onClick={onClick}
-        className={`${pad} rounded-full border border-primary text-primary font-medium transition-all hover:bg-primary/10 active:scale-95 ${className}`}
-        style={{ fontFamily: "'Raleway', sans-serif" }}>
-        {children}
-      </button>
-    );
-  }
+  const pad = size === "sm" ? "px-4 py-1.5 text-sm" : size === "lg" ? "px-8 py-4 text-base font-semibold" : "px-6 py-2.5 text-sm";
+  const btnClass = outline ? "btn-outline" : "btn-primary";
   return (
-    <button onClick={onClick}
-      className={`${pad} rounded-full bg-primary text-white font-semibold transition-all hover:bg-primary/90 hover:shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_45%,transparent)] active:scale-95 ${className}`}
-      style={{ fontFamily: "'Raleway', sans-serif" }}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${pad} rounded-full font-semibold transition-all active:scale-95 flex items-center justify-center gap-2 ${btnClass} ${className}`}
+      style={{ fontFamily: "'Raleway', sans-serif" }}
+    >
       {children}
     </button>
   );
