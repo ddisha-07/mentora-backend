@@ -555,12 +555,12 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   }, []);
 
   const features = [
-    { icon: <Brain size={22} />, title: "AI Learning Assistant", desc: "Context-aware AI that answers questions, explains concepts, and creates personalized study plans in real time.", color: "#38BDF8", bg: "rgba(56, 189, 248, 0.1)" },
-    { icon: <Map size={22} />, title: "Personalized Learning Paths", desc: "Adaptive curricula built around your role, skills, and goals — evolving as you progress through the platform.", color: "#34D399", bg: "rgba(52, 211, 153, 0.1)" },
-    { icon: <HelpCircle size={22} />, title: "Interactive Quizzes", desc: "Timed assessments with instant feedback, detailed explanations, and spaced repetition scheduling.", color: "#A78BFA", bg: "rgba(167, 139, 250, 0.1)" },
-    { icon: <BarChart3 size={22} />, title: "Skill Analytics", desc: "Granular skill-gap analysis and progress heatmaps that surface exactly where to focus next.", color: "#F59E0B", bg: "rgba(245, 158, 11, 0.1)" },
-    { icon: <Database size={22} />, title: "Knowledge Repository", desc: "A searchable internal knowledge base powered by AI — find answers from your organization's documentation instantly.", color: "#60A5FA", bg: "rgba(96, 165, 250, 0.1)" },
-    { icon: <Award size={22} />, title: "Verified Certificates", desc: "Blockchain-backed credentials shareable on LinkedIn, automatically tied to your professional profile.", color: "#F472B6", bg: "rgba(244, 114, 182, 0.1)" },
+    { icon: <Brain size={22} />, title: "AI Learning Assistant", desc: "Context-aware AI that answers questions, explains concepts, and creates personalized study plans in real time." },
+    { icon: <Map size={22} />, title: "Personalized Learning Paths", desc: "Adaptive curricula built around your role, skills, and goals — evolving as you progress through the platform." },
+    { icon: <HelpCircle size={22} />, title: "Interactive Quizzes", desc: "Timed assessments with instant feedback, detailed explanations, and spaced repetition scheduling." },
+    { icon: <BarChart3 size={22} />, title: "Skill Analytics", desc: "Granular skill-gap analysis and progress heatmaps that surface exactly where to focus next." },
+    { icon: <Database size={22} />, title: "Knowledge Repository", desc: "A searchable internal knowledge base powered by AI — find answers from your organization's documentation instantly." },
+    { icon: <Award size={22} />, title: "Verified Certificates", desc: "Blockchain-backed credentials shareable on LinkedIn, automatically tied to your professional profile." },
   ];
 
   const faqs = [
@@ -765,28 +765,20 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
               One platform for structured learning, informal knowledge sharing, assessments, and skill development.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((f, i) => {
-              const cardClass = 
-                f.color === "#38BDF8" ? "card-cyan" :
-                f.color === "#34D399" ? "card-green" :
-                f.color === "#A78BFA" ? "card-purple" :
-                f.color === "#F59E0B" ? "card-amber" :
-                f.color === "#60A5FA" ? "card-blue" : "card-primary";
-              
-              return (
-                <Card key={i} className={`p-6 group hover:border-primary/30 transition-all duration-300 ${cardClass}`}>
-                  <div 
-                    className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-all duration-300"
-                    style={{ backgroundColor: f.bg, color: f.color }}
-                  >
-                    {f.icon}
-                  </div>
-                  <h3 className="text-base font-bold mb-2" style={{ color: f.color, fontFamily: "'Raleway', sans-serif" }}>{f.title}</h3>
-                  <p className="text-xs text-[#8A8A9D] leading-relaxed">{f.desc}</p>
-                </Card>
-              );
-            })}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f, i) => (
+              <div key={i} className="p-6 capability-tile">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                  {f.icon}
+                </div>
+                <h3 className="text-base font-bold mb-2 text-primary" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  {f.title}
+                </h3>
+                <p className="text-xs capability-desc leading-relaxed">
+                  {f.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
