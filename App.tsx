@@ -3057,7 +3057,7 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   const handleSaveChanges = async () => {
-    if (!profile) return;
+    if (!profile || !profile.id) return;
     setSaving(true);
     const updatedName = `${firstName.trim()} ${lastName.trim()}`.trim() || profile.name;
     const updatedProfile = {
@@ -3069,9 +3069,31 @@ function SettingsPage() {
       avatar: avatar
     };
 
-    setProfile(updatedProfile);
-    alert("Profile settings saved successfully!");
-    setSaving(false);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: updatedName,
+          designation: designation,
+          department: department,
+          email: email,
+          avatar_url: avatar,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", profile.id);
+
+      if (error) {
+        alert("Failed to save changes: " + error.message);
+        console.error("Settings database sync error:", error);
+      } else {
+        setProfile(updatedProfile);
+        alert("Profile settings saved successfully!");
+      }
+    } catch (err: any) {
+      alert("Failed to save changes: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
   const [notifSettings, setNotifSettings] = useState({
     courseUpdates: true,
@@ -3515,6 +3537,7 @@ export default function App() {
       alert("Please fill in all details.");
       return;
     }
+    if (!user) return;
     setOnboardSaving(true);
     const fullName = `${onboardFirst.trim()} ${onboardLast.trim()}`;
     const updatedProfile = {
@@ -3524,9 +3547,43 @@ export default function App() {
       department: onboardDept.trim(),
       plant: onboardPlant.trim()
     };
-    
-    setProfile(updatedProfile);
-    setOnboardSaving(false);
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          full_name: fullName,
+          avatar_url: updatedProfile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+          email: updatedProfile.email || user.email,
+          role: updatedProfile.role?.toLowerCase() || "junior_employee",
+          employee_id: updatedProfile.employeeId || "EMP-" + user.id.slice(0, 4).toUpperCase(),
+          department: updatedProfile.department,
+          plant: updatedProfile.plant,
+          designation: updatedProfile.designation,
+          years_of_experience: updatedProfile.yearsOfExperience || 0,
+          expertise: updatedProfile.expertise || [],
+          skill_level: updatedProfile.skillLevel || "Level 1",
+          xp: updatedProfile.xp || 0,
+          knowledge_credits: updatedProfile.knowledgeCredits || 0,
+          mentora_credits: updatedProfile.mentoraCredits || 0,
+          current_streak: updatedProfile.currentStreak || 0,
+          longest_streak: updatedProfile.longestStreak || 0,
+          leaderboard_rank: updatedProfile.leaderboardRank || 0,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) {
+        alert("Failed to save profile: " + error.message);
+        console.error("Onboarding database sync error:", error);
+      } else {
+        setProfile(updatedProfile);
+      }
+    } catch (err: any) {
+      alert("Failed to save profile: " + err.message);
+    } finally {
+      setOnboardSaving(false);
+    }
   };
 
   // Phase 2 State
