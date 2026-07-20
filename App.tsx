@@ -4064,7 +4064,7 @@ export default function App() {
           {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
 
           {/* Onboarding Profile Modal */}
-          {user && profile && (!profile.name || !profile.designation || !profile.department || !profile.plant) && (
+          {user && profile && appPages.includes(page) && (!profile.name || !profile.designation || !profile.department || !profile.plant) && (
             <div className="fixed inset-0 bg-background/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
               <div className="bg-card border border-border rounded-2xl w-full max-w-lg p-6 md:p-8 space-y-6 relative overflow-hidden shadow-2xl card-primary">
                 <div className="space-y-2 text-center">
