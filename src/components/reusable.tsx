@@ -230,7 +230,14 @@ export function CourseCard({
   category,
   onNavigate,
   isBookmarked,
-  onBookmarkToggle
+  onBookmarkToggle,
+  
+  // Learning Journey fields
+  currentStage,
+  dailyMinutes,
+  totalXp,
+  earnedXp,
+  difficultyLevel
 }: {
   title: string;
   duration: string;
@@ -241,6 +248,12 @@ export function CourseCard({
   onNavigate?: () => void;
   isBookmarked?: boolean;
   onBookmarkToggle?: () => void;
+  
+  currentStage?: string;
+  dailyMinutes?: number;
+  totalXp?: number;
+  earnedXp?: number;
+  difficultyLevel?: string;
 }) {
   return (
     <div
@@ -272,14 +285,37 @@ export function CourseCard({
         <h4 className="text-sm font-bold text-foreground mb-1 leading-snug group-hover:text-primary transition-colors line-clamp-2">
           {title}
         </h4>
-        <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 mb-4">
-          <span className="flex items-center gap-1"><Clock size={12} /> {duration}</span>
-          <span className="flex items-center gap-1"><Star size={12} className="text-amber-400 fill-amber-400" /> {rating}</span>
+
+        {currentStage && (
+          <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2 mt-1 flex items-center gap-1 flex-wrap">
+            <span className={currentStage === 'Beginner' ? 'text-primary font-bold' : ''}>Beginner</span>
+            <span className="text-muted-foreground/30">&rarr;</span>
+            <span className={currentStage === 'Explorer' ? 'text-primary font-bold' : ''}>Explorer</span>
+            <span className="text-muted-foreground/30">&rarr;</span>
+            <span className={currentStage === 'Practitioner' ? 'text-primary font-bold' : ''}>Practitioner</span>
+            <span className="text-muted-foreground/30">&rarr;</span>
+            <span className={currentStage === 'Pro' ? 'text-primary font-bold' : ''}>Pro</span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 mb-4 flex-wrap gap-2">
+          <span className="flex items-center gap-1">
+            <Clock size={12} /> {dailyMinutes ? `${dailyMinutes} min/day` : duration}
+          </span>
+          {totalXp !== undefined && totalXp > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+              <Zap size={10} className="fill-primary text-primary" /> {earnedXp !== undefined ? `${earnedXp} / ${totalXp}` : totalXp} XP
+            </span>
+          )}
+          <span className="text-[10px] font-semibold uppercase tracking-wide">
+            {difficultyLevel || category}
+          </span>
         </div>
+
         {progress !== undefined && progress > 0 ? (
           <div>
             <div className="flex justify-between text-[10px] text-muted-foreground font-semibold mb-1">
-              <span>Progress</span>
+              <span>{currentStage ? `Stage: ${currentStage}` : 'Progress'}</span>
               <span>{progress}%</span>
             </div>
             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
@@ -287,7 +323,9 @@ export function CourseCard({
             </div>
           </div>
         ) : (
-          <span className="text-xs text-primary font-semibold group-hover:underline">Start Course &rarr;</span>
+          <span className="text-xs text-primary font-semibold group-hover:underline">
+            {currentStage ? 'Start Journey' : 'Start Course'} &rarr;
+          </span>
         )}
       </div>
     </div>

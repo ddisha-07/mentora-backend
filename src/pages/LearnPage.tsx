@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, GraduationCap, Search, Award, TrendingUp, Sparkles, UserCheck } from 'lucide-react';
-import { CourseCard, ProgressCard, StatCard } from '../components/reusable';
+import { CourseCard, StatCard } from '../components/reusable';
 import { UserRole } from '../types';
 import { useApp } from '../../App';
 
@@ -17,7 +17,7 @@ export default function LearnPage({
   onNavigateCourse: (id: number) => void;
   onNavigateCertificates: () => void;
 }) {
-  const { savedItems, setSavedItems } = useApp();
+  const { savedItems, setSavedItems, journeyStages, learningActivities, activityProgress } = useApp();
 
   const handleToggleBookmark = (course: any) => {
     const isSaved = (savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course');
@@ -30,8 +30,8 @@ export default function LearnPage({
           id: course.id,
           type: 'course',
           title: course.title,
-          desc: `Course instructed by ${course.instructor || 'L&D Instructor'}.`,
-          category: 'Courses',
+          desc: `Journey guided by ${course.instructor || 'L&D Instructor'}.`,
+          category: 'Journeys',
           page: 'learn'
         }
       ]);
@@ -96,22 +96,55 @@ export default function LearnPage({
   // Filter Catalog
   const filteredCatalog = coursesWithProgress.filter(c => {
     const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) ||
-                          c.instructor.toLowerCase().includes(search.toLowerCase());
+                          (c.instructor || '').toLowerCase().includes(search.toLowerCase());
     const matchesCategory = activeCategory === 'All' || c.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Helper to resolve journey-specific stats dynamically
+  const getJourneyStats = (courseId: number) => {
+    const courseStages = (journeyStages || []).filter(s => Number(s.course_id) === Number(courseId));
+    const courseActivities = (learningActivities || []).filter(a => Number(a.course_id) === Number(courseId));
+    const courseProgress = (activityProgress || []).filter(p => Number(p.course_id) === Number(courseId));
+    
+    const earnedXp = courseProgress.reduce((sum, p) => sum + (p.xp_earned || 0), 0);
+    
+    let currentStage = 'Beginner';
+    if (courseActivities.length > 0) {
+      const incompleteRequired = courseActivities
+        .filter(a => a.is_required)
+        .sort((a, b) => a.order_index - b.order_index)
+        .find(a => {
+          const prog = courseProgress.find(p => Number(p.activity_id) === Number(a.id));
+          return !prog || prog.status !== 'completed';
+        });
+      
+      if (incompleteRequired) {
+        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stage_id));
+        if (stage) currentStage = stage.title;
+      } else {
+        const lastStage = courseStages.sort((a, b) => b.order_index - a.order_index)[0];
+        if (lastStage) currentStage = lastStage.title;
+      }
+    }
+    
+    return {
+      currentStage,
+      earnedXp
+    };
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Overview stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Enrolled Courses" value={enrolledCourses.length} change="Active Paths" type="courses" />
-        <StatCard title="In Progress" value={continueLearning.length} change="Learning" type="progress" />
-        <StatCard title="Completed" value={completedCourses.length} change="Certifications" type="completions" />
+        <StatCard label="Enrolled Journeys" value={enrolledCourses.length} delta="Active Paths" type="courses" />
+        <StatCard label="In Progress" value={continueLearning.length} delta="Learning" type="progress" />
+        <StatCard label="Completed Paths" value={completedCourses.length} delta="Certifications" type="completions" />
         <StatCard
-          title="Skill Passport"
+          label="Skill Passport"
           value="8 Skills"
-          change="Verify Skills"
+          delta="Verify Skills"
           type="achievements"
           onAction={onNavigateCertificates}
           className="cursor-pointer hover:border-primary/20 transition-all"
@@ -124,64 +157,80 @@ export default function LearnPage({
           onClick={() => setActiveTab('my_learning')}
           className={`px-4 py-2 text-xs font-bold transition-all border-b-2 -mb-px ${activeTab === 'my_learning' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
         >
-          My Learning
+          My Journeys
         </button>
         <button
           onClick={() => setActiveTab('catalog')}
           className={`px-4 py-2 text-xs font-bold transition-all border-b-2 -mb-px ${activeTab === 'catalog' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
         >
-          Course Catalog
+          Explore Learning Journeys
         </button>
       </div>
 
       {activeTab === 'my_learning' ? (
         <div className="space-y-6">
-          {/* 1. Continue Learning */}
+          {/* 1. Continue Journey */}
           {continueLearning.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <BookOpen size={18} className="text-primary" /> Continue Learning
+                <BookOpen size={18} className="text-primary" /> Continue Your Journey
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {continueLearning.map(course => (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    progress={course.progress}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => onNavigateCourse(course.id)}
-                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                    onBookmarkToggle={() => handleToggleBookmark(course)}
-                  />
-                ))}
+                {continueLearning.map(course => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      title={course.title}
+                      duration={course.duration}
+                      rating={course.rating}
+                      progress={course.progress}
+                      thumbnail={course.thumbnail}
+                      category={course.category}
+                      onNavigate={() => onNavigateCourse(course.id)}
+                      isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                      onBookmarkToggle={() => handleToggleBookmark(course)}
+                      currentStage={course.journey_type ? stats.currentStage : undefined}
+                      dailyMinutes={course.daily_minutes}
+                      totalXp={course.total_xp}
+                      earnedXp={stats.earnedXp}
+                      difficultyLevel={course.difficulty_level}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* 2. Recommended for You */}
+          {/* 2. Recommended Journeys */}
           {recommendedForYou.length > 0 && (
             <div className="space-y-4 border-t border-border/50 pt-6">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Sparkles size={18} className="text-primary" /> Recommended for You
+                <Sparkles size={18} className="text-primary" /> Recommended Journeys
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recommendedForYou.slice(0, 3).map(course => (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    progress={course.enrolled ? course.progress : undefined}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => onNavigateCourse(course.id)}
-                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                    onBookmarkToggle={() => handleToggleBookmark(course)}
-                  />
-                ))}
+                {recommendedForYou.slice(0, 3).map(course => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      title={course.title}
+                      duration={course.duration}
+                      rating={course.rating}
+                      progress={course.enrolled ? course.progress : undefined}
+                      thumbnail={course.thumbnail}
+                      category={course.category}
+                      onNavigate={() => onNavigateCourse(course.id)}
+                      isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                      onBookmarkToggle={() => handleToggleBookmark(course)}
+                      currentStage={course.journey_type ? stats.currentStage : undefined}
+                      dailyMinutes={course.daily_minutes}
+                      totalXp={course.total_xp}
+                      earnedXp={stats.earnedXp}
+                      difficultyLevel={course.difficulty_level}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -190,23 +239,31 @@ export default function LearnPage({
           {basedOnYourRole.length > 0 && (
             <div className="space-y-4 border-t border-border/50 pt-6">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <UserCheck size={18} className="text-primary" /> Based on Your Role
+                <UserCheck size={18} className="text-primary" /> Journeys for Your Role
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {basedOnYourRole.slice(0, 3).map(course => (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    progress={course.enrolled ? course.progress : undefined}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => onNavigateCourse(course.id)}
-                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                    onBookmarkToggle={() => handleToggleBookmark(course)}
-                  />
-                ))}
+                {basedOnYourRole.slice(0, 3).map(course => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      title={course.title}
+                      duration={course.duration}
+                      rating={course.rating}
+                      progress={course.enrolled ? course.progress : undefined}
+                      thumbnail={course.thumbnail}
+                      category={course.category}
+                      onNavigate={() => onNavigateCourse(course.id)}
+                      isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                      onBookmarkToggle={() => handleToggleBookmark(course)}
+                      currentStage={course.journey_type ? stats.currentStage : undefined}
+                      dailyMinutes={course.daily_minutes}
+                      totalXp={course.total_xp}
+                      earnedXp={stats.earnedXp}
+                      difficultyLevel={course.difficulty_level}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -218,45 +275,61 @@ export default function LearnPage({
                 <TrendingUp size={18} className="text-primary" /> Trending in {userDept}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {trendingInDepartment.map(course => (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    progress={course.enrolled ? course.progress : undefined}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => onNavigateCourse(course.id)}
-                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                    onBookmarkToggle={() => handleToggleBookmark(course)}
-                  />
-                ))}
+                {trendingInDepartment.map(course => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      title={course.title}
+                      duration={course.duration}
+                      rating={course.rating}
+                      progress={course.enrolled ? course.progress : undefined}
+                      thumbnail={course.thumbnail}
+                      category={course.category}
+                      onNavigate={() => onNavigateCourse(course.id)}
+                      isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                      onBookmarkToggle={() => handleToggleBookmark(course)}
+                      currentStage={course.journey_type ? stats.currentStage : undefined}
+                      dailyMinutes={course.daily_minutes}
+                      totalXp={course.total_xp}
+                      earnedXp={stats.earnedXp}
+                      difficultyLevel={course.difficulty_level}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* 5. AI & ML Skills */}
+          {/* 5. AI & ML Journeys */}
           {aiMLSkills.length > 0 && (
             <div className="space-y-4 border-t border-border/50 pt-6">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Sparkles size={18} className="text-primary" /> AI &amp; ML Skills
+                <Sparkles size={18} className="text-primary" /> AI &amp; ML Learning Journeys
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {aiMLSkills.slice(0, 3).map(course => (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    progress={course.enrolled ? course.progress : undefined}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => onNavigateCourse(course.id)}
-                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                    onBookmarkToggle={() => handleToggleBookmark(course)}
-                  />
-                ))}
+                {aiMLSkills.slice(0, 3).map(course => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      title={course.title}
+                      duration={course.duration}
+                      rating={course.rating}
+                      progress={course.enrolled ? course.progress : undefined}
+                      thumbnail={course.thumbnail}
+                      category={course.category}
+                      onNavigate={() => onNavigateCourse(course.id)}
+                      isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                      onBookmarkToggle={() => handleToggleBookmark(course)}
+                      currentStage={course.journey_type ? stats.currentStage : undefined}
+                      dailyMinutes={course.daily_minutes}
+                      totalXp={course.total_xp}
+                      earnedXp={stats.earnedXp}
+                      difficultyLevel={course.difficulty_level}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -265,23 +338,31 @@ export default function LearnPage({
           {completedCourses.length > 0 && (
             <div className="space-y-4 border-t border-border/50 pt-6">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Award size={18} className="text-emerald-400" /> Completed
+                <Award size={18} className="text-emerald-400" /> Completed Journeys
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {completedCourses.map(course => (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    progress={course.progress}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => onNavigateCourse(course.id)}
-                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                    onBookmarkToggle={() => handleToggleBookmark(course)}
-                  />
-                ))}
+                {completedCourses.map(course => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      title={course.title}
+                      duration={course.duration}
+                      rating={course.rating}
+                      progress={course.progress}
+                      thumbnail={course.thumbnail}
+                      category={course.category}
+                      onNavigate={() => onNavigateCourse(course.id)}
+                      isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                      onBookmarkToggle={() => handleToggleBookmark(course)}
+                      currentStage={course.journey_type ? stats.currentStage : undefined}
+                      dailyMinutes={course.daily_minutes}
+                      totalXp={course.total_xp}
+                      earnedXp={stats.earnedXp}
+                      difficultyLevel={course.difficulty_level}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -289,13 +370,13 @@ export default function LearnPage({
           {enrolledCourses.length === 0 && (
             <div className="border border-border border-dashed rounded-2xl p-12 text-center max-w-md mx-auto mt-6">
               <GraduationCap size={44} className="text-muted-foreground mx-auto mb-4" />
-              <h4 className="font-bold text-foreground mb-1">No active courses</h4>
-              <p className="text-xs text-muted-foreground mb-6">You haven't enrolled in any courses yet. Browse the catalog to start learning!</p>
+              <h4 className="font-bold text-foreground mb-1">No active journeys</h4>
+              <p className="text-xs text-muted-foreground mb-6">You haven't started any learning journeys yet. Browse the catalog to start learning!</p>
               <button
                 onClick={() => setActiveTab('catalog')}
                 className="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-primary/95 transition-all"
               >
-                Explore Catalog
+                Explore Learning Journeys
               </button>
             </div>
           )}
@@ -307,7 +388,7 @@ export default function LearnPage({
             <div className="relative w-full md:w-72">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
-                placeholder="Search courses, instructors..."
+                placeholder="Search journeys, instructors..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="bg-card border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-foreground placeholder-muted-foreground w-full outline-none focus:border-primary/50 transition-all"
@@ -330,25 +411,33 @@ export default function LearnPage({
           {filteredCatalog.length === 0 ? (
             <div className="text-center py-20">
               <Search size={40} className="text-border mx-auto mb-4" />
-              <h4 className="text-lg font-semibold mb-1 text-foreground">No courses found</h4>
+              <h4 className="text-lg font-semibold mb-1 text-foreground">No journeys found</h4>
               <p className="text-muted-foreground text-xs">Try adjusting your search or filters.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCatalog.map(course => (
-                <CourseCard
-                  key={course.id}
-                  title={course.title}
-                  duration={course.duration}
-                  rating={course.rating}
-                  progress={course.progress || undefined}
-                  thumbnail={course.thumbnail}
-                  category={course.category}
-                  onNavigate={() => onNavigateCourse(course.id)}
-                  isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
-                  onBookmarkToggle={() => handleToggleBookmark(course)}
-                />
-              ))}
+              {filteredCatalog.map(course => {
+                const stats = getJourneyStats(course.id);
+                return (
+                  <CourseCard
+                    key={course.id}
+                    title={course.title}
+                    duration={course.duration}
+                    rating={course.rating}
+                    progress={course.progress || undefined}
+                    thumbnail={course.thumbnail}
+                    category={course.category}
+                    onNavigate={() => onNavigateCourse(course.id)}
+                    isBookmarked={(savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course')}
+                    onBookmarkToggle={() => handleToggleBookmark(course)}
+                    currentStage={course.journey_type ? stats.currentStage : undefined}
+                    dailyMinutes={course.daily_minutes}
+                    totalXp={course.total_xp}
+                    earnedXp={stats.earnedXp}
+                    difficultyLevel={course.difficulty_level}
+                  />
+                );
+              })}
             </div>
           )}
         </div>

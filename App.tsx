@@ -26,6 +26,7 @@ import { ROLES_CONFIG, canAccessFeature } from "./src/config/roles";
 import { mockService, MOCK_USERS } from "./src/services/mockData";
 import { RoleBadge, XPBadge, StreakIndicator, MissionCard, StatCard as ReusableStatCard, CourseCard } from "./src/components/reusable";
 import LearnPage from "./src/pages/LearnPage";
+import { LearningBitePlayer } from "./src/components/LearningBitePlayer";
 import KnowledgePage from "./src/pages/KnowledgePage";
 import KnowledgeExchangePage from "./src/pages/KnowledgeExchangePage";
 import TrainingPage from "./src/pages/TrainingPage";
@@ -77,6 +78,18 @@ export type AppContextType = {
   setNotifsState: React.Dispatch<React.SetStateAction<any[]>>;
   page: Page;
   setPage: React.Dispatch<React.SetStateAction<Page>>;
+
+  // Journey context fields
+  journeyStages: any[];
+  setJourneyStages: React.Dispatch<React.SetStateAction<any[]>>;
+  learningActivities: any[];
+  setLearningActivities: React.Dispatch<React.SetStateAction<any[]>>;
+  activityProgress: any[];
+  setActivityProgress: React.Dispatch<React.SetStateAction<any[]>>;
+  learningBites: any[];
+  setLearningBites: React.Dispatch<React.SetStateAction<any[]>>;
+  biteProgress: any[];
+  setBiteProgress: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
@@ -974,6 +987,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [remember, setRemember] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -984,36 +998,50 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     setAuthLoading(true);
     setErrorMsg("");
     try {
-      // 1. Try to log in
-      const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInErr) {
-        // 2. If login fails, check if the error is "Invalid login credentials". 
-        // If so, fall back to registering them as a new user (frictionless testing/onboarding!)
-        if (signInErr.message.includes("Invalid login credentials") || signInErr.message.includes("does not exist")) {
-          const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                full_name: email.split("@")[0],
-                username: email.split("@")[0]
-              }
+      if (isSignUp) {
+        // Sign Up Flow
+        const { data, error: signUpErr } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: email.split("@")[0],
+              username: email.split("@")[0]
             }
-          });
-          if (signUpErr) throw signUpErr;
-          
-          if (!signUpData.session) {
-            setErrorMsg("Account created! A confirmation link has been sent to your email.");
-            setAuthLoading(false);
-            return;
           }
-        } else {
-          throw signInErr;
+        });
+        if (signUpErr) throw signUpErr;
+        
+        if (data && !data.session) {
+          setErrorMsg("Account created! A confirmation link has been sent to your email.");
+        } else if (data && data.session) {
+          onNavigate("dashboard");
+        }
+      } else {
+        // Sign In Flow
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) throw signInErr;
+        onNavigate("dashboard");
+      }
+    } catch (err: any) {
+      console.error("Auth error caught:", err);
+      let msg = "An authentication error occurred.";
+      if (err) {
+        if (typeof err === "string") {
+          msg = err;
+        } else if (err.message) {
+          msg = err.message;
+        } else if (err.error_description) {
+          msg = err.error_description;
+        } else if (typeof err === "object") {
+          try {
+            msg = JSON.stringify(err);
+          } catch (_) {
+            msg = String(err);
+          }
         }
       }
-      onNavigate("dashboard");
-    } catch (err: any) {
-      setErrorMsg(err.message || "An authentication error occurred.");
+      setErrorMsg(msg);
     } finally {
       setAuthLoading(false);
     }
@@ -1064,9 +1092,15 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <span {...sg("text-lg font-semibold")}>Mentora</span>
           </div>
           <h2 style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 900, fontSize: "2rem", marginBottom: "0.5rem" }}>
-            Welcome <span style={{ fontFamily: "'Dancing Script', cursive", color: "var(--primary)", fontWeight: 700 }}>back</span>
+            {isSignUp ? (
+              <>Create your <span style={{ fontFamily: "'Dancing Script', cursive", color: "var(--primary)", fontWeight: 700 }}>account</span></>
+            ) : (
+              <>Welcome <span style={{ fontFamily: "'Dancing Script', cursive", color: "var(--primary)", fontWeight: 700 }}>back</span></>
+            )}
           </h2>
-          <p className="text-muted-foreground text-sm mb-8">Sign in to continue your learning journey.</p>
+          <p className="text-muted-foreground text-sm mb-8">
+            {isSignUp ? "Sign up to begin your learning journey." : "Sign in to continue your learning journey."}
+          </p>
 
           {errorMsg && (
             <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 rounded-xl mb-4">
@@ -1098,27 +1132,54 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 </button>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <button type="button" onClick={() => setRemember(!remember)}
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${remember ? "bg-primary border-primary" : "border-border"}`}
-                  disabled={authLoading}>
-                  {remember && <Check size={10} className="text-white" />}
-                </button>
-                <span className="text-sm text-muted-foreground">Remember me</span>
-              </label>
-              <a href="#" className="text-sm text-primary hover:text-primary/80 transition-colors">Forgot password?</a>
-            </div>
+            {!isSignUp && (
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <button type="button" onClick={() => setRemember(!remember)}
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${remember ? "bg-primary border-primary" : "border-border"}`}
+                    disabled={authLoading}>
+                    {remember && <Check size={10} className="text-white" />}
+                  </button>
+                  <span className="text-sm text-muted-foreground">Remember me</span>
+                </label>
+                <a href="#" className="text-sm text-primary hover:text-primary/80 transition-colors">Forgot password?</a>
+              </div>
+            )}
             <CyanButton className="w-full py-3 mt-2 text-center" disabled={authLoading}>
-              {authLoading ? "Authenticating..." : "Sign in"}
+              {authLoading ? "Authenticating..." : isSignUp ? "Sign up" : "Sign in"}
             </CyanButton>
           </form>
 
-
-
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don't have an account?{" "}
-            <a href="#" className="text-primary hover:text-primary/80 transition-colors">Create account</a>
+            {isSignUp ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(false);
+                    setErrorMsg("");
+                  }}
+                  className="text-primary hover:text-primary/80 font-semibold cursor-pointer transition-colors bg-transparent border-0 p-0"
+                >
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <>
+                Don't have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(true);
+                    setErrorMsg("");
+                  }}
+                  className="text-primary hover:text-primary/80 font-semibold cursor-pointer transition-colors bg-transparent border-0 p-0"
+                >
+                  Create account
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -1492,7 +1553,10 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     setSelectedCourseId,
     activeMissions,
     completeMission,
-    streakDays
+    streakDays,
+    journeyStages,
+    learningActivities,
+    activityProgress
   } = useApp();
 
   const getMissionCardClass = (type: string) => {
@@ -1607,7 +1671,39 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   const handleContinue = (courseId: number) => {
     setSelectedCourseId(courseId);
-    onNavigate("lesson");
+    onNavigate("course-detail");
+  };
+
+  const getJourneyStats = (courseId: number) => {
+    const courseStages = (journeyStages || []).filter(s => Number(s.course_id) === Number(courseId));
+    const courseActivities = (learningActivities || []).filter(a => Number(a.course_id) === Number(courseId));
+    const courseProgress = (activityProgress || []).filter(p => Number(p.course_id) === Number(courseId));
+    
+    const earnedXp = courseProgress.reduce((sum, p) => sum + (p.xp_earned || 0), 0);
+    
+    let currentStage = 'Beginner';
+    if (courseActivities.length > 0) {
+      const incompleteRequired = courseActivities
+        .filter(a => a.is_required)
+        .sort((a, b) => a.order_index - b.order_index)
+        .find(a => {
+          const prog = courseProgress.find(p => Number(p.activity_id) === Number(a.id));
+          return !prog || prog.status !== 'completed';
+        });
+      
+      if (incompleteRequired) {
+        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stage_id));
+        if (stage) currentStage = stage.title;
+      } else {
+        const lastStage = courseStages.sort((a, b) => b.order_index - a.order_index)[0];
+        if (lastStage) currentStage = lastStage.title;
+      }
+    }
+    
+    return {
+      currentStage,
+      earnedXp
+    };
   };
 
   const handleCompleteMissionClick = (missionId: number, e: React.MouseEvent) => {
@@ -1733,47 +1829,58 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
           {/* Continue Learning */}
           <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground">📖 Continue Learning</h3>
+            <h3 className="text-base font-bold text-foreground">📖 Continue Your Journeys</h3>
             {inProgress.length === 0 ? (
               <Card className="p-6 text-center text-muted-foreground text-sm">
                 <BookOpen size={30} className="mx-auto mb-2 text-border" />
-                No courses in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-semibold">Enroll in a course</button> to start learning!
+                No journeys in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-semibold font-bold">Enroll in a journey</button> to start learning!
               </Card>
             ) : (
               <div className="space-y-3">
-                {inProgress.map((course) => (
-                  <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer card-blue" onClick={() => handleContinue(course.id)}>
-                    <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
-                    <div className="flex-1 min-w-0">
-                      <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{course.instructor}</p>
-                      <div className="mt-2">
-                        <ProgressBar value={course.progress} />
-                        <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
+                {inProgress.map((course) => {
+                  const stats = getJourneyStats(course.id);
+                  return (
+                    <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer card-blue" onClick={() => handleContinue(course.id)}>
+                      <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
+                      <div className="flex-1 min-w-0">
+                        <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{course.journey_type ? `Stage: ${stats.currentStage}` : course.instructor}</p>
+                        <div className="mt-2">
+                          <ProgressBar value={course.progress} />
+                          <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
+                        </div>
                       </div>
-                    </div>
-                    <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
-                  </Card>
-                ))}
+                      <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
 
           {/* Recommended Learning */}
           <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground">💡 Recommended Learning</h3>
+            <h3 className="text-base font-bold text-foreground">💡 Recommended Learning Journeys</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {recommendedCourses.map(course => (
-                <CourseCard
-                  key={course.id}
-                  title={course.title}
-                  duration={course.duration}
-                  rating={course.rating}
-                  thumbnail={course.thumbnail}
-                  category={course.category}
-                  onNavigate={() => handleContinue(course.id)}
-                />
-              ))}
+              {recommendedCourses.map(course => {
+                const stats = getJourneyStats(course.id);
+                return (
+                  <CourseCard
+                    key={course.id}
+                    title={course.title}
+                    duration={course.duration}
+                    rating={course.rating}
+                    thumbnail={course.thumbnail}
+                    category={course.category}
+                    onNavigate={() => handleContinue(course.id)}
+                    currentStage={course.journey_type ? stats.currentStage : undefined}
+                    dailyMinutes={course.daily_minutes}
+                    totalXp={course.total_xp}
+                    earnedXp={stats.earnedXp}
+                    difficultyLevel={course.difficulty_level}
+                  />
+                );
+              })}
             </div>
           </div>
 
@@ -2189,192 +2296,962 @@ function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     </div>
   );
 }
-
-// ─── Course Detail ────────────────────────────────────────────────────────────
 function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  const { courses, enrollments, selectedCourseId, enrollInCourse } = useApp();
-  const [openModule, setOpenModule] = useState<number | null>(1);
+  const {
+    selectedCourseId,
+    courses,
+    enrollments,
+    enrollInCourse,
+    journeyStages,
+    learningActivities,
+    activityProgress,
+    setActivityProgress,
+    setProfile,
+    learningBites,
+    biteProgress,
+    setBiteProgress
+  } = useApp();
 
-  const course = courses.find((c) => Number(c.id) === Number(selectedCourseId)) || courses[0];
+  const [openModule, setOpenModule] = useState<number | null>(null);
+  const [activeActivity, setActiveActivity] = useState<any | null>(null);
+  const [activeBites, setActiveBites] = useState<any[] | null>(null);
+  const [showCelebration, setShowCelebration] = useState<{ show: boolean; xp: number; title: string } | null>(null);
+
+  const course = courses.find((c) => Number(c.id) === Number(selectedCourseId));
+  if (!course) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        Journey not found. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline">Go back</button>
+      </div>
+    );
+  }
+
   const enrollment = enrollments.find((e) => Number(e.course_id) === Number(course.id));
   const isEnrolled = !!enrollment;
-  const progress = enrollment ? enrollment.progress : 0;
+  
+  // Load journey stages, activities, and user progress
+  const courseStages = (journeyStages || []).filter(s => Number(s.course_id) === Number(course.id));
+  const courseActivities = (learningActivities || []).filter(a => Number(a.course_id) === Number(course.id));
+  const progressRecords = (activityProgress || []).filter(p => Number(p.course_id) === Number(course.id));
+  
+  const completedActivities = courseActivities.filter(a => {
+    const prog = progressRecords.find(p => Number(p.activity_id) === Number(a.id));
+    return prog && prog.status === 'completed';
+  });
 
-  // Use dynamic modules from database if they exist, otherwise fallback to mock MODULES
-  const modules = course.modules && course.modules.length > 0 ? course.modules : MODULES;
+  const journeyProgress = courseActivities.length > 0
+    ? Math.round((completedActivities.length / courseActivities.length) * 100)
+    : 0;
+
+  const earnedXp = progressRecords.reduce((sum, p) => sum + (p.xp_earned || 0), 0);
 
   const handleEnrollOrContinue = async () => {
-    if (isEnrolled) {
-      onNavigate("lesson");
-    } else {
+    if (!isEnrolled) {
       await enrollInCourse(course.id);
     }
   };
 
-  return (
-    <div className="max-w-[1200px] mx-auto">
-      {/* Banner */}
-      <div className="relative h-56 overflow-hidden">
-        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge color="cyan">{course.category}</Badge>
-            <Badge color="red">{course.difficulty}</Badge>
-          </div>
-          <h2 {...sg("text-2xl font-bold")}>{course.title}</h2>
+  const getActivityStatus = (activity: any, index: number) => {
+    const prog = progressRecords.find(p => Number(p.activity_id) === Number(activity.id));
+    if (prog) {
+      return prog.status;
+    }
+    if (index === 0) {
+      return 'available';
+    }
+    const prevActivity = courseActivities[index - 1];
+    if (prevActivity) {
+      const prevProg = progressRecords.find(p => Number(p.activity_id) === Number(prevActivity.id));
+      if (prevProg && prevProg.status === 'completed') {
+        return 'available';
+      }
+    }
+    return 'locked';
+  };
+
+  const handleNodeClick = (activity: any, status: string) => {
+    if (!isEnrolled) {
+      alert("Please enroll in this journey to start the learning map.");
+      return;
+    }
+    if (status === 'locked') {
+      alert("This activity is currently locked. Please complete the preceding activities to unlock it!");
+      return;
+    }
+    
+    // Check if this activity has learning bites
+    const bitesForActivity = (learningBites || []).filter(
+      (b: any) => Number(b.activity_id) === Number(activity.id)
+    );
+
+    if (bitesForActivity.length > 0) {
+      const sortedBites = [...bitesForActivity].sort((a, b) => a.order_index - b.order_index);
+      setActiveBites(sortedBites);
+      setActiveActivity(activity);
+    } else {
+      setActiveBites(null);
+      setActiveActivity(activity);
+    }
+  };
+
+  const isLearningJourney = course.journey_type === "Standard" || courseStages.length > 0;
+
+  // Render Activity Player or Learning Bite Player
+  if (activeActivity) {
+    if (activeBites && activeBites.length > 0) {
+      return (
+        <div className="max-w-[1200px] mx-auto p-4 md:p-6">
+          <LearningBitePlayer
+            bites={activeBites}
+            courseId={course.id}
+            activityId={activeActivity.id}
+            onClose={() => {
+              setActiveActivity(null);
+              setActiveBites(null);
+            }}
+            setProfile={setProfile}
+            setBiteProgress={setBiteProgress}
+            setActivityProgress={setActivityProgress}
+            onCompleteBite={(biteId, xpEarned) => {
+              setShowCelebration({
+                show: true,
+                xp: xpEarned,
+                title: "Bite Completed! (+20 XP)"
+              });
+            }}
+            onAllBitesCompleted={(activityXp) => {
+              setShowCelebration({
+                show: true,
+                xp: activityXp,
+                title: `Journey Node Complete! Bonus +${activityXp} XP`
+              });
+            }}
+          />
         </div>
-        <button onClick={() => onNavigate("courses")}
-          className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 backdrop-blur-sm border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft size={14} /> Back
+      );
+    }
+
+    return (
+      <ActivityPlayer
+        activity={activeActivity}
+        courseId={course.id}
+        onClose={() => setActiveActivity(null)}
+        setProfile={setProfile}
+        setActivityProgress={setActivityProgress}
+        onComplete={async (xpEarned: number) => {
+          const act = activeActivity;
+          setActiveActivity(null);
+          setShowCelebration({
+            show: true,
+            xp: xpEarned,
+            title: act.title
+          });
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="max-w-[1200px] mx-auto p-4 md:p-6 space-y-6">
+      {/* Banner */}
+      <div className="relative h-60 rounded-2xl overflow-hidden shadow-xl border border-border/10">
+        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Badge color="primary">{course.category}</Badge>
+              <Badge color="default">{course.difficulty_level || course.difficulty}</Badge>
+            </div>
+            <h2 {...sg("text-2xl md:text-3xl font-extrabold")}>
+              {isLearningJourney ? `${course.title} (Learning Journey)` : course.title}
+            </h2>
+          </div>
+          <button
+            onClick={handleEnrollOrContinue}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 ${
+              isEnrolled
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default"
+                : "bg-primary text-white hover:bg-primary/95"
+            }`}
+          >
+            {isEnrolled ? "✓ Enrolled in Journey" : "Enroll in Journey"}
+          </button>
+        </div>
+        <button onClick={() => onNavigate("learn")}
+          className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 backdrop-blur-sm border border-border/40 text-xs text-muted-foreground hover:text-foreground transition-all">
+          <ArrowLeft size={13} /> Back to Journeys
         </button>
       </div>
 
-      <div className="p-6 grid lg:grid-cols-3 gap-6">
-        {/* Left: content */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left: Content Path */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Instructor */}
-          <Card className="p-4 flex items-center gap-4">
-            <img src={course.instructorAvatar} alt={course.instructor} className="w-12 h-12 rounded-full object-cover bg-muted" />
-            <div>
-              <p {...sg("text-sm font-semibold")}>{course.instructor}</p>
-              <p className="text-xs text-muted-foreground">Lead Instructor, AI Research Division</p>
-            </div>
-            <div className="ml-auto flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Star size={12} className="text-amber-400" />{course.rating}</span>
-              <span className="flex items-center gap-1"><Users size={12} />{course.students.toLocaleString()} enrolled</span>
-            </div>
-          </Card>
-
-          {/* Description */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-3")}>About this course</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{course.description}</p>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              {[
-                { label: "Prerequisites", value: "Python, Linear Algebra basics" },
-                { label: "Certificate", value: "Verified on completion" },
-                { label: "Access", value: "Unlimited, self-paced" },
-                { label: "Language", value: "English + subtitles" },
-              ].map((item) => (
-                <div key={item.label}>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">{item.label}</p>
-                  <p className="text-xs text-foreground">{item.value}</p>
+          {isLearningJourney ? (
+            <Card className="p-6 relative overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-6">
+                <div>
+                  <h3 className="text-base font-extrabold text-foreground">Interactive Skill Path</h3>
+                  <p className="text-xs text-muted-foreground">Complete each task step-by-step to progress.</p>
                 </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Learning Objectives */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-3")}>What you'll learn</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                "Design and train deep neural networks from scratch",
-                "Implement CNNs for computer vision tasks",
-                "Build transformer models for NLP applications",
-                "Deploy ML models to production environments",
-                "Apply regularization and optimization techniques",
-                "Evaluate model performance rigorously",
-              ].map((obj) => (
-                <div key={obj} className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <CheckCircle size={13} className="text-primary mt-0.5 flex-shrink-0" />
-                  {obj}
+                <div className="text-right">
+                  <span className="text-xs font-bold text-primary">{journeyProgress}% Done</span>
                 </div>
-              ))}
-            </div>
-          </Card>
+              </div>
 
-          {/* Modules */}
+              {/* Visual Map */}
+              <div className="py-6 flex flex-col items-center">
+                <div className="relative w-full max-w-lg flex flex-col items-center">
+                  <div className="absolute top-12 bottom-12 w-0.5 bg-muted left-1/2 -translate-x-1/2 z-0" />
+                  
+                  {courseStages.map((stage, sIdx) => {
+                    const stageActivities = courseActivities.filter(a => Number(a.stage_id) === Number(stage.id));
+                    return (
+                      <div key={stage.id} className="w-full flex flex-col items-center mb-10 relative z-10">
+                        {/* Stage Badge */}
+                        <div className="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-extrabold text-[11px] uppercase tracking-wider mb-6 shadow-sm">
+                          Stage {sIdx + 1}: {stage.title}
+                        </div>
+                        {stage.description && (
+                          <p className="text-xs text-muted-foreground text-center max-w-xs mb-6 -mt-4 leading-relaxed">
+                            {stage.description}
+                          </p>
+                        )}
+                        
+                        {/* Nodes */}
+                        <div className="space-y-4 w-full flex flex-col items-center">
+                          {stageActivities.map((act) => {
+                            const actIdx = courseActivities.findIndex(a => a.id === act.id);
+                            const status = getActivityStatus(act, actIdx);
+                            
+                            return (
+                              <div
+                                key={act.id}
+                                onClick={() => handleNodeClick(act, status)}
+                                className={`w-full max-w-md bg-card border rounded-2xl p-4 flex items-center justify-between transition-all duration-300 relative group ${
+                                  status === 'completed'
+                                    ? 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 cursor-pointer'
+                                    : status === 'available'
+                                    ? 'border-primary/30 hover:border-primary shadow-lg shadow-primary/5 hover:scale-[1.01] cursor-pointer'
+                                    : status === 'in_progress'
+                                    ? 'border-amber-500/30 hover:border-amber-500/50 cursor-pointer'
+                                    : 'opacity-50 cursor-not-allowed border-border/10 bg-muted/20'
+                                }`}
+                              >
+                                {status === 'available' && (
+                                  <span className="absolute -left-1 -top-1 w-3 h-3 rounded-full bg-primary animate-ping" />
+                                )}
+                                
+                                <div className="flex items-center gap-3.5">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                    status === 'completed'
+                                      ? 'bg-emerald-500/10 text-emerald-400'
+                                      : status === 'available'
+                                      ? 'bg-primary/15 text-primary'
+                                      : status === 'in_progress'
+                                      ? 'bg-amber-500/10 text-amber-500'
+                                      : 'bg-muted text-muted-foreground'
+                                  }`}>
+                                    {status === 'completed' ? (
+                                      <CheckCircle size={18} />
+                                    ) : status === 'locked' ? (
+                                      <Lock size={15} />
+                                    ) : act.activity_type === 'skill_unlock' ? (
+                                      <Trophy size={18} className="animate-bounce text-yellow-400" />
+                                    ) : (
+                                      <Play size={14} className="fill-primary ml-0.5" />
+                                    )}
+                                  </div>
+                                  
+                                  <div>
+                                    <h4 className={`text-xs font-bold leading-snug ${status === 'locked' ? 'text-muted-foreground' : 'text-foreground'}`}>
+                                      {act.title}
+                                    </h4>
+                                    {learningBites && (learningBites || []).some((b: any) => Number(b.activity_id) === Number(act.id)) ? (
+                                      <div className="flex items-center gap-2 mt-1 text-[10px]">
+                                        <span className="text-cyan-400 font-extrabold font-mono">
+                                          {(biteProgress || []).filter((p: any) => Number(p.activity_id) === Number(act.id) && p.status === 'completed').length} / {(learningBites || []).filter((b: any) => Number(b.activity_id) === Number(act.id)).length} Bites Complete
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                                        <span className="capitalize font-mono">{act.activity_type.replace('_', ' ')}</span>
+                                        <span>&bull;</span>
+                                        <span>{act.estimated_minutes} min</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                {act.xp_reward > 0 && (
+                                  <div className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
+                                    status === 'completed'
+                                      ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
+                                      : 'text-primary bg-primary/10 border border-primary/20'
+                                  }`}>
+                                    +{act.xp_reward} XP
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </Card>
+          ) : (
+            // Fallback for standard course modules list
+            <div className="space-y-6">
+              <Card className="p-5">
+                <h3 {...sg("text-sm font-semibold mb-3")}>About this course</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{course.description}</p>
+              </Card>
+
+              <div>
+                <h3 {...sg("text-sm font-semibold mb-3")}>Course Content</h3>
+                <div className="space-y-2">
+                  {(course.modules && course.modules.length > 0 ? course.modules : MODULES).map((mod: any) => (
+                    <div key={mod.id} className="border border-border rounded-xl overflow-hidden">
+                      <button className="w-full flex items-center justify-between px-4 py-3 bg-card hover:bg-muted transition-colors"
+                        onClick={() => setOpenModule(openModule === mod.id ? null : mod.id)}>
+                        <div className="flex items-center gap-3">
+                          <span {...mono("text-xs text-muted-foreground")}>M{mod.id}</span>
+                          <span {...sg("text-sm font-medium")}>{mod.title}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{mod.lessons?.length || 0} lessons</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Journey Sidebar stats */}
+        <div className="space-y-4">
+          <Card className="p-5 sticky top-4 space-y-4">
+            {isEnrolled && (
+              <div>
+                <div className="flex justify-between text-[10px] text-muted-foreground font-semibold mb-1">
+                  <span>Journey Progress</span>
+                  <span>{journeyProgress}%</span>
+                </div>
+                <ProgressBar value={journeyProgress} />
+              </div>
+            )}
+            
+            <div className="border-t border-border/50 pt-4 space-y-3">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Total XP Available:</span>
+                <span className="text-foreground font-bold">{course.total_xp || 1200} XP</span>
+              </div>
+              {isEnrolled && (
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Your Earned XP:</span>
+                  <span className="text-primary font-bold">{earnedXp} XP</span>
+                </div>
+              )}
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Estimated Commitment:</span>
+                <span className="text-foreground font-bold">{course.estimated_days || 12} days</span>
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Daily learning limit:</span>
+                <span className="text-foreground font-bold">{course.daily_minutes || 10} min/day</span>
+              </div>
+            </div>
+            
+            {course.tags && (
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-border/50">
+                {course.tags.map((tag: string) => <Badge key={tag} color="default">{tag}</Badge>)}
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Activity Player ──────────────────────────────────────────────────────────
+function ActivityPlayer({
+  activity,
+  courseId,
+  onClose,
+  setProfile,
+  setActivityProgress
+}: {
+  activity: any;
+  courseId: number;
+  onClose: () => void;
+  setProfile: any;
+  setActivityProgress: any;
+}) {
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [interactiveAnswers, setInteractiveAnswers] = useState<Record<number, boolean>>({});
+  const [interactiveChecked, setInteractiveChecked] = useState<Record<number, boolean>>({});
+  
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<any[]>([
+    { role: 'ai', content: activity.content.systemPrompt ? "Hello! I am Kai, your AI tutor. Ask me any question about Generative AI, tokens, pre-training, or bias." : "Hi there! I am ready to help you complete this session. Ask me a question!" }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatTyping, setChatTyping] = useState(false);
+  const [chatExchanged, setChatExchanged] = useState(false);
+
+  // Challenge / Prompt state
+  const [userPrompt, setUserPrompt] = useState(activity.content.starterCode || '');
+  const [promptLogs, setPromptLogs] = useState<string[]>([]);
+  const [promptVerified, setPromptVerified] = useState(false);
+  const [isTestingPrompt, setIsTestingPrompt] = useState(false);
+
+  // Scenario state
+  const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
+  const [showScenarioFeedback, setShowScenarioFeedback] = useState(false);
+
+  // Mini project state
+  const [userCode, setUserCode] = useState(activity.content.starterCode || '');
+  const [projectLogs, setProjectLogs] = useState<string[]>([]);
+  const [projectVerified, setProjectVerified] = useState(false);
+  const [isTestingProject, setIsTestingProject] = useState(false);
+
+  const handleComplete = async () => {
+    setIsCompleting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const xpReward = activity.xp_reward || 20;
+
+      // 1. Upsert progress record
+      const { error: progError } = await supabase
+        .from('user_activity_progress')
+        .upsert({
+          user_id: user.id,
+          course_id: courseId,
+          activity_id: activity.id,
+          status: 'completed',
+          xp_earned: xpReward,
+          completed_at: new Date().toISOString(),
+          last_accessed_at: new Date().toISOString()
+        }, { onConflict: 'user_id,activity_id' });
+
+      if (progError) {
+        console.error("Error upserting progress:", progError);
+      }
+
+      // 2. Fetch profile to increment XP
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('id', user.id)
+        .single();
+      
+      const currentXp = (profileData?.xp || 0) + xpReward;
+
+      // 3. Update profile XP
+      const { error: profError } = await supabase
+        .from('profiles')
+        .update({ xp: currentXp })
+        .eq('id', user.id);
+
+      if (!profError) {
+        setProfile(prev => prev ? { ...prev, xp: currentXp } : null);
+      }
+
+      // 4. Fetch updated activity progress list
+      const { data: freshProgress } = await supabase
+        .from('user_activity_progress')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (freshProgress) {
+        setActivityProgress(freshProgress);
+      }
+
+      // 5. Close and trigger success banner
+      onClose();
+      if (activity.onCompleteCallback) {
+        activity.onCompleteCallback(xpReward);
+      }
+    } catch (err) {
+      console.error("Error completing activity:", err);
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  // Handle suggested or custom chat questions
+  const sendChatMessage = (text: string) => {
+    if (!text.trim()) return;
+    setChatMessages(prev => [...prev, { role: 'user', content: text }]);
+    setChatInput('');
+    setChatTyping(true);
+    setChatExchanged(true);
+
+    setTimeout(() => {
+      setChatTyping(false);
+      let reply = "Interesting question! Generative AI leverages transformer networks to construct patterns modeled on massive datasets. Do you have other questions about LLMs?";
+      
+      const q = text.toLowerCase();
+      if (q.includes("token")) {
+        reply = "A token is a basic unit of text processed by Large Language Models. Words are split into sub-word tokens (e.g. 'transformer' -> 'trans', 'former'). Common LLM token limit sizes define their maximum query window.";
+      } else if (q.includes("bias")) {
+        reply = "Bias in LLMs is inherited from cultural or patterns represented in training data. We mitigate bias during pre-training filtering and subsequent RLHF (Reinforcement Learning from Human Feedback) tuning.";
+      } else if (q.includes("pre-training")) {
+        reply = "Pre-training is the foundational stage where the LLM reads massive web libraries to build grammar, logic, and base conceptual mappings, before being customized in standard instructional templates.";
+      }
+      setChatMessages(prev => [...prev, { role: 'ai', content: reply }]);
+    }, 900);
+  };
+
+  // Test prompt engineering challenge
+  const handleTestPrompt = () => {
+    if (!userPrompt.trim()) return;
+    setIsTestingPrompt(true);
+    setPromptLogs(["Initializing Prompt Evaluator...", "Checking token length... OK", "Validating system-user constraints..."]);
+
+    setTimeout(() => {
+      setPromptLogs(prev => [
+        ...prev,
+        "Constraint matched: exact 3 bullet points... PASSED",
+        "Constraint matched: word limit constraints... PASSED",
+        "Success! Prompt successfully optimized and validated."
+      ]);
+      setPromptVerified(true);
+      setIsTestingPrompt(false);
+    }, 1200);
+  };
+
+  // Run mini project verification tests
+  const handleRunProjectTests = () => {
+    setIsTestingProject(true);
+    setProjectLogs(["Starting testing framework...", "Evaluating imports... OK", "Running test_zero_shot_classifier..."]);
+
+    setTimeout(() => {
+      setProjectLogs(prev => [
+        ...prev,
+        "test_zero_shot_classifier... PASSED",
+        "test_api_client_calls... PASSED",
+        "All checks passed! Project is complete and ready for deployment."
+      ]);
+      setProjectVerified(true);
+      setIsTestingProject(false);
+    }, 1500);
+  };
+
+  return (
+    <div className="bg-[#06060F] border border-border/10 rounded-2xl p-6 space-y-6 max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+      {/* Background aurora */}
+      <div className="absolute -top-10 -right-10 w-44 h-44 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border/30 pb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary font-bold text-sm">
+            <Zap size={15} className="fill-primary text-primary" />
+          </div>
           <div>
-            <h3 {...sg("text-sm font-semibold mb-3")}>Course Content</h3>
-            <div className="space-y-2">
-              {modules.map((mod: any) => (
-                <div key={mod.id} className="border border-border rounded-xl overflow-hidden">
-                  <button className="w-full flex items-center justify-between px-4 py-3 bg-card hover:bg-muted transition-colors"
-                    onClick={() => setOpenModule(openModule === mod.id ? null : mod.id)}>
-                    <div className="flex items-center gap-3">
-                      <span {...mono("text-xs text-muted-foreground")}>M{mod.id}</span>
-                      <span {...sg("text-sm font-medium")}>{mod.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">{mod.lessons?.length || 0} lessons</span>
-                      <ChevronDown size={14} className={`text-muted-foreground transition-transform ${openModule === mod.id ? "rotate-180" : ""}`} />
-                    </div>
-                  </button>
-                  {openModule === mod.id && (
-                    <div className="bg-secondary divide-y divide-border/50">
-                      {mod.lessons?.map((lesson: any) => {
-                        const isLessonCompleted = enrollment?.completed_lessons?.includes(lesson.id) || false;
-                        return (
-                          <div key={lesson.id}
-                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-card transition-colors ${lesson.current ? "bg-primary/5" : ""}`}
-                            onClick={() => {
-                              if (isEnrolled) {
-                                onNavigate("lesson");
-                              } else {
-                                handleEnrollOrContinue();
-                              }
-                            }}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isLessonCompleted ? "bg-emerald-500/10" : lesson.current ? "bg-primary/10" : "bg-muted"}`}>
-                              {isLessonCompleted ? <Check size={12} className="dark:text-emerald-400 text-emerald-600" /> : lesson.current ? <Play size={10} className="text-primary" /> : <Circle size={12} className="text-muted-foreground" />}
-                            </div>
-                            <span className={`text-xs flex-1 ${lesson.current ? "text-foreground font-medium" : isLessonCompleted ? "text-muted-foreground line-through" : "text-muted-foreground"}`}>
-                              {lesson.title}
-                              {lesson.current && <span className="ml-2 text-primary text-[10px]">Current</span>}
-                            </span>
-                            <span {...mono("text-[10px] text-muted-foreground")}>{lesson.duration}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <span className="text-[10px] text-primary uppercase font-mono tracking-wider font-extrabold">Active Activity Playroom</span>
+            <h3 className="text-sm font-bold text-foreground">{activity.title}</h3>
           </div>
         </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-all">
+          <X size={18} />
+        </button>
+      </div>
 
-        {/* Right: sidebar */}
-        <div className="space-y-4">
-          <Card className="p-5 sticky top-4">
-            {isEnrolled && (
-              <div className="mb-4">
-                <ProgressBar value={progress} />
-                <p {...mono("text-xs text-muted-foreground mt-1")}>{progress}% complete</p>
+      {/* Content Renderers by Activity Type */}
+      <div className="py-2 min-h-[300px]">
+        {activity.activity_type === 'concept' && (
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {activity.description}
+            </p>
+            {activity.content.explanation && (
+              <div className="bg-muted/50 rounded-xl p-4 border border-border/10 text-xs text-foreground leading-relaxed">
+                {activity.content.explanation}
               </div>
             )}
-            <CyanButton className="w-full text-center mb-3" onClick={handleEnrollOrContinue}>
-              {isEnrolled ? "Continue Learning" : "Enroll Now"}
-            </CyanButton>
-            {isEnrolled && (
-              <button onClick={() => onNavigate("quiz")}
-                className="w-full py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-border transition-all mb-4"
-                style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Take Quiz
-              </button>
+            {activity.content.keyPoints && (
+              <div className="space-y-2">
+                <h5 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Key Takeaways</h5>
+                <ul className="space-y-1.5">
+                  {activity.content.keyPoints.map((pt: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
-            <div className="space-y-3 text-xs text-muted-foreground">
-              {[
-                [<Clock size={13} />, `${course.duration} total`],
-                [<BookOpen size={13} />, `${course.lessons} lessons`],
-                [<Users size={13} />, `${course.students.toLocaleString()} enrolled`],
-                [<Award size={13} />, "Certificate included"],
-                [<Download size={13} />, "Downloadable resources"],
-              ].map(([icon, text], i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-muted-foreground">{icon as React.ReactNode}</span>
-                  {text as string}
+            {activity.content.examples && (
+              <div className="space-y-2 pt-2">
+                <h5 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Real-World Examples</h5>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {activity.content.examples.map((ex: string, idx: number) => (
+                    <div key={idx} className="bg-card p-3 rounded-xl border border-border/10 text-xs text-muted-foreground">
+                      {ex}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="pt-6">
+              <button
+                onClick={handleComplete}
+                disabled={isCompleting}
+                className="w-full btn-primary py-3 rounded-xl text-xs font-bold transition-all active:scale-95"
+              >
+                {isCompleting ? "Registering completion..." : "Mark Concept Completed (+100 XP) ✓"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activity.activity_type === 'interactive' && (
+          <div className="space-y-5">
+            <p className="text-xs text-muted-foreground mb-4">
+              {activity.content.instructions || "Check the correct options below to resolve the challenge."}
+            </p>
+
+            <div className="space-y-3">
+              {activity.content.items?.map((item: any) => {
+                const checked = interactiveChecked[item.id];
+                const isCorrect = interactiveAnswers[item.id] === item.isGenerative;
+
+                return (
+                  <div key={item.id} className="bg-card border border-border/10 rounded-2xl p-4 space-y-3">
+                    <p className="text-xs text-foreground font-medium">{item.text}</p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setInteractiveAnswers(prev => ({ ...prev, [item.id]: true }));
+                          setInteractiveChecked(prev => ({ ...prev, [item.id]: true }));
+                        }}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                          checked && interactiveAnswers[item.id] === true
+                            ? isCorrect
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                        }`}
+                      >
+                        Generative AI
+                      </button>
+                      <button
+                        onClick={() => {
+                          setInteractiveAnswers(prev => ({ ...prev, [item.id]: false }));
+                          setInteractiveChecked(prev => ({ ...prev, [item.id]: true }));
+                        }}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                          checked && interactiveAnswers[item.id] === false
+                            ? !isCorrect
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                        }`}
+                      >
+                        Predictive / Rule AI
+                      </button>
+                    </div>
+                    {checked && (
+                      <p className={`text-[10px] leading-relaxed ${isCorrect ? 'text-emerald-400/90' : 'text-red-400/90'}`}>
+                        {isCorrect ? `✓ Correct! ${item.explanation}` : `✗ Incorrect. Try again! ${item.explanation}`}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {Object.keys(interactiveChecked).length === activity.content.items?.length &&
+            Object.keys(interactiveAnswers).every(id => {
+              const item = activity.content.items.find((i: any) => Number(i.id) === Number(id));
+              return item && interactiveAnswers[id] === item.isGenerative;
+            }) ? (
+              <div className="pt-4">
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs transition-all active:scale-95"
+                >
+                  {isCompleting ? "Saving..." : "All Checks Correct! Claim +150 XP"}
+                </button>
+              </div>
+            ) : (
+              <p className="text-[10px] text-center text-muted-foreground mt-4 italic">Resolve all checks correctly to complete the task.</p>
+            )}
+          </div>
+        )}
+
+        {activity.activity_type === 'kai_chat' && (
+          <div className="space-y-4 flex flex-col h-[380px]">
+            {/* Chat Thread */}
+            <div className="flex-1 overflow-y-auto border border-border/10 bg-card rounded-2xl p-4 space-y-3">
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-xs md:max-w-md rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-white'
+                      : 'bg-muted/50 border border-border/10 text-foreground'
+                  }`}>
+                    {msg.role !== 'user' && (
+                      <span className="text-[9px] font-mono text-primary font-bold uppercase tracking-wider block mb-0.5">Kai Assistant</span>
+                    )}
+                    {msg.content}
+                  </div>
                 </div>
               ))}
+              {chatTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-muted/50 rounded-2xl px-3 py-2 text-xs text-muted-foreground animate-pulse">
+                    Kai is typing...
+                  </div>
+                </div>
+              )}
             </div>
-            {course.tags && course.tags.length > 0 && (
-              <div className="flex gap-2 mt-4 pt-4 border-t border-border flex-wrap">
-                {course.tags.map((tag) => <Badge key={tag} color="default">{tag}</Badge>)}
+
+            {/* Quick Prompts */}
+            {activity.content.suggestedQuestions && (
+              <div className="flex gap-2 flex-wrap items-center">
+                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Suggested:</span>
+                {activity.content.suggestedQuestions.map((q: string) => (
+                  <button
+                    key={q}
+                    onClick={() => sendChatMessage(q)}
+                    className="px-2.5 py-1 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/30 text-[10px] text-primary transition-all font-semibold"
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             )}
-          </Card>
-        </div>
+
+            {/* Message input */}
+            <div className="flex gap-2 pt-1">
+              <input
+                placeholder="Ask Kai a prompt query..."
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && sendChatMessage(chatInput)}
+                className="bg-card border border-border/10 rounded-xl px-4 py-2.5 text-xs text-foreground placeholder-muted-foreground outline-none flex-1 focus:border-primary/50 transition-all"
+              />
+              <button
+                onClick={() => sendChatMessage(chatInput)}
+                className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-all"
+              >
+                <Send size={14} fill="white" />
+              </button>
+            </div>
+
+            {chatExchanged && (
+              <div className="pt-2">
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95"
+                >
+                  {isCompleting ? "Saving..." : "Finish Conversational Session (+150 XP) ✓"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activity.activity_type === 'challenge' && (
+          <div className="space-y-4">
+            <div className="bg-muted/50 border border-border/10 rounded-2xl p-4 text-xs space-y-2">
+              <h5 className="font-bold text-foreground">Challenge Guidelines</h5>
+              <p className="text-muted-foreground leading-relaxed">{activity.content.instructions}</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Your Prompt Submission</label>
+              <textarea
+                rows={4}
+                value={userPrompt}
+                onChange={e => setUserPrompt(e.target.value)}
+                className="w-full bg-card border border-border/10 rounded-xl p-3.5 text-xs text-foreground placeholder-muted-foreground font-mono outline-none focus:border-primary/50 transition-all resize-none"
+              />
+            </div>
+
+            {/* Evaluate logs */}
+            {promptLogs.length > 0 && (
+              <div className="bg-secondary/40 border border-border/10 rounded-xl p-3.5 text-[10px] font-mono text-muted-foreground space-y-1">
+                {promptLogs.map((log, idx) => (
+                  <p key={idx} className={log.includes("Success") ? "text-emerald-400 font-bold" : ""}>
+                    {log}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleTestPrompt}
+                disabled={isTestingPrompt || !userPrompt.trim()}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-border/20 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all flex items-center justify-center gap-1.5"
+              >
+                {isTestingPrompt ? "Running evaluator..." : "Evaluate Prompt Settings"}
+              </button>
+              {promptVerified && (
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-md shadow-primary/20"
+                >
+                  {isCompleting ? "Saving..." : "Submit Optimized Prompt (+200 XP)"}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activity.activity_type === 'scenario' && (
+          <div className="space-y-4">
+            <div className="bg-muted/50 border border-border/10 rounded-2xl p-4 space-y-2">
+              <h5 className="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">Scenario Situation</h5>
+              <p className="text-xs text-foreground leading-relaxed">{activity.content.situation}</p>
+            </div>
+
+            <div className="space-y-2">
+              <h5 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Select the Best Action</h5>
+              <div className="space-y-2.5">
+                {activity.content.choices?.map((choice: any) => {
+                  const isSelected = selectedChoiceId === choice.id;
+                  return (
+                    <div
+                      key={choice.id}
+                      onClick={() => {
+                        setSelectedChoiceId(choice.id);
+                        setShowScenarioFeedback(true);
+                      }}
+                      className={`p-3.5 border rounded-2xl text-xs cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? choice.correct
+                            ? 'border-emerald-500 bg-emerald-500/5 text-foreground'
+                            : 'border-red-500 bg-red-500/5 text-foreground'
+                          : 'border-border/10 hover:border-border/30 bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <div className="font-bold mb-1">{choice.text}</div>
+                      {showScenarioFeedback && isSelected && (
+                        <p className={`text-[10px] font-medium leading-relaxed mt-1 ${choice.correct ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {choice.correct ? "✓ Correct! " : "✗ Incorrect. "} {choice.feedback}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedChoiceId !== null && activity.content.choices?.find((c: any) => c.id === selectedChoiceId)?.correct && (
+              <div className="pt-4">
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs transition-all active:scale-95"
+                >
+                  {isCompleting ? "Saving..." : "Scenario Resolved! Claim +200 XP"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activity.activity_type === 'mini_project' && (
+          <div className="space-y-4">
+            <div className="bg-muted/50 border border-border/10 rounded-2xl p-4 text-xs space-y-2">
+              <h5 className="font-bold text-foreground">Project instructions</h5>
+              <p className="text-muted-foreground leading-relaxed">{activity.content.instructions}</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Python Script Editor</label>
+              <textarea
+                rows={5}
+                value={userCode}
+                onChange={e => setUserCode(e.target.value)}
+                className="w-full bg-card border border-border/10 rounded-xl p-3.5 text-xs text-foreground placeholder-muted-foreground font-mono outline-none focus:border-primary/50 transition-all resize-none"
+              />
+            </div>
+
+            {projectLogs.length > 0 && (
+              <div className="bg-secondary/40 border border-border/10 rounded-xl p-3.5 text-[10px] font-mono text-muted-foreground space-y-1">
+                {projectLogs.map((log, idx) => (
+                  <p key={idx} className={log.includes("PASSED") ? "text-emerald-400 font-bold" : ""}>
+                    {log}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleRunProjectTests}
+                disabled={isTestingProject}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-border/20 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all flex items-center justify-center gap-1.5"
+              >
+                {isTestingProject ? "Compiling tests..." : "Run Verification Tests"}
+              </button>
+              {projectVerified && (
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-md shadow-primary/20"
+                >
+                  {isCompleting ? "Saving..." : "Submit Solution (+200 XP)"}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activity.activity_type === 'skill_unlock' && (
+          <div className="text-center py-6 space-y-6">
+            <div className="w-20 h-20 rounded-full bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400 mx-auto animate-pulse">
+              <Trophy size={40} className="animate-bounce" />
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-lg font-extrabold text-foreground">Skill Badge Unlocked!</h4>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                You have successfully achieved the verified status of <strong className="text-primary">{activity.content.achievementName}</strong> on Mentora.
+              </p>
+            </div>
+
+            {activity.content.skillsUnlocked && (
+              <div className="max-w-xs mx-auto bg-card rounded-2xl p-4 border border-border/10 space-y-2">
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-left">Skills Added to Passport</h5>
+                <div className="flex gap-2 flex-wrap pt-1">
+                  {activity.content.skillsUnlocked.map((sk: string) => (
+                    <span key={sk} className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                      ✓ {sk}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="pt-6 max-w-sm mx-auto">
+              <button
+                onClick={handleComplete}
+                disabled={isCompleting}
+                className="w-full bg-gradient-to-r from-primary to-violet-600 hover:opacity-95 text-white font-extrabold py-3.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-primary/25"
+              >
+                {isCompleting ? "Registering badge..." : "Claim Verified Badge & Certificate"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3516,6 +4393,13 @@ export default function App() {
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Learning Journeys states
+  const [journeyStages, setJourneyStages] = useState<any[]>([]);
+  const [learningActivities, setLearningActivities] = useState<any[]>([]);
+  const [activityProgress, setActivityProgress] = useState<any[]>([]);
+  const [learningBites, setLearningBites] = useState<any[]>([]);
+  const [biteProgress, setBiteProgress] = useState<any[]>([]);
+
   // Local onboarding state
   const [onboardFirst, setOnboardFirst] = useState("");
   const [onboardLast, setOnboardLast] = useState("");
@@ -3853,6 +4737,26 @@ export default function App() {
       if (!enrollmentsErr && enrollmentsData) {
         setEnrollments(enrollmentsData);
       }
+
+      // 3. Fetch User Activity Progress
+      const { data: progressData } = await supabase
+        .from("user_activity_progress")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (progressData) {
+        setActivityProgress(progressData);
+      }
+
+      // 4. Fetch User Bite Progress
+      const { data: biteProgData } = await supabase
+        .from("user_bite_progress")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (biteProgData) {
+        setBiteProgress(biteProgData);
+      }
     } catch (err) {
       console.error("Error in fetchProfileAndData:", err);
     }
@@ -3877,8 +4781,30 @@ export default function App() {
             console.error("Supabase error fetching courses:", coursesErr);
           }
         }
+
+        // Fetch journey stages and activities
+        const { data: stagesData } = await supabase
+          .from("journey_stages")
+          .select("*")
+          .order("order_index", { ascending: true });
+        
+        const { data: actsData } = await supabase
+          .from("learning_activities")
+          .select("*")
+          .order("order_index", { ascending: true });
+
+        const { data: bitesData } = await supabase
+          .from("learning_bites")
+          .select("*")
+          .order("order_index", { ascending: true });
+
+        if (active) {
+          if (stagesData) setJourneyStages(stagesData);
+          if (actsData) setLearningActivities(actsData);
+          if (bitesData) setLearningBites(bitesData);
+        }
       } catch (err) {
-        console.error("Error loading courses on mount:", err);
+        console.error("Error loading courses or journey metadata on mount:", err);
       }
 
       // Get current auth session
@@ -4097,7 +5023,18 @@ export default function App() {
       notifsState,
       setNotifsState,
       page,
-      setPage
+      setPage,
+      
+      journeyStages,
+      setJourneyStages,
+      learningActivities,
+      setLearningActivities,
+      activityProgress,
+      setActivityProgress,
+      learningBites,
+      setLearningBites,
+      biteProgress,
+      setBiteProgress
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
         <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>
