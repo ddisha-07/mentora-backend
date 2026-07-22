@@ -2332,6 +2332,11 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const enrollment = enrollments.find((e) => Number(e.course_id) === Number(course.id));
   const isEnrolled = !!enrollment;
   
+  // Debug log details
+  console.log("[Curriculum Debug] CourseDetails active course:", course.title, "ID:", course.id);
+  console.log("[Curriculum Debug] All stages in memory:", (journeyStages || []).map(s => `(${s.id}: c_id=${s.course_id}, ${s.title})`));
+  console.log("[Curriculum Debug] All activities in memory:", (learningActivities || []).map(a => `(${a.id}: s_id=${a.stage_id}, c_id=${a.course_id}, ${a.title})`));
+  
   // Load journey stages, activities, and user progress
   const courseStages = (journeyStages || [])
     .filter(s => Number(s.course_id) === Number(course.id))
@@ -4798,29 +4803,47 @@ export default function App() {
           .select("*")
           .order("id", { ascending: true });
 
-        if (active) {
-          if (!coursesErr && coursesData) {
-            setCourses(coursesData);
-          } else if (coursesErr) {
-            console.error("Supabase error fetching courses:", coursesErr);
-          }
+        if (coursesErr) {
+          console.error("[Curriculum Debug] Supabase error fetching courses:", coursesErr);
+          throw coursesErr;
         }
 
-        // Fetch journey stages and activities
-        const { data: stagesData } = await supabase
+        if (active && coursesData) {
+          setCourses(coursesData);
+        }
+
+        // Fetch journey stages
+        const { data: stagesData, error: stagesErr } = await supabase
           .from("journey_stages")
           .select("*")
           .order("order_index", { ascending: true });
         
-        const { data: actsData } = await supabase
+        if (stagesErr) {
+          console.error("[Curriculum Debug] Supabase error fetching journey_stages:", stagesErr);
+          throw stagesErr;
+        }
+
+        // Fetch learning activities
+        const { data: actsData, error: actsErr } = await supabase
           .from("learning_activities")
           .select("*")
           .order("order_index", { ascending: true });
 
-        const { data: bitesData } = await supabase
+        if (actsErr) {
+          console.error("[Curriculum Debug] Supabase error fetching learning_activities:", actsErr);
+          throw actsErr;
+        }
+
+        // Fetch learning bites
+        const { data: bitesData, error: bitesErr } = await supabase
           .from("learning_bites")
           .select("*")
           .order("order_index", { ascending: true });
+
+        if (bitesErr) {
+          console.error("[Curriculum Debug] Supabase error fetching learning_bites:", bitesErr);
+          throw bitesErr;
+        }
 
         if (active) {
           if (stagesData) setJourneyStages(stagesData);
@@ -4877,7 +4900,7 @@ export default function App() {
       if (currentUser) {
         await fetchProfileAndData(currentUser.id);
         if (event === "SIGNED_IN") {
-          navigateTo("dashboard");
+          setPage(prev => (prev === "landing" || prev === "login" || prev === "" ? "dashboard" : prev));
         }
       } else {
         setProfile(null);
