@@ -1809,6 +1809,10 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                           <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
                             <Check size={10} strokeWidth={3} /> Done
                           </span>
+                        ) : m.status === 'in_progress' ? (
+                          <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
+                            In Progress
+                          </span>
                         ) : (
                           <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                             Assigned
@@ -2069,7 +2073,9 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 {selectedMission.type}
               </span>
               <h3 className="text-lg font-bold text-foreground">{selectedMission.title}</h3>
-              <p className="text-xs text-muted-foreground">Status: {selectedMission.status === 'completed' ? 'Completed' : 'Assigned'}</p>
+              <p className="text-xs text-muted-foreground">
+                Status: {selectedMission.status === 'completed' ? 'Completed' : selectedMission.status === 'in_progress' ? 'In Progress' : 'Assigned'}
+              </p>
             </div>
 
             <div className="space-y-4 bg-background/50 border border-border/50 rounded-xl p-4 text-xs leading-relaxed text-muted-foreground">
@@ -4559,6 +4565,12 @@ export default function App() {
   // Load initial Q&A datasets from Supabase on mount
   useEffect(() => {
     const loadQAAndArticles = async () => {
+      if (!user) {
+        setKnowledgeQuestions([]);
+        setKnowledgeAnswers({});
+        setPreservedKnowledge([]);
+        return;
+      }
       try {
         // Fetch questions
         const { data: dbQuestions, error: qErr } = await supabase
@@ -4635,7 +4647,7 @@ export default function App() {
     };
 
     loadQAAndArticles();
-  }, []);
+  }, [user]);
 
   // Load missions when profile role changes
   useEffect(() => {
@@ -4704,8 +4716,9 @@ export default function App() {
       setActiveMissions(prev =>
         prev.map(m => (m.id === missionId ? { ...m, status: 'in_progress' } : m))
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error starting mission:", err);
+      alert(`Failed to start mission: ${err.message || err}`);
     }
   };
 
@@ -4790,8 +4803,9 @@ export default function App() {
       setStreakDays(prev =>
         prev.map(d => (d.current ? { ...d, active: true } : d))
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error completing mission:", err);
+      alert(`Failed to complete mission: ${err.message || err}`);
     }
   };
 
