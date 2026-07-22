@@ -90,6 +90,8 @@ export type AppContextType = {
   setLearningBites: React.Dispatch<React.SetStateAction<any[]>>;
   biteProgress: any[];
   setBiteProgress: React.Dispatch<React.SetStateAction<any[]>>;
+  curriculumError: string | null;
+  setCurriculumError: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
@@ -2309,7 +2311,8 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     setProfile,
     learningBites,
     biteProgress,
-    setBiteProgress
+    setBiteProgress,
+    curriculumError
   } = useApp();
 
   const [openModule, setOpenModule] = useState<number | null>(null);
@@ -2330,8 +2333,12 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const isEnrolled = !!enrollment;
   
   // Load journey stages, activities, and user progress
-  const courseStages = (journeyStages || []).filter(s => Number(s.course_id) === Number(course.id));
-  const courseActivities = (learningActivities || []).filter(a => Number(a.course_id) === Number(course.id));
+  const courseStages = (journeyStages || [])
+    .filter(s => Number(s.course_id) === Number(course.id))
+    .sort((a, b) => a.order_index - b.order_index);
+  const courseActivities = (learningActivities || [])
+    .filter(a => Number(a.course_id) === Number(course.id))
+    .sort((a, b) => a.order_index - b.order_index);
   const progressRecords = (activityProgress || []).filter(p => Number(p.course_id) === Number(course.id));
   
   const completedActivities = courseActivities.filter(a => {
@@ -2487,6 +2494,12 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left: Content Path */}
         <div className="lg:col-span-2 space-y-6">
+          {curriculumError && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-xs flex items-center gap-2">
+              <span>⚠️ Failed to load curriculum: {curriculumError}</span>
+            </div>
+          )}
+
           {isLearningJourney ? (
             <Card className="p-6 relative overflow-hidden">
               <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-6">
@@ -2499,9 +2512,18 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 </div>
               </div>
 
-              {/* Visual Map */}
-              <div className="py-6 flex flex-col items-center">
-                <div className="relative w-full max-w-lg flex flex-col items-center">
+              {courseStages.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                  <Sparkles className="text-muted-foreground/30 animate-pulse" size={40} />
+                  <p className="text-sm font-semibold">No skill path stages configured yet.</p>
+                  <p className="text-xs text-muted-foreground/80 max-w-xs leading-relaxed">
+                    This learning journey's curriculum is currently being built. Check back soon!
+                  </p>
+                </div>
+              ) : (
+                <div className="py-6 flex flex-col items-center">
+                  {/* Visual Map */}
+                  <div className="relative w-full max-w-lg flex flex-col items-center">
                   <div className="absolute top-12 bottom-12 w-0.5 bg-muted left-1/2 -translate-x-1/2 z-0" />
                   
                   {courseStages.map((stage, sIdx) => {
@@ -2601,6 +2623,7 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   })}
                 </div>
               </div>
+              )}
             </Card>
           ) : (
             // Fallback for standard course modules list
@@ -4399,6 +4422,7 @@ export default function App() {
   const [activityProgress, setActivityProgress] = useState<any[]>([]);
   const [learningBites, setLearningBites] = useState<any[]>([]);
   const [biteProgress, setBiteProgress] = useState<any[]>([]);
+  const [curriculumError, setCurriculumError] = useState<string | null>(null);
 
   // Local onboarding state
   const [onboardFirst, setOnboardFirst] = useState("");
@@ -4803,8 +4827,11 @@ export default function App() {
           if (actsData) setLearningActivities(actsData);
           if (bitesData) setLearningBites(bitesData);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error loading courses or journey metadata on mount:", err);
+        if (active) {
+          setCurriculumError(err.message || String(err));
+        }
       }
 
       // Get current auth session
@@ -5034,7 +5061,9 @@ export default function App() {
       learningBites,
       setLearningBites,
       biteProgress,
-      setBiteProgress
+      setBiteProgress,
+      curriculumError,
+      setCurriculumError
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
         <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>

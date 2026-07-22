@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name TEXT,
     avatar_url TEXT,
     email TEXT,
-    role TEXT DEFAULT 'student' CHECK (role IN ('student', 'instructor', 'admin')),
+    role TEXT DEFAULT 'junior_employee' CHECK (role IN ('shop_floor_worker', 'junior_employee', 'senior_employee', 'officer_manager', 'retired_employee', 'admin')),
     employee_id TEXT,
     department TEXT,
     plant TEXT,
@@ -53,7 +53,7 @@ BEGIN
         COALESCE(new.raw_user_meta_data->>'full_name', 'Student'),
         COALESCE(new.raw_user_meta_data->>'avatar_url', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format'),
         new.email,
-        COALESCE(new.raw_user_meta_data->>'role', 'student')
+        LOWER(COALESCE(new.raw_user_meta_data->>'role', 'junior_employee'))
     );
     RETURN NEW;
 END;
@@ -309,21 +309,21 @@ CREATE POLICY "Only admins and instructors can manage learning bites" ON public.
 -- Seed Phase 2 Curriculum Data
 INSERT INTO public.journey_stages (id, course_id, title, description, stage_level, order_index, xp_required)
 VALUES
-(1, 1, 'Deep Learning Foundations', 'Understand Perceptrons, multi-layer networks, and activation functions.', 'Beginner', 1, 0),
-(2, 1, 'Optimization & Regularization', 'Learn Backpropagation, Gradient Descent variants, and Dropout.', 'Intermediate', 2, 100),
-(3, 1, 'Convolutional Networks (CNN)', 'Deep dive into spatial data, convolution operations, and pooling.', 'Advanced', 3, 250)
+(101, 1, 'Deep Learning Foundations', 'Understand Perceptrons, multi-layer networks, and activation functions.', 'Beginner', 1, 0),
+(102, 1, 'Optimization & Regularization', 'Learn Backpropagation, Gradient Descent variants, and Dropout.', 'Intermediate', 2, 100),
+(103, 1, 'Convolutional Networks (CNN)', 'Deep dive into spatial data, convolution operations, and pooling.', 'Advanced', 3, 250)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.learning_activities (id, stage_id, course_id, title, description, activity_type, content, order_index, xp_reward, estimated_minutes, is_required)
 VALUES
-(11, 1, 1, 'What is a Perceptron?', 'The building block of deep neural networks.', 'concept', '{}'::JSONB, 1, 50, 10, true),
-(12, 1, 1, 'Activation Functions Challenge', 'Determine which activation function is right for each layer.', 'quiz', '{}'::JSONB, 2, 50, 15, true),
-(13, 2, 1, 'Backpropagation Walkthrough', 'Nesting sub-routines and chain rule computation.', 'scenario', '{}'::JSONB, 3, 50, 20, true)
+(111, 101, 1, 'What is a Perceptron?', 'The building block of deep neural networks.', 'concept', '{}'::JSONB, 1, 50, 10, true),
+(112, 101, 1, 'Activation Functions Challenge', 'Determine which activation function is right for each layer.', 'quiz', '{}'::JSONB, 2, 50, 15, true),
+(113, 102, 1, 'Backpropagation Walkthrough', 'Nesting sub-routines and chain rule computation.', 'scenario', '{}'::JSONB, 3, 50, 20, true)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.learning_bites (id, activity_id, course_id, stage_id, title, subtitle, bite_type, content, order_index, estimated_minutes, xp_reward, is_required)
 VALUES
-(111, 11, 1, 1, 'The Perceptron Model', 'Deep learning starts here', 'concept', '{
+(1111, 111, 1, 101, 'The Perceptron Model', 'Deep learning starts here', 'concept', '{
   "concept": {
     "title": "The Perceptron Model",
     "description": "A perceptron is a single artificial neuron that takes multiple inputs, multiplies them by weights, sums them, and passes the result through an activation function to generate a binary output."
@@ -352,7 +352,7 @@ VALUES
     "incorrect": "Not quite. Remember that weights scale inputs to signify how important each factor is in decision making."
   }
 }'::JSONB, 1, 5, 20, true),
-(112, 11, 1, 1, 'Perceptron Limits & XOR', 'Understanding simple boundaries', 'concept', '{
+(1112, 111, 1, 101, 'Perceptron Limits & XOR', 'Understanding simple boundaries', 'concept', '{
   "concept": {
     "title": "Perceptron Limits & XOR",
     "description": "Perceptrons can only solve linearly separable problems. They cannot solve functions like XOR because you cannot draw a single straight line to split the positive and negative outputs."
