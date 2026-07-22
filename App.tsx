@@ -2483,7 +2483,7 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             onClick={handleEnrollOrContinue}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 ${
               isEnrolled
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default"
+                ? "bg-emerald-500 text-black border border-emerald-400/20 cursor-default font-extrabold"
                 : "bg-primary text-white hover:bg-primary/95"
             }`}
           >
