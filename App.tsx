@@ -110,10 +110,17 @@ type Page =
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
   | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin";
 
-const MISSION_CONFIGS: Record<string, { page: Page; completionType: 'manual' | 'action'; actionKey?: string }> = {
+const MISSION_CONFIGS: Record<string, { page: Page; completionType: 'manual' | 'action'; actionKey?: string; redirectAction?: (ctx: any) => void }> = {
   'QUIZ': { page: 'learn', completionType: 'manual' },
   'SOP_READING': { page: 'knowledge', completionType: 'manual' },
-  'LEARNING': { page: 'learn', completionType: 'action', actionKey: 'learning_completion' },
+  'LEARNING': { 
+    page: 'course-detail', 
+    completionType: 'action', 
+    actionKey: 'learning_completion',
+    redirectAction: (ctx) => {
+      ctx.setSelectedCourseId(1);
+    }
+  },
   'KNOWLEDGE_SHARING': { page: 'knowledge-exchange', completionType: 'action', actionKey: 'submit_answer' },
   'MENTORING': { page: 'knowledge-exchange', completionType: 'manual' },
   'EXPERIENCE_SHARING': { page: 'knowledge', completionType: 'manual' }
@@ -2113,13 +2120,30 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               {selectedMission.status === 'assigned' || !selectedMission.status ? (
                 <button
                   onClick={async () => {
-                    await startMission(selectedMission.id);
-                    setSelectedMission(prev => prev ? { ...prev, status: 'in_progress' } : null);
-                    const config = MISSION_CONFIGS[selectedMission.type];
-                    if (config) {
-                      setPage(config.page);
+                    console.log("[StartMission] Clicked for ID:", selectedMission.id, "Type:", selectedMission.type);
+                    if (!user) {
+                      console.error("[StartMission] No authenticated user session found!");
+                      alert("Authentication error: Please log in again to start missions.");
+                      return;
                     }
-                    setSelectedMission(null);
+                    try {
+                      await startMission(selectedMission.id);
+                      console.log("[StartMission] DB upsert complete.");
+                      
+                      setSelectedMission(prev => prev ? { ...prev, status: 'in_progress' } : null);
+                      const config = MISSION_CONFIGS[selectedMission.type];
+                      if (config) {
+                        if (config.redirectAction) {
+                          config.redirectAction({ setSelectedCourseId });
+                        }
+                        setPage(config.page);
+                        console.log("[StartMission] Routed contextually to:", config.page);
+                      }
+                      setSelectedMission(null);
+                    } catch (err: any) {
+                      console.error("[StartMission] Click handler caught error:", err);
+                      alert(`Failed to start mission: ${err.message || err}`);
+                    }
                   }}
                   className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-cyan-500/20"
                 >
