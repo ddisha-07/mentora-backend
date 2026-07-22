@@ -48,7 +48,7 @@ export default function KnowledgeExchangePage() {
   
   const savedQuestionIds = (savedItems || [])
     .filter(x => x.type === 'question')
-    .map(x => Number(x.id)); // Initial mock bookmark
+    .map(x => String(x.id)); // Initial mock bookmark
 
   // Legacy directory state
   const [legacySearch, setLegacySearch] = useState('');
@@ -125,9 +125,9 @@ export default function KnowledgeExchangePage() {
 
   // Toggle bookmark / saved state
   const toggleBookmark = (q: KnowledgeQuestion) => {
-    const isSaved = (savedItems || []).some(x => Number(x.id) === Number(q.id) && x.type === 'question');
+    const isSaved = (savedItems || []).some(x => String(x.id) === String(q.id) && x.type === 'question');
     if (isSaved) {
-      setSavedItems(prev => prev.filter(x => !(Number(x.id) === Number(q.id) && x.type === 'question')));
+      setSavedItems(prev => prev.filter(x => !(String(x.id) === String(q.id) && x.type === 'question')));
     } else {
       setSavedItems(prev => [
         ...prev,
@@ -158,7 +158,7 @@ export default function KnowledgeExchangePage() {
       const newQuestionRecord = {
         title: newTitle,
         description: newDesc,
-        author_id: user.id,
+        user_id: user.id,
         author_name: activeProfile.name || 'Anonymous',
         department: activeProfile.department || 'Operations',
         topic: newTopic,
@@ -175,7 +175,7 @@ export default function KnowledgeExchangePage() {
 
       if (insertedQ) {
         const newQ: KnowledgeQuestion = {
-          id: Number(insertedQ.id),
+          id: insertedQ.id,
           title: insertedQ.title,
           description: insertedQ.description,
           author: insertedQ.author_name,
@@ -212,7 +212,7 @@ export default function KnowledgeExchangePage() {
 
           if (insertedAI) {
             qAnswers.push({
-              id: Number(insertedAI.id),
+              id: insertedAI.id,
               questionId: newQ.id,
               author: insertedAI.author_name,
               authorRole: insertedAI.author_role,
@@ -263,7 +263,7 @@ export default function KnowledgeExchangePage() {
 
       const newAnswerRecord = {
         question_id: selectedQuestion.id,
-        author_id: user.id,
+        user_id: user.id,
         author_name: activeProfile.name || 'Expert Contributor',
         author_role: `${activeProfile.designation || 'Specialist'} (${activeProfile.department})`,
         content: newAnswerText,
@@ -283,7 +283,7 @@ export default function KnowledgeExchangePage() {
 
       if (insertedAns) {
         const newAns: KnowledgeAnswer = {
-          id: Number(insertedAns.id),
+          id: insertedAns.id,
           questionId: selectedQuestion.id,
           author: insertedAns.author_name,
           authorRole: insertedAns.author_role,
@@ -459,7 +459,7 @@ export default function KnowledgeExchangePage() {
     } else if (qaSubTab === 'my_questions') {
       matchesTab = q.author === activeProfile.name;
     } else if (qaSubTab === 'saved') {
-      matchesTab = savedQuestionIds.includes(q.id);
+      matchesTab = savedQuestionIds.includes(String(q.id));
     }
 
     return matchesSearch && matchesDept && matchesTopic && matchesTab;
@@ -600,7 +600,7 @@ export default function KnowledgeExchangePage() {
               <div className="space-y-3">
                 {filteredQuestions.map(q => {
                   const answersList = knowledgeAnswers[q.id] || [];
-                  const isSaved = savedQuestionIds.includes(q.id);
+                  const isSaved = savedQuestionIds.includes(String(q.id));
 
                   return (
                     <div
@@ -663,9 +663,9 @@ export default function KnowledgeExchangePage() {
                       <span className="text-[9px] px-2 py-0.5 rounded bg-background border border-border text-muted-foreground font-semibold">{selectedQuestion.topic}</span>
                       <button
                         onClick={() => toggleBookmark(selectedQuestion)}
-                        className={`text-xs ${savedQuestionIds.includes(selectedQuestion.id) ? 'text-primary' : 'text-muted-foreground'}`}
+                        className={`text-xs ${savedQuestionIds.includes(String(selectedQuestion.id)) ? 'text-primary' : 'text-muted-foreground'}`}
                       >
-                        <Bookmark size={15} className={savedQuestionIds.includes(selectedQuestion.id) ? 'fill-primary' : ''} />
+                        <Bookmark size={15} className={savedQuestionIds.includes(String(selectedQuestion.id)) ? 'fill-primary' : ''} />
                       </button>
                     </div>
                     <h4 className="text-base font-bold text-foreground mt-3 leading-snug">{selectedQuestion.title}</h4>

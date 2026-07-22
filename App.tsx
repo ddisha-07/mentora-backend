@@ -67,8 +67,8 @@ export type AppContextType = {
   // Phase 3 Context Fields
   knowledgeQuestions: KnowledgeQuestion[];
   setKnowledgeQuestions: React.Dispatch<React.SetStateAction<KnowledgeQuestion[]>>;
-  knowledgeAnswers: Record<number, KnowledgeAnswer[]>;
-  setKnowledgeAnswers: React.Dispatch<React.SetStateAction<Record<number, KnowledgeAnswer[]>>>;
+  knowledgeAnswers: Record<string | number, KnowledgeAnswer[]>;
+  setKnowledgeAnswers: React.Dispatch<React.SetStateAction<Record<string | number, KnowledgeAnswer[]>>>;
   preservedKnowledge: any[];
   setPreservedKnowledge: React.Dispatch<React.SetStateAction<any[]>>;
 
@@ -4529,7 +4529,7 @@ export default function App() {
 
   // Phase 3 State
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<KnowledgeQuestion[]>([]);
-  const [knowledgeAnswers, setKnowledgeAnswers] = useState<Record<number, KnowledgeAnswer[]>>({});
+  const [knowledgeAnswers, setKnowledgeAnswers] = useState<Record<string | number, KnowledgeAnswer[]>>({});
   const [preservedKnowledge, setPreservedKnowledge] = useState<any[]>([]);
 
   // Phase 7 State
@@ -4585,7 +4585,7 @@ export default function App() {
 
         if (dbQuestions) {
           const mappedQuestions = dbQuestions.map((q: any) => ({
-            id: Number(q.id),
+            id: q.id,
             title: q.title,
             description: q.description,
             author: q.author_name,
@@ -4598,14 +4598,14 @@ export default function App() {
         }
 
         if (dbAnswers) {
-          const answersGrouped: Record<number, KnowledgeAnswer[]> = {};
+          const answersGrouped: Record<string | number, KnowledgeAnswer[]> = {};
           dbAnswers.forEach((ans: any) => {
-            const qId = Number(ans.question_id);
+            const qId = ans.question_id;
             if (!answersGrouped[qId]) {
               answersGrouped[qId] = [];
             }
             answersGrouped[qId].push({
-              id: Number(ans.id),
+              id: ans.id,
               questionId: qId,
               author: ans.author_name,
               authorRole: ans.author_role || "Specialist",

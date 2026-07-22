@@ -63,7 +63,7 @@ export interface Training {
 }
 
 export interface KnowledgeQuestion {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   author: string;
@@ -74,8 +74,8 @@ export interface KnowledgeQuestion {
 }
 
 export interface KnowledgeAnswer {
-  id: number;
-  questionId: number;
+  id: string | number;
+  questionId: string | number;
   author: string;
   authorRole: string;
   content: string;
