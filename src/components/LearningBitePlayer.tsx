@@ -116,17 +116,16 @@ export function LearningBitePlayer({
     if (selectedAnswer === null || isAnswerSubmitted) return;
 
     const activityConfig = content.quickActivity;
-    const isAnsCorrect = selectedAnswer === activityConfig?.correctAnswer;
+    const isAnsCorrect = Number(selectedAnswer) === Number(activityConfig?.correctAnswer);
     
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnsCorrect);
     setIsAnswerSubmitted(true);
 
-    if (isAnsCorrect) {
-      setTimeout(() => {
-        setStep(6);
-      }, 800);
-    }
+    // Transition to step 6 (Feedback screen) for both correct and incorrect answers after a short delay
+    setTimeout(() => {
+      setStep(6);
+    }, 600);
   };
 
   const handleTryAgain = () => {
@@ -647,20 +646,21 @@ export function KaiFeedbackSection({
       </div>
 
       <div className="pt-4 flex justify-center gap-3">
-        {!isCorrect && (
+        {!isCorrect ? (
           <button
             onClick={onTryAgain}
-            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all active:scale-95"
+            className="flex items-center gap-1 bg-cyan-500 hover:bg-cyan-600 text-black px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/10"
           >
             <RotateCcw size={13} /> Try Again
           </button>
+        ) : (
+          <button
+            onClick={onContinue}
+            className="flex items-center gap-1 bg-cyan-500 hover:bg-cyan-600 text-black px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/10"
+          >
+            Proceed <ArrowRight size={13} />
+          </button>
         )}
-        <button
-          onClick={onContinue}
-          className="flex items-center gap-1 bg-cyan-500 hover:bg-cyan-600 text-black px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/10"
-        >
-          Proceed <ArrowRight size={13} />
-        </button>
       </div>
     </div>
   );
