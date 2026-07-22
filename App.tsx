@@ -110,6 +110,15 @@ type Page =
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
   | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin";
 
+const MISSION_CONFIGS: Record<string, { page: Page; completionType: 'manual' | 'action'; actionKey?: string }> = {
+  'QUIZ': { page: 'learn', completionType: 'manual' },
+  'SOP_READING': { page: 'knowledge', completionType: 'manual' },
+  'LEARNING': { page: 'learn', completionType: 'action', actionKey: 'learning_completion' },
+  'KNOWLEDGE_SHARING': { page: 'knowledge-exchange', completionType: 'action', actionKey: 'submit_answer' },
+  'MENTORING': { page: 'knowledge-exchange', completionType: 'manual' },
+  'EXPERIENCE_SHARING': { page: 'knowledge', completionType: 'manual' }
+};
+
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const COURSES = [
   {
@@ -2106,6 +2115,11 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   onClick={async () => {
                     await startMission(selectedMission.id);
                     setSelectedMission(prev => prev ? { ...prev, status: 'in_progress' } : null);
+                    const config = MISSION_CONFIGS[selectedMission.type];
+                    if (config) {
+                      setPage(config.page);
+                    }
+                    setSelectedMission(null);
                   }}
                   className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-cyan-500/20"
                 >
@@ -2443,6 +2457,12 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 xp: xpEarned,
                 title: "Bite Completed! (+20 XP)"
               });
+              const activeLearningMission = (activeMissions || []).find(
+                (m: any) => m.status === 'in_progress' && m.type === 'LEARNING'
+              );
+              if (activeLearningMission) {
+                completeMission(activeLearningMission.id);
+              }
             }}
             onAllBitesCompleted={(activityXp) => {
               setShowCelebration({

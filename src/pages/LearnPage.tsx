@@ -17,7 +17,11 @@ export default function LearnPage({
   onNavigateCourse: (id: number) => void;
   onNavigateCertificates: () => void;
 }) {
-  const { savedItems, setSavedItems, journeyStages, learningActivities, activityProgress } = useApp();
+  const { savedItems, setSavedItems, journeyStages, learningActivities, activityProgress, activeMissions, completeMission } = useApp();
+
+  const activeLearnMission = (activeMissions || []).find(
+    (m: any) => m.status === 'in_progress' && (m.type === 'LEARNING' || m.type === 'QUIZ')
+  );
 
   const handleToggleBookmark = (course: any) => {
     const isSaved = (savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course');
@@ -136,6 +140,27 @@ export default function LearnPage({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {activeLearnMission && (
+        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between gap-4 relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+          <div>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+              🎯 Active Daily Mission In Progress
+            </div>
+            <h4 className="text-sm font-bold text-foreground mt-1">{activeLearnMission.title}</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">{activeLearnMission.description}</p>
+          </div>
+          <button
+            onClick={async () => {
+              await completeMission(activeLearnMission.id);
+            }}
+            className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all cursor-pointer shadow-md shadow-primary/20"
+          >
+            Confirm Completion
+          </button>
+        </div>
+      )}
+
       {/* Overview stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard label="Enrolled Journeys" value={enrolledCourses.length} delta="Active Paths" type="courses" />

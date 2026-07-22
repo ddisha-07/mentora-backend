@@ -5,7 +5,11 @@ import { Card } from '../components/reusable';
 
 export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) => void }) {
   const [search, setSearch] = useState('');
-  const { preservedKnowledge, savedItems, setSavedItems } = useApp();
+  const { preservedKnowledge, savedItems, setSavedItems, activeMissions, completeMission } = useApp();
+
+  const activeHubMission = (activeMissions || []).find(
+    (m: any) => m.status === 'in_progress' && (m.type === 'SOP_READING' || m.type === 'EXPERIENCE_SHARING')
+  );
 
   const handleToggleBookmark = (article: any) => {
     const isSaved = (savedItems || []).some(x => x.id === article.id && x.type === 'sop');
@@ -61,6 +65,27 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
+      {activeHubMission && (
+        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between gap-4 relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+          <div>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+              🎯 Active Daily Mission In Progress
+            </div>
+            <h4 className="text-sm font-bold text-foreground mt-1">{activeHubMission.title}</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">{activeHubMission.description}</p>
+          </div>
+          <button
+            onClick={async () => {
+              await completeMission(activeHubMission.id);
+            }}
+            className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all cursor-pointer shadow-md shadow-primary/20"
+          >
+            Confirm SOP Read / Complete Mission
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

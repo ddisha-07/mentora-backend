@@ -18,7 +18,9 @@ export default function KnowledgeExchangePage() {
     preservedKnowledge,
     setPreservedKnowledge,
     savedItems,
-    setSavedItems
+    setSavedItems,
+    activeMissions,
+    completeMission
   } = useApp();
 
   const activeProfile = profile || {
@@ -313,6 +315,14 @@ export default function KnowledgeExchangePage() {
           }
         }
 
+        // Automatically complete active KNOWLEDGE_SHARING mission
+        const activeKMission = (activeMissions || []).find(
+          (m: any) => m.status === 'in_progress' && m.type === 'KNOWLEDGE_SHARING'
+        );
+        if (activeKMission) {
+          await completeMission(activeKMission.id);
+        }
+
         setNewAnswerText('');
         setIsSopSource(false);
         setSopSourceText('');
@@ -531,6 +541,34 @@ export default function KnowledgeExchangePage() {
       {/* VIEW 1: Q&A BOARD */}
       {activeMainTab === 'exchange' && (
         <div className="space-y-6">
+          {/* Active Mission Banner */}
+          {(() => {
+            const activeKMission = (activeMissions || []).find(
+              (m: any) => m.status === 'in_progress' && (m.type === 'KNOWLEDGE_SHARING' || m.type === 'MENTORING')
+            );
+            if (!activeKMission) return null;
+            return (
+              <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between gap-4 relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+                <div>
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+                    🎯 Active Daily Mission In Progress
+                  </div>
+                  <h4 className="text-sm font-bold text-foreground mt-1">{activeKMission.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">{activeKMission.description}</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    await completeMission(activeKMission.id);
+                  }}
+                  className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all cursor-pointer shadow-md shadow-primary/20"
+                >
+                  Confirm Completion
+                </button>
+              </div>
+            );
+          })()}
+
           {/* Filters Bar */}
           <div className="flex flex-wrap gap-4 items-center justify-between bg-card/45 border border-border p-4 rounded-2xl">
             <div className="relative w-full md:w-64">
