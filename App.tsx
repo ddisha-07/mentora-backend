@@ -2113,16 +2113,12 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 </button>
               ) : selectedMission.status === 'in_progress' ? (
                 <button
-                  onClick={(e) => {
-                    handleCompleteMissionClick(selectedMission.id, e);
-                    setSelectedMission(null);
-                    if (selectedMission.type === 'QUIZ') {
-                      onNavigate('quiz');
-                    } else if (selectedMission.type === 'KNOWLEDGE_SHARING' || selectedMission.type === 'EXPERIENCE_SHARING') {
-                      onNavigate('knowledge-exchange');
-                    } else {
-                      onNavigate('learn');
-                    }
+                  onClick={async (e) => {
+                    await completeMission(selectedMission.id, e);
+                    setSelectedMission(prev => prev ? { ...prev, status: 'completed' } : null);
+                    setTimeout(() => {
+                      setSelectedMission(null);
+                    }, 1200);
                   }}
                   className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-primary/20"
                 >
