@@ -2410,11 +2410,11 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   // Render Activity Player or Learning Bite Player
   if (activeActivity) {
-    if (activeBites && activeBites.length > 0) {
+    if (isLearningJourney) {
       return (
         <div className="max-w-[1200px] mx-auto p-4 md:p-6">
           <LearningBitePlayer
-            bites={activeBites}
+            bites={activeBites || []}
             courseId={course.id}
             activityId={activeActivity.id}
             onClose={() => {

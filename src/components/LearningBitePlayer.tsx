@@ -84,6 +84,45 @@ export function LearningBitePlayer({
     setIsCorrect(false);
   }, [currentBiteIdx]);
 
+  if (bites.length === 0) {
+    return (
+      <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[400px]">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border/10 pb-4 mb-4 z-10">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-black">
+              Empty Activity
+            </span>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 z-10 gap-3">
+          <BookOpen className="text-muted-foreground/30 animate-pulse" size={48} />
+          <h4 className="text-sm font-bold text-foreground">No Learning Bites Available</h4>
+          <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
+            No Learning Bites are available for this activity yet.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end border-t border-border/10 pt-4 mt-6 z-10">
+          <button 
+            onClick={onClose}
+            className="flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-black px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/10"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!activeBite) {
     return (
       <div className="flex items-center justify-center p-8 bg-[#06060F] text-muted-foreground">
