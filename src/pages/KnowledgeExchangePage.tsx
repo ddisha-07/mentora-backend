@@ -6,6 +6,7 @@ import {
 import { useApp } from '../../App';
 import { KnowledgeQuestion, KnowledgeAnswer, UserRole } from '../types';
 import { StatusBadge, AnswerTypeBadge, Card } from '../components/reusable';
+import { supabase } from '../lib/supabaseClient';
 
 export default function KnowledgeExchangePage() {
   const {
@@ -143,142 +144,297 @@ export default function KnowledgeExchangePage() {
   };
 
   // Ask Question Submission
-  const handleCreateQuestion = (e: React.FormEvent) => {
+  const handleCreateQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
-    const newQ: KnowledgeQuestion = {
-      id: Date.now(),
-      title: newTitle,
-      description: newDesc,
-      author: activeProfile.name || 'Anonymous',
-      department: activeProfile.department || 'Operations',
-      topic: newTopic,
-      status: 'open',
-      createdAt: 'Just now'
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("You must be logged in to ask questions.");
+        return;
+      }
 
-    // If they selected AI topic, we immediately mock generate an AI answer as well!
-    const qAnswers: KnowledgeAnswer[] = [];
-    if (newDesc.toLowerCase().includes('ai') || newTitle.toLowerCase().includes('ai') || newTopic === 'AI Exploration') {
-      qAnswers.push({
-        id: Date.now() + 1,
-        questionId: newQ.id,
-        author: 'Mentora AI Assistant 🤖',
-        authorRole: 'Core Platform AI Model',
-        content: `Based on internal manuals and document databases:
+      const newQuestionRecord = {
+        title: newTitle,
+        description: newDesc,
+        author_id: user.id,
+        author_name: activeProfile.name || 'Anonymous',
+        department: activeProfile.department || 'Operations',
+        topic: newTopic,
+        status: 'open'
+      };
+
+      const { data: insertedQ, error: qErr } = await supabase
+        .from("questions")
+        .insert(newQuestionRecord)
+        .select()
+        .single();
+
+      if (qErr) throw qErr;
+
+      if (insertedQ) {
+        const newQ: KnowledgeQuestion = {
+          id: Number(insertedQ.id),
+          title: insertedQ.title,
+          description: insertedQ.description,
+          author: insertedQ.author_name,
+          department: insertedQ.department || 'Operations',
+          topic: insertedQ.topic || 'Safety Procedures',
+          status: insertedQ.status || 'open',
+          createdAt: 'Just now'
+        };
+
+        const qAnswers: KnowledgeAnswer[] = [];
+        
+        if (newDesc.toLowerCase().includes('ai') || newTitle.toLowerCase().includes('ai') || newTopic === 'AI Exploration') {
+          const aiAnsRecord = {
+            question_id: insertedQ.id,
+            author_id: null,
+            author_name: 'Mentora AI Assistant 🤖',
+            author_role: 'Core Platform AI Model',
+            content: `Based on internal manuals and document databases:
 1. Verify LOTO override pins are cleared.
 2. Confirm the Modbus registry is configured for RS-485 at 9600 Baud.
 3. If this requires expert inspection, click the 'Escalate to Expert' button.`,
-        answerType: 'ai_generated',
-        verified: false,
-        helpfulCount: 0
-      });
-    }
+            answer_type: 'ai_generated',
+            verified: false,
+            helpful_count: 0
+          };
 
-    setKnowledgeQuestions(prev => [newQ, ...prev]);
-    if (qAnswers.length > 0) {
-      setKnowledgeAnswers(prev => ({
-        ...prev,
-        [newQ.id]: qAnswers
-      }));
-    }
+          const { data: insertedAI, error: aiErr } = await supabase
+            .from("answers")
+            .insert(aiAnsRecord)
+            .select()
+            .single();
 
-    setNewTitle('');
-    setNewDesc('');
-    setNewTopic('Safety Procedures');
-    setAskModalOpen(false);
-    setSelectedQuestion(newQ);
+          if (aiErr) throw aiErr;
+
+          if (insertedAI) {
+            qAnswers.push({
+              id: Number(insertedAI.id),
+              questionId: newQ.id,
+              author: insertedAI.author_name,
+              authorRole: insertedAI.author_role,
+              content: insertedAI.content,
+              answerType: insertedAI.answer_type,
+              verified: insertedAI.verified,
+              helpfulCount: insertedAI.helpful_count || 0
+            });
+          }
+        }
+
+        setKnowledgeQuestions(prev => [newQ, ...prev]);
+        if (qAnswers.length > 0) {
+          setKnowledgeAnswers(prev => ({
+            ...prev,
+            [newQ.id]: qAnswers
+          }));
+        }
+
+        setNewTitle('');
+        setNewDesc('');
+        setNewTopic('Safety Procedures');
+        setAskModalOpen(false);
+        setSelectedQuestion(newQ);
+      }
+    } catch (err) {
+      console.error("Error creating question:", err);
+      alert("Failed to submit question. Please try again.");
+    }
   };
 
   // Submit Answer / Follow-up
-  const handleSubmitAnswer = (e: React.FormEvent) => {
+  const handleSubmitAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedQuestion || !newAnswerText.trim()) return;
 
-    let ansType: any = 'standard';
-    if (userRole === 'SENIOR_EMPLOYEE') ansType = 'senior_employee';
-    if (userRole === 'RETIRED_EMPLOYEE') ansType = 'retired_expert';
-    if (isSopSource) ansType = 'based_on_sop';
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("You must be logged in to submit answers.");
+        return;
+      }
 
-    const newAns: KnowledgeAnswer = {
-      id: Date.now(),
-      questionId: selectedQuestion.id,
-      author: activeProfile.name || 'Expert Contributor',
-      authorRole: `${activeProfile.designation || 'Specialist'} (${activeProfile.department})`,
-      content: newAnswerText,
-      answerType: ansType,
-      verified: isExpert, // Automatically verified if submitted by Senior/Retired Expert
-      helpfulCount: 0,
-      source: isSopSource ? (sopSourceText || 'Standard SOP Reference') : undefined
-    };
+      let ansType: any = 'standard';
+      if (userRole === 'SENIOR_EMPLOYEE') ansType = 'senior_employee';
+      if (userRole === 'RETIRED_EMPLOYEE') ansType = 'retired_expert';
+      if (isSopSource) ansType = 'based_on_sop';
 
-    setKnowledgeAnswers(prev => ({
-      ...prev,
-      [selectedQuestion.id]: [...(prev[selectedQuestion.id] || []), newAns]
-    }));
+      const newAnswerRecord = {
+        question_id: selectedQuestion.id,
+        author_id: user.id,
+        author_name: activeProfile.name || 'Expert Contributor',
+        author_role: `${activeProfile.designation || 'Specialist'} (${activeProfile.department})`,
+        content: newAnswerText,
+        answer_type: ansType,
+        verified: isExpert,
+        helpful_count: 0,
+        source: isSopSource ? (sopSourceText || 'Standard SOP Reference') : null
+      };
 
-    // If it is the first answer, update the question status
-    setKnowledgeQuestions(prev =>
-      prev.map(q => q.id === selectedQuestion.id ? { ...q, status: 'resolved' } : q)
-    );
+      const { data: insertedAns, error: ansErr } = await supabase
+        .from("answers")
+        .insert(newAnswerRecord)
+        .select()
+        .single();
 
-    setNewAnswerText('');
-    setIsSopSource(false);
-    setSopSourceText('');
+      if (ansErr) throw ansErr;
+
+      if (insertedAns) {
+        const newAns: KnowledgeAnswer = {
+          id: Number(insertedAns.id),
+          questionId: selectedQuestion.id,
+          author: insertedAns.author_name,
+          authorRole: insertedAns.author_role,
+          content: insertedAns.content,
+          answerType: insertedAns.answer_type,
+          verified: insertedAns.verified,
+          helpfulCount: insertedAns.helpful_count || 0,
+          source: insertedAns.source
+        };
+
+        setKnowledgeAnswers(prev => ({
+          ...prev,
+          [selectedQuestion.id]: [...(prev[selectedQuestion.id] || []), newAns]
+        }));
+
+        if (selectedQuestion.status !== 'resolved') {
+          const { error: qErr } = await supabase
+            .from("questions")
+            .update({ status: 'resolved' })
+            .eq("id", selectedQuestion.id);
+
+          if (!qErr) {
+            setKnowledgeQuestions(prev =>
+              prev.map(q => q.id === selectedQuestion.id ? { ...q, status: 'resolved' } : q)
+            );
+            setSelectedQuestion(prev => prev ? { ...prev, status: 'resolved' } : null);
+          }
+        }
+
+        setNewAnswerText('');
+        setIsSopSource(false);
+        setSopSourceText('');
+      }
+    } catch (err) {
+      console.error("Error submitting answer:", err);
+      alert("Failed to submit answer. Please try again.");
+    }
   };
 
   // Mark answer helpful
-  const handleMarkHelpful = (answerId: number) => {
+  const handleMarkHelpful = async (answerId: number) => {
     if (!selectedQuestion) return;
-    setKnowledgeAnswers(prev => {
-      const qAnswers = prev[selectedQuestion.id] || [];
-      return {
-        ...prev,
-        [selectedQuestion.id]: qAnswers.map(ans =>
-          ans.id === answerId ? { ...ans, helpfulCount: ans.helpfulCount + 1 } : ans
-        )
-      };
-    });
+    try {
+      const qAnswers = knowledgeAnswers[selectedQuestion.id] || [];
+      const targetAns = qAnswers.find(ans => ans.id === answerId);
+      if (!targetAns) return;
+
+      const nextHelpfulCount = (targetAns.helpfulCount || 0) + 1;
+
+      const { error } = await supabase
+        .from("answers")
+        .update({ helpful_count: nextHelpfulCount })
+        .eq("id", answerId);
+
+      if (error) throw error;
+
+      setKnowledgeAnswers(prev => {
+        const currentAnswers = prev[selectedQuestion.id] || [];
+        return {
+          ...prev,
+          [selectedQuestion.id]: currentAnswers.map(ans =>
+            ans.id === answerId ? { ...ans, helpfulCount: nextHelpfulCount } : ans
+          )
+        };
+      });
+    } catch (err) {
+      console.error("Error marking answer helpful:", err);
+    }
   };
 
   // Verify Answer Flow
-  const handleVerifyAnswer = (answerId: number) => {
+  const handleVerifyAnswer = async (answerId: number) => {
     if (!selectedQuestion) return;
-    setKnowledgeAnswers(prev => {
-      const qAnswers = prev[selectedQuestion.id] || [];
-      return {
-        ...prev,
-        [selectedQuestion.id]: qAnswers.map(ans =>
-          ans.id === answerId ? { ...ans, verified: true, answerType: 'expert_verified' } : ans
-        )
-      };
-    });
-    alert('Answer marked as Expert Verified! Toggled verification badge.');
+    try {
+      const { error } = await supabase
+        .from("answers")
+        .update({ verified: true, answer_type: 'expert_verified' })
+        .eq("id", answerId);
+
+      if (error) throw error;
+
+      setKnowledgeAnswers(prev => {
+        const qAnswers = prev[selectedQuestion.id] || [];
+        return {
+          ...prev,
+          [selectedQuestion.id]: qAnswers.map(ans =>
+            ans.id === answerId ? { ...ans, verified: true, answerType: 'expert_verified' } : ans
+          )
+        };
+      });
+      alert('Answer marked as Expert Verified! Toggled verification badge.');
+    } catch (err) {
+      console.error("Error verifying answer:", err);
+    }
   };
 
   // Escalate to Expert Flow
-  const handleEscalateQuestion = () => {
+  const handleEscalateQuestion = async () => {
     if (!selectedQuestion) return;
-    setKnowledgeQuestions(prev =>
-      prev.map(q => q.id === selectedQuestion.id ? { ...q, status: 'open' } : q)
-    );
-    alert('Question has been escalated to Expert! It is now listed under Unanswered questions.');
+    try {
+      const { error } = await supabase
+        .from("questions")
+        .update({ status: 'open' })
+        .eq("id", selectedQuestion.id);
+
+      if (error) throw error;
+
+      setKnowledgeQuestions(prev =>
+        prev.map(q => q.id === selectedQuestion.id ? { ...q, status: 'open' } : q)
+      );
+      setSelectedQuestion(prev => prev ? { ...prev, status: 'open' } : null);
+      alert('Question has been escalated to Expert! It is now listed under Unanswered questions.');
+    } catch (err) {
+      console.error("Error escalating question:", err);
+    }
   };
 
   // Preserve in Knowledge Base Flow
-  const handlePreserveKnowledge = (ans: KnowledgeAnswer) => {
+  const handlePreserveKnowledge = async (ans: KnowledgeAnswer) => {
     if (!selectedQuestion) return;
-    const newPreserved = {
-      id: ans.id,
-      title: selectedQuestion.title,
-      dept: selectedQuestion.department,
-      views: 12,
-      author: ans.author,
-      content: ans.content
-    };
-    setPreservedKnowledge((prev: any[]) => [...(prev || []), newPreserved]);
-    alert('Valuable answer successfully preserved in Knowledge Hub Base! Sync complete.');
+    try {
+      const newArticleRecord = {
+        id: `sop_${Date.now()}`,
+        title: selectedQuestion.title,
+        department: selectedQuestion.department || 'Operations',
+        author: ans.author,
+        content: ans.content,
+        is_preserved: true,
+        is_official: false
+      };
+
+      const { error } = await supabase
+        .from("knowledge_articles")
+        .insert(newArticleRecord);
+
+      if (error) throw error;
+
+      const newPreserved = {
+        id: newArticleRecord.id,
+        title: newArticleRecord.title,
+        dept: newArticleRecord.department,
+        views: 0,
+        author: newArticleRecord.author,
+        content: newArticleRecord.content
+      };
+      
+      setPreservedKnowledge((prev: any[]) => [...(prev || []), newPreserved]);
+      alert('Valuable answer successfully preserved in Knowledge Hub Base! Sync complete.');
+    } catch (err) {
+      console.error("Error preserving knowledge:", err);
+    }
   };
 
   // Filter Q&A questions list

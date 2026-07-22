@@ -60,6 +60,7 @@ export type AppContextType = {
   // Phase 2 Context Fields
   activeMissions: any[];
   completeMission: (id: number, event?: React.MouseEvent) => void;
+  startMission: (id: number) => Promise<void>;
   streakDays: any[];
   floatingXp: any[];
 
@@ -2094,7 +2095,17 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               >
                 Close
               </button>
-              {selectedMission.status !== 'completed' && (
+              {selectedMission.status === 'assigned' || !selectedMission.status ? (
+                <button
+                  onClick={async () => {
+                    await startMission(selectedMission.id);
+                    setSelectedMission(prev => prev ? { ...prev, status: 'in_progress' } : null);
+                  }}
+                  className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-cyan-500/20"
+                >
+                  Start Mission
+                </button>
+              ) : selectedMission.status === 'in_progress' ? (
                 <button
                   onClick={(e) => {
                     handleCompleteMissionClick(selectedMission.id, e);
@@ -2111,7 +2122,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 >
                   Complete Task
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -4545,121 +4556,243 @@ export default function App() {
     });
   }, []);
 
-  // Load initial Q&A datasets from mockService on mount
+  // Load initial Q&A datasets from Supabase on mount
   useEffect(() => {
-    mockService.fetchQuestions().then(data => {
-      setKnowledgeQuestions(data);
-    });
-    const initialAnswers: Record<number, KnowledgeAnswer[]> = {
-      401: [
-        {
-          id: 501,
-          questionId: 401,
-          author: 'Arjun Mehta',
-          authorRole: 'Senior Employee (R&D)',
-          content: 'Never attempt to manually override with active lines. First verify that breaker panel 4B is physically shut off. Once isolated, use the physical release lever at the base of Valve 12.',
-          answerType: 'senior_employee',
-          verified: false,
-          helpfulCount: 8
-        },
-        {
-          id: 502,
-          questionId: 401,
-          author: 'Devendra Prasad',
-          authorRole: 'Retired Expert Advisor',
-          content: 'Arjun is correct. The legacy override lever in Plant 2 is yellow-coded and located directly beneath the pressure gauge housing. Pull it downwards and rotate 90 degrees clockwise to lock mechanical pins.',
-          answerType: 'retired_expert',
-          verified: true,
-          helpfulCount: 22,
-          source: 'Plant 2 Operations Manual, Section 14.2'
-        }
-      ],
-      402: [
-        {
-          id: 503,
-          questionId: 402,
-          author: 'Sarah Jenkins',
-          authorRole: 'L&D Director',
-          content: 'I highly suggest using Zod schema verification on mount. It gives us run-time guarantees since JSONB data changes frequently. I can share our standard training module schema example.',
-          answerType: 'standard',
-          verified: false,
-          helpfulCount: 2
-        }
-      ],
-      403: [
-        {
-          id: 504,
-          questionId: 403,
-          author: 'Devendra Prasad',
-          authorRole: 'Retired Expert Advisor',
-          content: 'This was a common bug in the 1994 turbines. The runout is caused by uneven cooling contraction of the rotor shaft during brief stops. Turn on the auxiliary barring gear to rotate the shaft slowly at 2 RPM for 4 hours; this will thermal-normalize the shaft and resolve the runout.',
-          answerType: 'retired_expert',
-          verified: true,
-          helpfulCount: 14,
-          source: 'Legacy Operating Bulletins - Jamshedpur, 1996'
-        }
-      ]
-    };
-    setKnowledgeAnswers(initialAnswers);
+    const loadQAAndArticles = async () => {
+      try {
+        // Fetch questions
+        const { data: dbQuestions, error: qErr } = await supabase
+          .from("questions")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-    setPreservedKnowledge([
-      { id: 1, title: 'Standard Boiler Valve Override Procedure', dept: 'Maintenance', views: 320, author: 'Devendra Prasad', content: 'Pull yellow-coded override lever downwards and rotate 90 degrees clockwise.' },
-      { id: 2, title: 'Modbus Gateway Telemetry Configuration Guidelines', dept: 'R&D / IT', views: 180, author: 'Arjun Mehta', content: 'Configure Baud rate to 9600 and check parity bit overrides.' }
-    ]);
+        if (qErr) throw qErr;
+
+        // Fetch answers
+        const { data: dbAnswers, error: aErr } = await supabase
+          .from("answers")
+          .select("*")
+          .order("created_at", { ascending: true });
+
+        if (aErr) throw aErr;
+
+        // Fetch preserved articles
+        const { data: dbArticles, error: artErr } = await supabase
+          .from("knowledge_articles")
+          .select("*");
+
+        if (artErr) throw artErr;
+
+        if (dbQuestions) {
+          const mappedQuestions = dbQuestions.map((q: any) => ({
+            id: Number(q.id),
+            title: q.title,
+            description: q.description,
+            author: q.author_name,
+            department: q.department || "Operations",
+            topic: q.topic || "General Ops",
+            status: q.status || "open",
+            createdAt: q.created_at ? new Date(q.created_at).toLocaleDateString() : "Just now"
+          }));
+          setKnowledgeQuestions(mappedQuestions);
+        }
+
+        if (dbAnswers) {
+          const answersGrouped: Record<number, KnowledgeAnswer[]> = {};
+          dbAnswers.forEach((ans: any) => {
+            const qId = Number(ans.question_id);
+            if (!answersGrouped[qId]) {
+              answersGrouped[qId] = [];
+            }
+            answersGrouped[qId].push({
+              id: Number(ans.id),
+              questionId: qId,
+              author: ans.author_name,
+              authorRole: ans.author_role || "Specialist",
+              content: ans.content,
+              answerType: ans.answer_type,
+              verified: ans.verified,
+              helpfulCount: ans.helpful_count || 0,
+              source: ans.source
+            });
+          });
+          setKnowledgeAnswers(answersGrouped);
+        }
+
+        if (dbArticles) {
+          setPreservedKnowledge(dbArticles.map((art: any) => ({
+            id: art.id,
+            title: art.title,
+            dept: art.department || "General",
+            views: art.views || 0,
+            author: art.author,
+            content: art.content
+          })));
+        }
+      } catch (err) {
+        console.error("Error loading QA / Articles from Supabase:", err);
+      }
+    };
+
+    loadQAAndArticles();
   }, []);
 
   // Load missions when profile role changes
   useEffect(() => {
-    if (profile) {
-      mockService.fetchMissions(profile.role).then(data => {
-        setActiveMissions(data);
-      });
+    let active = true;
+    const fetchMissionsAndProgress = async () => {
+      if (!user || !profile) return;
+      try {
+        const userRoleUpper = (profile.role || "JUNIOR_EMPLOYEE").toUpperCase();
+        const { data: dbMissions, error: mErr } = await supabase
+          .from("missions")
+          .select("*")
+          .eq("assigned_role", userRoleUpper);
+
+        if (mErr) throw mErr;
+
+        const { data: dbProgress, error: pErr } = await supabase
+          .from("user_missions_progress")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (pErr) throw pErr;
+
+        if (active && dbMissions) {
+          const mappedMissions = dbMissions.map((m: any) => {
+            const prog = (dbProgress || []).find((p: any) => Number(p.mission_id) === Number(m.id));
+            return {
+              id: Number(m.id),
+              title: m.title,
+              description: m.description,
+              type: m.type,
+              assignedRole: m.assigned_role,
+              rewardType: m.reward_type,
+              rewardAmount: m.reward_amount,
+              estimatedTime: m.estimated_time,
+              dueDate: m.due_date,
+              status: prog ? prog.status : "assigned"
+            };
+          });
+          setActiveMissions(mappedMissions);
+        }
+      } catch (err) {
+        console.error("Error loading missions and progress:", err);
+      }
+    };
+
+    fetchMissionsAndProgress();
+    return () => {
+      active = false;
+    };
+  }, [profile, user]);
+
+  const startMission = async (missionId: number) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("user_missions_progress")
+        .upsert({
+          user_id: user.id,
+          mission_id: missionId,
+          status: 'in_progress',
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id,mission_id" });
+
+      if (error) throw error;
+
+      setActiveMissions(prev =>
+        prev.map(m => (m.id === missionId ? { ...m, status: 'in_progress' } : m))
+      );
+    } catch (err) {
+      console.error("Error starting mission:", err);
     }
-  }, [profile?.role]);
+  };
 
-  const completeMission = (missionId: number, event?: React.MouseEvent) => {
-    setActiveMissions(prev =>
-      prev.map(m => (m.id === missionId ? { ...m, status: 'completed' } : m))
-    );
+  const completeMission = async (missionId: number, event?: React.MouseEvent) => {
+    if (!user) return;
+    try {
+      const { error: pErr } = await supabase
+        .from("user_missions_progress")
+        .upsert({
+          user_id: user.id,
+          mission_id: missionId,
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id,mission_id" });
 
-    const mission = activeMissions.find(m => m.id === missionId);
-    if (!mission) return;
+      if (pErr) throw pErr;
 
-    const isXp = mission.rewardType === 'xp' || mission.rewardType === 'both';
-    const isCredits = mission.rewardType === 'credits' || mission.rewardType === 'both';
-    const xpAmt = isXp ? mission.rewardAmount : 0;
-    const credAmt = isCredits ? (mission.rewardType === 'both' ? 100 : mission.rewardAmount) : 0;
+      setActiveMissions(prev =>
+        prev.map(m => (m.id === missionId ? { ...m, status: 'completed' } : m))
+      );
 
-    // Trigger floating XP animation
-    const x = event ? event.clientX : window.innerWidth / 2;
-    const y = event ? event.clientY : window.innerHeight / 2;
-    
-    if (xpAmt > 0) {
-      const animId = Date.now();
-      setFloatingXp(prev => [...prev, { id: animId, amount: xpAmt, x, y }]);
-      setTimeout(() => {
-        setFloatingXp(prev => prev.filter(item => item.id !== animId));
-      }, 1200);
+      const mission = activeMissions.find(m => m.id === missionId);
+      if (!mission) return;
+
+      const isXp = mission.rewardType === 'xp' || mission.rewardType === 'both';
+      const isCredits = mission.rewardType === 'credits' || mission.rewardType === 'both';
+      const xpAmt = isXp ? mission.rewardAmount : 0;
+      const credAmt = isCredits ? (mission.rewardType === 'both' ? 100 : mission.rewardAmount) : 0;
+
+      // Trigger floating XP animation
+      const x = event ? event.clientX : window.innerWidth / 2;
+      const y = event ? event.clientY : window.innerHeight / 2;
+      
+      if (xpAmt > 0) {
+        const animId = Date.now();
+        setFloatingXp(prev => [...prev, { id: animId, amount: xpAmt, x, y }]);
+        setTimeout(() => {
+          setFloatingXp(prev => prev.filter(item => item.id !== animId));
+        }, 1200);
+      }
+
+      // Fetch current profile fields directly to avoid race conditions
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("xp, knowledge_credits, mentora_credits, current_streak")
+        .eq("id", user.id)
+        .single();
+
+      if (profileData) {
+        const nextXp = (profileData.xp || 0) + xpAmt;
+        const nextKnowledgeCreds = (profileData.knowledge_credits || 0) + (mission.type === 'KNOWLEDGE_SHARING' || mission.type === 'EXPERIENCE_SHARING' ? 20 : 0);
+        const nextMentoraCreds = (profileData.mentora_credits || 0) + (mission.type !== 'KNOWLEDGE_SHARING' && mission.type !== 'EXPERIENCE_SHARING' ? credAmt : 0);
+        const nextStreak = (profileData.current_streak || 0) + 1;
+
+        // Update profile in database
+        const { error: profError } = await supabase
+          .from("profiles")
+          .update({
+            xp: nextXp,
+            knowledge_credits: nextKnowledgeCreds,
+            mentora_credits: nextMentoraCreds,
+            current_streak: nextStreak,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", user.id);
+
+        if (!profError) {
+          setProfile((prev: any) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              xp: nextXp,
+              mentoraCredits: nextMentoraCreds,
+              knowledgeCredits: nextKnowledgeCreds,
+              currentStreak: nextStreak
+            };
+          });
+        }
+      }
+
+      // Mark current day as active in streak visual tracker
+      setStreakDays(prev =>
+        prev.map(d => (d.current ? { ...d, active: true } : d))
+      );
+    } catch (err) {
+      console.error("Error completing mission:", err);
     }
-
-    // Update profile stats
-    setProfile((prev: any) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        xp: (prev.xp || 0) + xpAmt,
-        mentoraCredits: (prev.mentoraCredits || 0) + credAmt,
-        knowledgeCredits: mission.type === 'KNOWLEDGE_SHARING' || mission.type === 'EXPERIENCE_SHARING'
-          ? (prev.knowledgeCredits || 0) + 20
-          : (prev.knowledgeCredits || 0),
-        currentStreak: (prev.currentStreak || 0) + 1
-      };
-    });
-
-    // Mark current day as active in streak visual tracker
-    setStreakDays(prev =>
-      prev.map(d => (d.current ? { ...d, active: true } : d))
-    );
   };
 
   const appPages: Page[] = [
@@ -5060,6 +5193,7 @@ export default function App() {
       loading,
       activeMissions,
       completeMission,
+      startMission,
       streakDays,
       floatingXp,
       knowledgeQuestions,
