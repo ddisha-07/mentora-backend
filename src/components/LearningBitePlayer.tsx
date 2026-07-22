@@ -193,15 +193,12 @@ export function LearningBitePlayer({
 
       onCompleteBite(activeBite.id, xpEarned);
 
-      // Check if all bites for this activity are completed
-      const activityBites = bites;
-      const completedBites = (freshBiteProg || []).filter(
-        (p: any) => p.activity_id === activityId && p.status === "completed"
-      );
-
-      const allCompleted = activityBites.every((b) =>
-        completedBites.some((p: any) => p.bite_id === b.id)
-      );
+      // Check if all bites for this activity are completed (using timing-safe check)
+      const completedBiteIds = new Set([
+        ...(freshBiteProg || []).filter((p: any) => p.status === "completed" && Number(p.activity_id) === Number(activityId)).map((p: any) => Number(p.bite_id)),
+        Number(activeBite.id)
+      ]);
+      const allCompleted = bites.every((b) => completedBiteIds.has(Number(b.id)));
 
       if (allCompleted) {
         const activityXp = 50;
@@ -231,6 +228,7 @@ export function LearningBitePlayer({
         }
 
         onAllBitesCompleted(activityXp);
+        onClose(); // Automatically return the user to the Course Details / Interactive Skill Path
       } else {
         if (currentBiteIdx < totalBitesCount - 1) {
           setCurrentBiteIdx(prev => prev + 1);
