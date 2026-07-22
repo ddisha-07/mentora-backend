@@ -4704,6 +4704,8 @@ export default function App() {
           user_id: user.id,
           mission_id: missionId,
           status: 'in_progress',
+          completed: false,
+          completed_at: null,
           updated_at: new Date().toISOString()
         }, { onConflict: "user_id,mission_id" });
 
@@ -4727,6 +4729,8 @@ export default function App() {
           user_id: user.id,
           mission_id: missionId,
           status: 'completed',
+          completed: true,
+          completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }, { onConflict: "user_id,mission_id" });
 
