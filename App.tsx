@@ -36,6 +36,7 @@ import RewardsPage from "./src/pages/RewardsPage";
 import SkillPassportPage from "./src/pages/SkillPassportPage";
 import SavedPage from "./src/pages/SavedPage";
 import AdminPage from "./src/pages/AdminPage";
+import SopDetailPage from "./src/pages/SopDetailPage";
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
@@ -94,6 +95,9 @@ export type AppContextType = {
   setBiteProgress: React.Dispatch<React.SetStateAction<any[]>>;
   curriculumError: string | null;
   setCurriculumError: React.Dispatch<React.SetStateAction<string | null>>;
+  
+  selectedSopId: string | null;
+  setSelectedSopId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const AppCtx = createContext<AppContextType | null>(null);
@@ -109,7 +113,7 @@ type Page =
   | "lesson" | "ai-chat" | "quiz" | "quiz-results" | "certificates"
   | "profile" | "settings" | "announcements"
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
-  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin";
+  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin" | "sop-detail";
 
 const MISSION_CONFIGS: Record<string, { page: Page; completionType: 'manual' | 'action'; actionKey?: string; redirectAction?: (ctx: any) => void }> = {
   'QUIZ': { page: 'learn', completionType: 'manual' },
@@ -4392,6 +4396,8 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
         return <SavedPage onNavigate={onNavigate} />;
       case "admin":
         return <AdminPage />;
+      case "sop-detail":
+        return <SopDetailPage onNavigate={onNavigate} />;
       
       default: return <DashboardPage onNavigate={onNavigate} />;
     }
@@ -4455,6 +4461,7 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [page, setPage] = useState<Page>("landing");
+  const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(true);
 
   // Redirect chatbot requests to external deployment
@@ -4635,7 +4642,8 @@ export default function App() {
         // Fetch preserved articles
         const { data: dbArticles, error: artErr } = await supabase
           .from("knowledge_articles")
-          .select("*");
+          .select("*")
+          .eq("is_preserved", true);
 
         if (artErr) throw artErr;
 
@@ -5329,6 +5337,8 @@ export default function App() {
       page,
       setPage,
       toggleBookmark,
+      selectedSopId,
+      setSelectedSopId,
       
       journeyStages,
       setJourneyStages,

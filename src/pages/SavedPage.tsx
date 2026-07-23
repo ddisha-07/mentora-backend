@@ -4,7 +4,7 @@ import { useApp } from '../../App';
 import { Card, EmptyState, SkeletonLoader } from '../components/reusable';
 
 export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void }) {
-  const { profile, savedItems, toggleBookmark } = useApp();
+  const { profile, savedItems, toggleBookmark, setSelectedSopId } = useApp();
 
   const activeProfile = profile || {
     name: 'Learner',
@@ -167,7 +167,14 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
                   className="bg-card border border-border hover:border-primary/10 rounded-2xl p-4 flex items-center justify-between gap-4 transition-all"
                 >
                   <div
-                    onClick={() => onNavigate(item.page || 'learn')}
+                    onClick={() => {
+                      if (item.type === 'sop') {
+                        setSelectedSopId(item.id);
+                        onNavigate('sop-detail');
+                      } else {
+                        onNavigate(item.page || 'learn');
+                      }
+                    }}
                     className="flex-1 cursor-pointer space-y-1"
                   >
                     <div className="flex items-center gap-2">

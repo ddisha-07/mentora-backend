@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient';
 
 export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) => void }) {
   const [search, setSearch] = useState('');
-  const { preservedKnowledge, savedItems, activeMissions, completeMission, toggleBookmark } = useApp();
+  const { preservedKnowledge, savedItems, activeMissions, completeMission, toggleBookmark, setSelectedSopId } = useApp();
   
   const [articles, setArticles] = useState<any[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
@@ -17,6 +17,7 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
         const { data, error } = await supabase
           .from("knowledge_articles")
           .select("*")
+          .eq("is_preserved", false)
           .order("id", { ascending: true });
         
         if (!error && data) {
@@ -70,7 +71,6 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
     (a.author || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const [activeArticle, setActiveArticle] = useState<any | null>(null);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
@@ -138,8 +138,13 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
             {filteredArticles.map(article => (
               <div
                 key={article.id}
-                onClick={() => setActiveArticle(article)}
-                className={`bg-card border rounded-2xl p-4 flex flex-col hover:border-primary/30 transition-all cursor-pointer ${activeArticle?.id === article.id ? 'border-primary/50' : 'border-border'}`}
+                onClick={() => {
+                  // Strip the "preserved_" prefix if it is preserved knowledge to match database id
+                  const realId = article.id.startsWith('preserved_') ? article.id.replace('preserved_', '') : article.id;
+                  setSelectedSopId(realId);
+                  onNavigate('sop-detail');
+                }}
+                className="bg-card border border-border rounded-2xl p-4 flex flex-col hover:border-primary/30 transition-all cursor-pointer hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -151,7 +156,7 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
                         {article.title}
                         {article.isPreserved ? (
                           <span className="text-[9px] bg-primary/20 text-primary px-2 py-0.5 border border-primary/20 rounded-full font-bold flex items-center gap-0.5">
-                            <Bookmark size={9} /> Preserved Q&amp;A
+                            <Bookmark size={9} /> Preserved Expert Knowledge
                           </span>
                         ) : (
                           <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 border border-emerald-500/20 rounded-full font-bold flex items-center gap-0.5">
@@ -160,7 +165,7 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
                         )}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Dept: {article.dept} &bull; Contributor: {article.author}
+                        Dept: {article.department || article.dept} &bull; Contributor: {article.author}
                       </p>
                     </div>
                   </div>
@@ -178,13 +183,6 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
                     </button>
                   </div>
                 </div>
-
-                {activeArticle?.id === article.id && (
-                  <div className="mt-4 border-t border-border/50 pt-3 text-xs leading-relaxed text-muted-foreground bg-background/50 p-3.5 rounded-xl whitespace-pre-wrap">
-                    <h5 className="font-bold text-foreground mb-1.5 uppercase text-[10px] tracking-wider">Document Content:</h5>
-                    {article.content}
-                  </div>
-                )}
               </div>
             ))}
 
