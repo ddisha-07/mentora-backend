@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Users, Award, BookOpen, Clock, AlertTriangle, Play, FileText, Check, Activity, BarChart2, CheckCircle2, MessageSquare, Send } from 'lucide-react';
 import { Card, EmptyState, SkeletonLoader } from '../components/reusable';
 import { useApp } from '../../App';
+import { supabase } from '../lib/supabaseClient';
 
 export default function AdminPage() {
   const { setNotifsState } = useApp();
@@ -9,12 +10,60 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Mock Data
+  const [dbStats, setDbStats] = useState({
+    totalEmployees: 0,
+    activeLearners: 0,
+    avgStreak: '0',
+    completedMissions: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      setLoadingStats(true);
+      try {
+        const { count: empCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        const { data: enrollmentsData } = await supabase
+          .from('enrollments')
+          .select('user_id');
+        const uniqueUsers = new Set((enrollmentsData || []).map((e: any) => e.user_id));
+
+        const { data: streaksData } = await supabase
+          .from('profiles')
+          .select('current_streak');
+        const totalStreak = (streaksData || []).reduce((acc: number, p: any) => acc + (p.current_streak || 0), 0);
+        const avgStreakVal = streaksData && streaksData.length 
+          ? (totalStreak / streaksData.length).toFixed(1) 
+          : '0.0';
+
+        const { count: misCount } = await supabase
+          .from('user_missions_progress')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'completed');
+
+        setDbStats({
+          totalEmployees: empCount || 0,
+          activeLearners: uniqueUsers.size || 0,
+          avgStreak: avgStreakVal,
+          completedMissions: misCount || 0
+        });
+      } catch (err) {
+        console.error("Error fetching admin stats:", err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchAdminStats();
+  }, []);
+
   const stats = [
-    { title: 'Total Employees', value: '3,240', change: '+4.2% MoM', icon: <Users size={16} className="text-blue-400" /> },
-    { title: 'Active Learners', value: '2,890', change: '89.2% rate', icon: <Award size={16} className="text-emerald-400" /> },
-    { title: 'Daily Active Users', value: '1,120', change: '+12% weekly', icon: <Activity size={16} className="text-purple-400" /> },
-    { title: 'Avg Streak', value: '8.4 Days', change: 'EHS record', icon: <Clock size={16} className="text-amber-400" /> }
+    { title: 'Total Employees', value: loadingStats ? '...' : dbStats.totalEmployees.toLocaleString(), change: 'Live Database Count', icon: <Users size={16} className="text-blue-400" /> },
+    { title: 'Active Learners', value: loadingStats ? '...' : dbStats.activeLearners.toLocaleString(), change: 'Unique Enrolled Users', icon: <Award size={16} className="text-emerald-400" /> },
+    { title: 'Avg Streak', value: loadingStats ? '...' : `${dbStats.avgStreak} Days`, change: 'Platform-wide Average', icon: <Clock size={16} className="text-amber-400" /> },
+    { title: 'Missions Completed', value: loadingStats ? '...' : dbStats.completedMissions.toLocaleString(), change: 'Live verified logs', icon: <Activity size={16} className="text-purple-400" /> }
   ];
 
   // Knowledge Gaps List

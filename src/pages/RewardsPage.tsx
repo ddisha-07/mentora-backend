@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gift, Award, Send, Receipt, Shield, Sparkles, Flame, CheckCircle, RefreshCw, Layers } from 'lucide-react';
 import { useApp } from '../../App';
-import { Card } from '../components/reusable';
+import { Card, EmptyState, SkeletonLoader } from '../components/reusable';
+import { supabase } from '../lib/supabaseClient';
 
 interface Transaction {
-  id: number;
+  id: string | number;
+  rewardId?: number | string;
   description: string;
   amount: number;
   type: 'earn' | 'spend' | 'transfer';
@@ -12,29 +14,33 @@ interface Transaction {
 }
 
 export default function RewardsPage() {
-  const { profile, setProfile } = useApp();
+  const { profile, setProfile, user } = useApp();
 
   const activeProfile = profile || {
+    id: '',
     name: 'Learner',
     role: 'JUNIOR_EMPLOYEE',
     department: 'Software Engineering',
-    mentoraCredits: 450,
-    xp: 1240,
-    streak: 12
+    mentoraCredits: 0,
+    xp: 0,
+    streak: 0
   };
 
-  const mentoraCredits = activeProfile.mentoraCredits || activeProfile.mentora_credits || 0;
+  // Enforce consistent, safe credit resolution from active profile context
+  const mentoraCredits = activeProfile.mentoraCredits !== undefined 
+    ? Number(activeProfile.mentoraCredits) 
+    : (activeProfile.mentora_credits !== undefined ? Number(activeProfile.mentora_credits) : 0);
+
   const isRetired = activeProfile.role === 'RETIRED_EMPLOYEE' || activeProfile.role === 'ADMIN' || activeProfile.role === 'SENIOR_EMPLOYEE';
 
-  // Transaction history state
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: 1, description: 'Completed Course: Advanced Machine Learning', amount: 250, type: 'earn', date: 'Jul 12, 2026' },
-    { id: 2, description: 'Daily Mission: Read Safety SOP-202', amount: 100, type: 'earn', date: 'Jul 14, 2026' },
-    { id: 3, description: 'Redeemed: Tata Steel Coffee Mug', amount: 150, type: 'spend', date: 'Jul 14, 2026' }
-  ]);
+  // Live states
+  const [rewardsList, setRewardsList] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [redeemingId, setRedeemingId] = useState<number | null>(null);
 
   // Wallet spend / transfer states
-  const [spentCredits, setSpentCredits] = useState(150);
   const [transferredCredits, setTransferredCredits] = useState(0);
 
   // Transfer form state
@@ -43,45 +49,130 @@ export default function RewardsPage() {
   const [transferAmount, setTransferAmount] = useState('');
   const [relationship, setRelationship] = useState('Son');
 
-  // Rewards catalogue data
-  const rewardsList = [
-    { id: 101, title: 'Tata Steel Premium Tech Hoodie', category: 'Merchandise', cost: 500, desc: 'Heavyweight organic cotton hoodie with custom Tata Steel Pune insignia.' },
-    { id: 102, title: 'Tata Steel Travel Mug', category: 'Merchandise', cost: 150, desc: 'Vacuum insulated thermal travel mug keeping steam utilities hot.' },
-    { id: 103, title: 'Advanced IIoT Robotics Course Voucher', category: 'Courses', cost: 200, desc: 'Enrolls you in specialized PLC automation labs in Bengaluru.' },
-    { id: 104, title: 'Private Webinar Q&A with Executive Panel', category: 'Webinars', cost: 300, desc: 'Attend a live virtual executive session on steel manufacturing tech.' },
-    { id: 105, title: 'Pune Canteen Monthly Food Pass', category: 'Benefits Placeholder', cost: 80, desc: 'Organization-approved free lunches voucher for Pune Plant canteens.' },
-    { id: 106, title: 'Free Pune Bus Commuter Pass', category: 'Benefits Placeholder', cost: 120, desc: 'Free shuttle pick-and-drop service for Pune municipal sector.' }
-  ];
+  const fetchCatalog = async () => {
+    setLoadingCatalog(true);
+    try {
+      const { data, error } = await supabase
+        .from('rewards')
+        .select('*')
+        .order('cost', { ascending: true });
+      if (error) throw error;
+      setRewardsList(data || []);
+    } catch (err: any) {
+      console.error("Error loading rewards:", err);
+    } finally {
+      setLoadingCatalog(false);
+    }
+  };
 
-  // Redeem logic
-  const handleRedeem = (reward: any) => {
-    if (mentoraCredits < reward.cost) {
-      alert(`Insufficient credits to redeem: ${reward.title}. Learn more courses to earn MC!`);
+  const fetchRedemptionHistory = async () => {
+    if (!user) return;
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('reward_redemptions')
+        .select('id, reward_id, cost_paid, redeemed_at, rewards (title)')
+        .eq('user_id', user.id)
+        .order('redeemed_at', { ascending: false });
+      if (error) throw error;
+
+      const mappedTx: Transaction[] = (data || []).map((r: any) => ({
+        id: r.id,
+        rewardId: r.reward_id,
+        description: `Redeemed: ${r.rewards?.title || 'Unknown Reward'}`,
+        amount: Number(r.cost_paid),
+        type: 'spend',
+        date: new Date(r.redeemed_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })
+      }));
+      setTransactions(mappedTx);
+    } catch (err: any) {
+      console.error("Error loading redemption history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  // Re-sync full authenticated profile from public.profiles
+  const fetchUpdatedProfile = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (error) throw error;
+      if (data) {
+        setProfile((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            mentoraCredits: data.mentora_credits,
+            mentora_credits: data.mentora_credits,
+            xp: data.xp,
+            knowledgeCredits: data.knowledge_credits
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Error syncing profile:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCatalog();
+    fetchRedemptionHistory();
+  }, [user]);
+
+  // Derived wallet metrics
+  const spentCredits = transactions.reduce((acc, tx) => acc + (tx.type === 'spend' ? tx.amount : 0), 0);
+  const lifetimeEarned = mentoraCredits + spentCredits + transferredCredits;
+
+  // Redeem logic invoking the secure database RPC transaction function
+  const handleRedeem = async (reward: any) => {
+    if (!user) {
+      alert("You must be logged in to redeem rewards.");
+      return;
+    }
+    const rewardCost = Number(reward.cost || 0);
+    if (mentoraCredits < rewardCost) {
+      alert(`Insufficient credits to redeem: ${reward.title}. Earn more credits by completing daily missions or learning paths!`);
       return;
     }
 
-    // Deduct context balance
-    setProfile((prev: any) => ({
-      ...prev,
-      mentoraCredits: (prev.mentoraCredits || prev.mentora_credits || 0) - reward.cost
-    }));
+    setRedeemingId(reward.id);
+    try {
+      // Execute transaction atomically on backend
+      const { data, error } = await supabase.rpc('redeem_reward_item', {
+        p_reward_id: reward.id
+      });
 
-    setSpentCredits(prev => prev + reward.cost);
+      if (error) throw error;
 
-    // Log transaction
-    const newTx: Transaction = {
-      id: Date.now(),
-      description: `Redeemed: ${reward.title}`,
-      amount: reward.cost,
-      type: 'spend',
-      date: 'Just now'
-    };
-    setTransactions(prev => [newTx, ...prev]);
-
-    alert(`Success! Redeemed: ${reward.title}. Code dispatched to employee mail.`);
+      // Inspect response success explicitly
+      if (data && data.success === true) {
+        alert(`Success! Redeemed: ${data.reward_title}.\nCost: ${data.cost_paid} MC\nTransaction ID: ${data.redemption_id}\n\nYour reward voucher code has been dispatched to your employee email.`);
+        
+        // Re-sync wallet balances and logs from the DB
+        await fetchUpdatedProfile();
+        await fetchRedemptionHistory();
+      } else {
+        const errMsg = data?.error || "Transaction declined by database constraints.";
+        alert(`Redemption Failed: ${errMsg}`);
+      }
+    } catch (err: any) {
+      console.error("Checkout transaction error:", err);
+      alert(`Redemption Failed: ${err.message || "An unexpected error occurred during checkout."}`);
+    } finally {
+      setRedeemingId(null);
+    }
   };
 
-  // Transfer logic
+  // Transfer logic (keeps UI presentation)
   const handleTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(transferAmount);
@@ -99,14 +190,19 @@ export default function RewardsPage() {
     }
 
     // Deduct context balance
-    setProfile((prev: any) => ({
-      ...prev,
-      mentoraCredits: (prev.mentoraCredits || prev.mentora_credits || 0) - amount
-    }));
+    setProfile((prev: any) => {
+      if (!prev) return prev;
+      const nextBal = Math.max(0, (prev.mentoraCredits || prev.mentora_credits || 0) - amount);
+      return {
+        ...prev,
+        mentoraCredits: nextBal,
+        mentora_credits: nextBal
+      };
+    });
 
     setTransferredCredits(prev => prev + amount);
 
-    // Log transaction
+    // Log transaction locally
     const newTx: Transaction = {
       id: Date.now() + 1,
       description: `Transferred to ${transferName} (${relationship}) - ID: ${transferId}`,
@@ -150,22 +246,22 @@ export default function RewardsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="p-5 flex flex-col justify-between h-28 bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
           <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Wallet Balance</span>
-          <p className="text-2xl font-black text-foreground">{mentoraCredits} MC</p>
+          <p className="text-2xl font-black text-foreground">{mentoraCredits.toLocaleString()} MC</p>
           <span className="text-[9px] text-muted-foreground">Available for immediate redemption</span>
         </Card>
         <Card className="p-5 flex flex-col justify-between h-28">
           <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Lifetime Earned</span>
-          <p className="text-2xl font-black text-foreground">1,240 MC</p>
+          <p className="text-2xl font-black text-foreground">{lifetimeEarned.toLocaleString()} MC</p>
           <span className="text-[9px] text-emerald-400 font-semibold">+100 MC this week</span>
         </Card>
         <Card className="p-5 flex flex-col justify-between h-28">
           <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Redeemed Spent</span>
-          <p className="text-2xl font-black text-foreground">{spentCredits} MC</p>
+          <p className="text-2xl font-black text-foreground">{spentCredits.toLocaleString()} MC</p>
           <span className="text-[9px] text-muted-foreground">Exchanged in Rewards Store</span>
         </Card>
         <Card className="p-5 flex flex-col justify-between h-28">
           <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Transferred Credits</span>
-          <p className="text-2xl font-black text-foreground">{transferredCredits} MC</p>
+          <p className="text-2xl font-black text-foreground">{transferredCredits.toLocaleString()} MC</p>
           <span className="text-[9px] text-muted-foreground">Excluded from XP/Leaderboards</span>
         </Card>
       </div>
@@ -248,17 +344,26 @@ export default function RewardsPage() {
                 <Receipt size={14} className="text-primary" /> Wallet Transactions History
               </h3>
               <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
-                {transactions.map(tx => (
-                  <div key={tx.id} className="p-3 bg-background border border-border rounded-xl flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-bold text-foreground leading-snug">{tx.description}</p>
-                      <span className="text-[10px] text-muted-foreground">{tx.date}</span>
-                    </div>
-                    <span className={`font-black text-sm ${tx.type === 'earn' ? 'text-emerald-400' : tx.type === 'spend' ? 'text-rose-400' : 'text-primary'}`}>
-                      {tx.type === 'earn' ? `+${tx.amount}` : `-${tx.amount}`} MC
-                    </span>
+                {loadingHistory ? (
+                  <div className="space-y-2 py-4">
+                    <SkeletonLoader />
+                    <SkeletonLoader />
                   </div>
-                ))}
+                ) : transactions.length > 0 ? (
+                  transactions.map(tx => (
+                    <div key={tx.id} className="p-3 bg-background border border-border rounded-xl flex items-center justify-between text-xs animate-in fade-in duration-200">
+                      <div>
+                        <p className="font-bold text-foreground leading-snug">{tx.description}</p>
+                        <span className="text-[10px] text-muted-foreground">{tx.date}</span>
+                      </div>
+                      <span className={`font-black text-sm ${tx.type === 'earn' ? 'text-emerald-400' : tx.type === 'spend' ? 'text-rose-400' : 'text-primary'}`}>
+                        {tx.type === 'earn' ? `+${tx.amount}` : `-${tx.amount}`} MC
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground italic text-center py-6">No transaction records found.</p>
+                )}
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground italic border-t border-border/50 pt-3 mt-4">
@@ -297,30 +402,69 @@ export default function RewardsPage() {
         <h3 className="text-sm font-black uppercase tracking-wider text-muted-foreground">
           Rewards Catalogue Store
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rewardsList.map(reward => (
-            <div key={reward.id} className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between hover:border-primary/20 transition-all h-48">
-              <div>
-                <div className="flex justify-between items-start gap-4">
-                  <span className="text-[8px] px-2 py-0.5 rounded bg-background border border-border text-muted-foreground font-black uppercase tracking-wider">
-                    {reward.category}
-                  </span>
-                  <strong className="text-xs text-primary font-black font-mono">
-                    💰 {reward.cost} MC
-                  </strong>
+        
+        {loadingCatalog ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <SkeletonLoader className="h-48" />
+            <SkeletonLoader className="h-48" />
+            <SkeletonLoader className="h-48" />
+          </div>
+        ) : rewardsList.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-200">
+            {rewardsList.map(reward => {
+              const isRedeeming = redeemingId === reward.id;
+              const rewardCost = Number(reward.cost || 0);
+              const isAvailable = reward.availability === true || String(reward.availability) === 'true';
+              const hasBalance = mentoraCredits >= rewardCost;
+              const hasRedeemed = !reward.is_repeatable && transactions.some((tx: any) => Number(tx.rewardId) === Number(reward.id));
+              const isBtnDisabled = isRedeeming || !isAvailable || !hasBalance || hasRedeemed;
+
+              return (
+                <div key={reward.id} className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between hover:border-primary/20 transition-all h-48">
+                  <div>
+                    <div className="flex justify-between items-start gap-4">
+                      <span className="text-[8px] px-2 py-0.5 rounded bg-background border border-border text-muted-foreground font-black uppercase tracking-wider">
+                        {reward.category}
+                      </span>
+                      <strong className="text-xs text-primary font-black font-mono">
+                        💰 {rewardCost} MC
+                      </strong>
+                    </div>
+                    <h4 className="text-xs font-black text-foreground mt-3 mb-1.5 leading-snug">{reward.title}</h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{reward.description}</p>
+                  </div>
+                  <button
+                    disabled={isBtnDisabled}
+                    onClick={() => handleRedeem(reward)}
+                    className={`w-full font-bold py-2 rounded-xl text-xs transition-all mt-4 ${
+                      isBtnDisabled 
+                        ? 'bg-muted text-muted-foreground cursor-not-allowed border border-border opacity-50'
+                        : 'bg-primary hover:bg-primary/95 text-white active:scale-95'
+                    }`}
+                  >
+                    {!isAvailable 
+                      ? 'Unavailable'
+                      : hasRedeemed 
+                        ? 'Already Redeemed'
+                        : !hasBalance
+                          ? 'Insufficient Credits'
+                          : isRedeeming 
+                            ? 'Processing Checkout...' 
+                            : 'Redeem Reward'
+                    }
+                  </button>
                 </div>
-                <h4 className="text-xs font-black text-foreground mt-3 mb-1.5 leading-snug">{reward.title}</h4>
-                <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{reward.desc}</p>
-              </div>
-              <button
-                onClick={() => handleRedeem(reward)}
-                className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2 rounded-xl text-xs transition-all active:scale-95 mt-4"
-              >
-                Redeem Reward
-              </button>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-8">
+            <EmptyState
+              title="Catalog store is empty"
+              message="Check back later for available merchandise and course vouchers."
+            />
+          </div>
+        )}
       </div>
     </div>
   );

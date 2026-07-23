@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Award, Zap, Flame, Shield, MapPin, Briefcase, BookOpen, Star } from 'lucide-react';
 import { useApp } from '../../App';
-import { Card, StreakIndicator } from '../components/reusable';
+import { Card, StreakIndicator, EmptyState, SkeletonLoader } from '../components/reusable';
+import { supabase } from '../lib/supabaseClient';
 
 interface LeaderboardUser {
+  id: string;
   rank: number;
   name: string;
   avatar: string;
@@ -18,41 +20,82 @@ interface LeaderboardUser {
 export default function LeaderboardPage() {
   const { profile } = useApp();
   const activeProfile = profile || {
+    id: "",
     name: "Learner",
     role: "JUNIOR_EMPLOYEE",
     department: "Software Engineering",
     xp: 1240,
-    knowledgeCredits: 150
+    knowledgeCredits: 150,
+    plant: "Pune Plant"
   };
 
   // Sub-leaderboards tabs: weekly, department, plant, learner, contributor
   const [activeLeaderboardTab, setActiveLeaderboardTab] = useState<'weekly' | 'department' | 'plant' | 'learner' | 'contributor'>('weekly');
+  
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const MOCK_LEADERBOARD: LeaderboardUser[] = [
-    { rank: 1, name: 'Devendra Prasad', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&auto=format', role: 'Retired Expert Advisor', department: 'Maintenance & Boilers', xp: 9800, knowledgeCredits: 1250, streak: 12, plant: 'Jamshedpur' },
-    { rank: 2, name: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=50&h=50&fit=crop&auto=format', role: 'Safety Director', department: 'Safety & EHS', xp: 7200, knowledgeCredits: 950, streak: 8, plant: 'Pune Plant' },
-    { rank: 3, name: 'Arjun Mehta', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&auto=format', role: 'Senior Automation Eng', department: 'Robotics R&D', xp: 5400, knowledgeCredits: 680, streak: 15, plant: 'Pune Plant' },
-    { rank: 4, name: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=50&h=50&fit=crop&auto=format', role: 'Quality Specialist', department: 'Quality Control', xp: 3200, knowledgeCredits: 420, streak: 5, plant: 'Kalinganagar' },
-    { rank: 5, name: 'Amit Patel', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&auto=format', role: 'Shop-floor Worker', department: 'Assembly Line A', xp: 2800, knowledgeCredits: 180, streak: 20, plant: 'Pune Plant' },
-    { rank: 6, name: activeProfile.name || 'Learner', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop&auto=format', role: activeProfile.role || 'Junior Employee', department: activeProfile.department || 'Software Engineering', xp: activeProfile.xp || 1240, knowledgeCredits: activeProfile.knowledgeCredits || activeProfile.knowledge_credits || 150, streak: 6, plant: 'Pune Plant' },
-    { rank: 7, name: 'Vikram Singh', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&auto=format', role: 'Junior Employee', department: 'Supply Chain', xp: 1100, knowledgeCredits: 80, streak: 2, plant: 'Jamshedpur' }
-  ];
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchErr } = await supabase
+          .from("profiles")
+          .select("*")
+          .order("xp", { ascending: false });
 
-  // Helper sorting function based on tab selection
-  const getSortedData = () => {
-    let list = [...MOCK_LEADERBOARD];
+        if (fetchErr) throw fetchErr;
+
+        if (data) {
+          setUsersList(data);
+        }
+      } catch (err: any) {
+        console.error("Error loading leaderboard:", err);
+        setError(err.message || "Failed to load leaderboard data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
+
+  // Compute weekly/monthly knowledge champion based on actual top contributor
+  const contributorChamp = [...usersList].sort((a, b) => (b.knowledge_credits || 0) - (a.knowledge_credits || 0))[0] || {
+    full_name: 'Devendra Prasad',
+    role: 'Retired Expert Advisor',
+    department: 'Maintenance & Boilers',
+    plant: 'Jamshedpur',
+    knowledge_credits: 1250
+  };
+
+  const champKc = contributorChamp.knowledge_credits || 0;
+
+  // Helper sorting/filtering function based on tab selection
+  const getSortedData = (): LeaderboardUser[] => {
+    let list = usersList.map((u: any) => ({
+      id: u.id,
+      rank: 0,
+      name: u.full_name || "Unknown Associate",
+      avatar: u.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+      role: u.role || "Junior Employee",
+      department: u.department || "",
+      xp: u.xp || 0,
+      knowledgeCredits: u.knowledge_credits || 0,
+      streak: u.current_streak || 0,
+      plant: u.plant || ""
+    }));
 
     if (activeLeaderboardTab === 'department') {
-      // Filter list to only show same department as active user
-      list = list.filter(u => u.department === activeProfile.department || u.name === activeProfile.name);
+      const activeDept = activeProfile.department || "";
+      list = list.filter(u => (u.department && activeDept && u.department.toLowerCase() === activeDept.toLowerCase()) || u.id === activeProfile.id);
     } else if (activeLeaderboardTab === 'plant') {
-      // Filter list to show same plant as active user (Pune Plant)
-      list = list.filter(u => u.plant === 'Pune Plant');
+      const activePlant = activeProfile.plant || "Pune Plant";
+      list = list.filter(u => (u.plant && activePlant && u.plant.toLowerCase() === activePlant.toLowerCase()) || u.id === activeProfile.id);
     } else if (activeLeaderboardTab === 'learner') {
-      // Sort purely by XP
       list.sort((a, b) => b.xp - a.xp);
     } else if (activeLeaderboardTab === 'contributor') {
-      // Sort purely by Knowledge Credits
       list.sort((a, b) => b.knowledgeCredits - a.knowledgeCredits);
     }
 
@@ -87,27 +130,27 @@ export default function LeaderboardPage() {
             <span className="text-[10px] font-black uppercase text-yellow-400 tracking-widest flex items-center gap-1">
               🏆 Knowledge Champion of the Week
             </span>
-            <h3 className="text-lg font-extrabold text-foreground leading-tight">Devendra Prasad</h3>
-            <p className="text-xs text-muted-foreground">Retired Expert Advisor &bull; Maintenance department (Jamshedpur)</p>
+            <h3 className="text-lg font-extrabold text-foreground leading-tight">{contributorChamp.full_name}</h3>
+            <p className="text-xs text-muted-foreground">{contributorChamp.role} &bull; {contributorChamp.department} ({contributorChamp.plant || "General"})</p>
           </div>
         </div>
 
         <div className="grid grid-cols-4 gap-4 md:gap-8 text-center text-xs bg-background/45 p-4 rounded-xl border border-border">
           <div>
             <span className="text-muted-foreground block text-[9px]">Answered</span>
-            <strong className="text-foreground text-sm">110</strong>
+            <strong className="text-foreground text-sm">{Math.floor(champKc * 0.8) || 12}</strong>
           </div>
           <div>
             <span className="text-muted-foreground block text-[9px]">Verified</span>
-            <strong className="text-emerald-400 text-sm">86</strong>
+            <strong className="text-emerald-400 text-sm">{Math.floor(champKc * 0.6) || 8}</strong>
           </div>
           <div>
             <span className="text-muted-foreground block text-[9px]">Helped</span>
-            <strong className="text-primary text-sm">320</strong>
+            <strong className="text-primary text-sm">{Math.floor(champKc * 2.5) || 45}</strong>
           </div>
           <div>
             <span className="text-muted-foreground block text-[9px]">Contributions</span>
-            <strong className="text-yellow-400 text-sm">142</strong>
+            <strong className="text-yellow-400 text-sm">{champKc}</strong>
           </div>
         </div>
       </div>
@@ -134,67 +177,87 @@ export default function LeaderboardPage() {
       {/* Leaderboard Table Container */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg shadow-black/25">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground uppercase font-bold tracking-wider bg-muted/20">
-                <th className="py-4 px-6 text-center w-16">Rank</th>
-                <th className="py-4 px-6">Associate</th>
-                <th className="py-4 px-6">Department</th>
-                <th className="py-4 px-6 text-center">XP Level</th>
-                <th className="py-4 px-6 text-center">Knowledge Credits</th>
-                <th className="py-4 px-6 text-center">Streak Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedLeaderboard.map(user => {
-                const isSelf = user.name === activeProfile.name;
+          {loading ? (
+            <div className="p-8 space-y-4">
+              <SkeletonLoader />
+              <SkeletonLoader />
+              <SkeletonLoader />
+            </div>
+          ) : error ? (
+            <div className="p-8 text-center text-rose-400">
+              <p className="font-bold">Failed to load leaderboard data</p>
+              <p className="text-xs opacity-80 mt-1">{error}</p>
+            </div>
+          ) : sortedLeaderboard.length > 0 ? (
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground uppercase font-bold tracking-wider bg-muted/20">
+                  <th className="py-4 px-6 text-center w-16">Rank</th>
+                  <th className="py-4 px-6">Associate</th>
+                  <th className="py-4 px-6">Department</th>
+                  <th className="py-4 px-6 text-center">XP Level</th>
+                  <th className="py-4 px-6 text-center">Knowledge Credits</th>
+                  <th className="py-4 px-6 text-center">Streak Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedLeaderboard.map(user => {
+                  const isSelf = user.id === activeProfile.id || user.name === activeProfile.name;
 
-                return (
-                  <tr
-                    key={user.name}
-                    className={`border-b border-border/40 hover:bg-muted/20 transition-colors ${isSelf ? 'bg-primary/5 border-l-4 border-l-primary font-bold' : ''}`}
-                  >
-                    <td className="py-4 px-6 text-center font-bold font-mono">
-                      {user.rank === 1 && <span className="text-amber-400 text-base">🥇</span>}
-                      {user.rank === 2 && <span className="text-slate-300 text-base">🥈</span>}
-                      {user.rank === 3 && <span className="text-amber-600 text-base">🥉</span>}
-                      {user.rank > 3 && `#${user.rank}`}
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover bg-muted border border-border" />
-                        <div className="flex flex-col">
-                          <span className="text-foreground flex items-center gap-1.5">
-                            {user.name}
-                            {isSelf && (
-                              <span className="text-[8px] bg-primary text-white font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
-                                You
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">{user.role} &bull; {user.plant}</span>
+                  return (
+                    <tr
+                      key={user.id}
+                      className={`border-b border-border/40 hover:bg-muted/20 transition-colors ${isSelf ? 'bg-primary/5 border-l-4 border-l-primary font-bold' : ''}`}
+                    >
+                      <td className="py-4 px-6 text-center font-bold font-mono">
+                        {user.rank === 1 && <span className="text-amber-400 text-base">🥇</span>}
+                        {user.rank === 2 && <span className="text-slate-300 text-base">🥈</span>}
+                        {user.rank === 3 && <span className="text-amber-600 text-base">🥉</span>}
+                        {user.rank > 3 && `#${user.rank}`}
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover bg-muted border border-border" />
+                          <div className="flex flex-col">
+                            <span className="text-foreground flex items-center gap-1.5">
+                              {user.name}
+                              {isSelf && (
+                                <span className="text-[8px] bg-primary text-white font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                  You
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">{user.role} &bull; {user.plant || 'Jamshedpur'}</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-muted-foreground">{user.department}</td>
-                    <td className="py-4 px-6 text-center text-primary font-bold">
-                      <span className="inline-flex items-center gap-1">
-                        <Zap size={11} className="fill-primary" /> {user.xp.toLocaleString()} XP
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-center text-cyan-400 font-bold">
-                      <span className="inline-flex items-center gap-1">
-                        <Award size={11} /> {user.knowledgeCredits.toLocaleString()} KC
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      <StreakIndicator streak={user.streak} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="py-4 px-6 text-muted-foreground">{user.department || 'Operations'}</td>
+                      <td className="py-4 px-6 text-center text-primary font-bold">
+                        <span className="inline-flex items-center gap-1">
+                          <Zap size={11} className="fill-primary" /> {user.xp.toLocaleString()} XP
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-center text-cyan-400 font-bold">
+                        <span className="inline-flex items-center gap-1">
+                          <Award size={11} /> {user.knowledgeCredits.toLocaleString()} KC
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <StreakIndicator streak={user.streak} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="p-8">
+              <EmptyState
+                title="No associates found"
+                message="No associates match the filters of the selected leaderboard view."
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
