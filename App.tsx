@@ -1431,12 +1431,23 @@ function TopNav({ title, onNavigate, onToggleMobileMenu }: { title: string; onNa
             value={activeProfile.role}
             onChange={async (e) => {
               const r = e.target.value as UserRole;
-              const mockUser = await mockService.fetchCurrentUser(r);
-              setProfile({
-                ...mockUser,
-                avatar_url: mockUser.avatar, 
-                full_name: mockUser.name
-              });
+              if (user) {
+                const { error: roleErr } = await supabase
+                  .from("profiles")
+                  .update({ role: r.toLowerCase() })
+                  .eq("id", user.id);
+                if (roleErr) {
+                  console.error("Error syncing role update to Supabase:", roleErr.message);
+                }
+                await fetchProfileAndData(user.id);
+              } else {
+                const mockUser = await mockService.fetchCurrentUser(r);
+                setProfile({
+                  ...mockUser,
+                  avatar_url: mockUser.avatar, 
+                  full_name: mockUser.name
+                });
+              }
             }}
             className="bg-transparent text-foreground outline-none font-semibold cursor-pointer border-none p-0 pr-1 text-xs"
             style={{ fontFamily: "'Poppins', sans-serif" }}
@@ -4782,6 +4793,11 @@ export default function App() {
 
   const completeMission = async (missionId: number, event?: React.MouseEvent) => {
     if (!user) return;
+    const currentMission = activeMissions.find(m => m.id === missionId);
+    if (!currentMission || currentMission.status === 'completed') {
+      console.log("Mission already completed or not found, skipping completion.");
+      return;
+    }
     try {
       const { error: pErr } = await supabase
         .from("user_missions_progress")

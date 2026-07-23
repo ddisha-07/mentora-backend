@@ -182,6 +182,16 @@ export function LearningBitePlayer({
 
       const xpEarned = activeBite.xp_reward || 20;
 
+      // Check if this bite has already been completed in the database
+      const { data: existingBite } = await supabase
+        .from("user_bite_progress")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("bite_id", activeBite.id)
+        .maybeSingle();
+
+      const alreadyCompleted = existingBite && existingBite.status === "completed";
+
       // 1. Record User Bite Progress
       const { error: biteError } = await supabase
         .from("user_bite_progress")
@@ -202,23 +212,24 @@ export function LearningBitePlayer({
         console.error("Error saving user bite progress:", biteError);
       }
 
-      // 2. Fetch updated profile to add XP
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("xp")
-        .eq("id", user.id)
-        .single();
-      
-      const currentXp = (profileData?.xp || 0) + xpEarned;
+      // Only award bite XP to profile if this is the first completion
+      if (!alreadyCompleted) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("xp")
+          .eq("id", user.id)
+          .single();
+        
+        const currentXp = (profileData?.xp || 0) + xpEarned;
 
-      // 3. Update profile XP
-      const { error: profError } = await supabase
-        .from("profiles")
-        .update({ xp: currentXp })
-        .eq("id", user.id);
+        const { error: profError } = await supabase
+          .from("profiles")
+          .update({ xp: currentXp })
+          .eq("id", user.id);
 
-      if (!profError) {
-        setProfile((prev: any) => prev ? { ...prev, xp: currentXp } : null);
+        if (!profError) {
+          setProfile((prev: any) => prev ? { ...prev, xp: currentXp } : null);
+        }
       }
 
       // 4. Fetch updated bite progress
@@ -230,7 +241,7 @@ export function LearningBitePlayer({
         setBiteProgress(freshBiteProg);
       }
 
-      onCompleteBite(activeBite.id, xpEarned);
+      onCompleteBite(activeBite.id, alreadyCompleted ? 0 : xpEarned);
 
       // Check if all bites for this activity are completed (using timing-safe check)
       const completedBiteIds = new Set([
@@ -241,6 +252,16 @@ export function LearningBitePlayer({
 
       if (allCompleted) {
         const activityXp = 50;
+
+        // Check if the activity has already been marked completed
+        const { data: existingAct } = await supabase
+          .from("user_activity_progress")
+          .select("status")
+          .eq("user_id", user.id)
+          .eq("activity_id", activityId)
+          .maybeSingle();
+
+        const actAlreadyCompleted = existingAct && existingAct.status === "completed";
         
         const { error: actError } = await supabase
           .from("user_activity_progress")
@@ -266,7 +287,28 @@ export function LearningBitePlayer({
           setActivityProgress(freshActProg);
         }
 
-        onAllBitesCompleted(activityXp);
+        // Only award activity bonus XP to profile if this is the first completion
+        if (!actAlreadyCompleted) {
+          const { data: profileData2 } = await supabase
+            .from("profiles")
+            .select("xp")
+            .eq("id", user.id)
+            .single();
+          
+          const nextXp = (profileData2?.xp || 0) + activityXp;
+          const { error: profError2 } = await supabase
+            .from("profiles")
+            .update({ xp: nextXp })
+            .eq("id", user.id);
+
+          if (!profError2) {
+            setProfile((prev: any) => prev ? { ...prev, xp: nextXp } : null);
+          }
+          onAllBitesCompleted(activityXp);
+        } else {
+          onAllBitesCompleted(0);
+        }
+        
         onClose(); // Automatically return the user to the Course Details / Interactive Skill Path
       } else {
         if (currentBiteIdx < totalBitesCount - 1) {
