@@ -5163,7 +5163,7 @@ export default function App() {
       if (currentUser) {
         await fetchProfileAndData(currentUser.id);
         if (event === "SIGNED_IN") {
-          setPage(prev => (prev === "landing" || prev === "login" || prev === "" ? "dashboard" : prev));
+          setPage(prev => (prev === "login" || prev === "" ? "dashboard" : prev));
         }
       } else {
         setProfile(null);
