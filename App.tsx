@@ -5242,6 +5242,7 @@ export default function App() {
   const toggleBookmark = async (item: { id: string | number; type: string; title: string; desc: string; category: string; page: Page }) => {
     if (!user) return;
     const isSaved = (savedItems || []).some(x => String(x.id) === String(item.id) && x.type === item.type);
+    console.log("TOGGLE BOOKMARK CLICKED", { item, isSaved, savedItems });
     try {
       if (isSaved) {
         const { error } = await supabase
@@ -5255,7 +5256,7 @@ export default function App() {
       } else {
         const { error } = await supabase
           .from("saved_items")
-          .insert({
+          .upsert({
             user_id: user.id,
             item_id: String(item.id),
             item_type: item.type,
@@ -5263,7 +5264,7 @@ export default function App() {
             desc_content: item.desc || "",
             category: item.category,
             page_route: item.page
-          });
+          }, { onConflict: "user_id,item_id,item_type" });
         if (error) throw error;
         setSavedItems(prev => [...prev, item]);
       }
