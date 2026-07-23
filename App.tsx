@@ -5038,7 +5038,6 @@ export default function App() {
           category: item.category,
           page: item.page_route
         }));
-        console.log("FETCHED BOOKMARKS FROM SUPABASE:", mappedSaved);
         setSavedItems(mappedSaved);
       }
     } catch (err) {

@@ -24,29 +24,21 @@ interface TrainingSession {
 }
 
 export default function TrainingPage() {
-  const { profile, savedItems, setSavedItems } = useApp();
+  const { profile, savedItems, toggleBookmark } = useApp();
 
-  const handleToggleBookmark = (session: TrainingSession) => {
-    const isSaved = (savedItems || []).some(x => Number(x.id) === Number(session.id) && x.type === 'recording');
-    if (isSaved) {
-      setSavedItems(prev => prev.filter(x => !(Number(x.id) === Number(session.id) && x.type === 'recording')));
-    } else {
-      setSavedItems(prev => [
-        ...prev,
-        {
-          id: session.id,
-          type: 'recording',
-          title: session.title,
-          desc: `Training recording by ${session.trainer || 'L&D Trainer'}.`,
-          category: 'Recordings',
-          page: 'training'
-        }
-      ]);
-    }
+  const handleToggleBookmark = async (session: TrainingSession) => {
+    await toggleBookmark({
+      id: String(session.id),
+      type: 'recording',
+      title: session.title,
+      desc: `Training recording by ${session.trainer || 'L&D Trainer'}.`,
+      category: 'Recordings',
+      page: 'training'
+    });
   };
 
   const isBookmarked = (session: TrainingSession) => {
-    return (savedItems || []).some(x => Number(x.id) === Number(session.id) && x.type === 'recording');
+    return (savedItems || []).some(x => String(x.id) === String(session.id) && x.type === 'recording');
   };
 
   const activeProfile = profile || {

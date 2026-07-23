@@ -20,29 +20,21 @@ interface UseCase {
 }
 
 export default function AIInMyWorkPage() {
-  const { profile, setPage, savedItems, setSavedItems } = useApp();
+  const { profile, setPage, savedItems, toggleBookmark } = useApp();
 
-  const handleToggleBookmark = (uc: UseCase) => {
-    const isSaved = (savedItems || []).some(x => x.id === uc.id && x.type === 'ai_usecase');
-    if (isSaved) {
-      setSavedItems(prev => prev.filter(x => !(x.id === uc.id && x.type === 'ai_usecase')));
-    } else {
-      setSavedItems(prev => [
-        ...prev,
-        {
-          id: uc.id,
-          type: 'ai_usecase',
-          title: uc.title,
-          desc: uc.shortDesc,
-          category: 'AI Use Cases',
-          page: 'ai-in-my-work'
-        }
-      ]);
-    }
+  const handleToggleBookmark = async (uc: UseCase) => {
+    await toggleBookmark({
+      id: String(uc.id),
+      type: 'ai_usecase',
+      title: uc.title,
+      desc: uc.shortDesc,
+      category: 'AI Use Cases',
+      page: 'ai-in-my-work'
+    });
   };
 
   const isBookmarked = (uc: UseCase) => {
-    return (savedItems || []).some(x => x.id === uc.id && x.type === 'ai_usecase');
+    return (savedItems || []).some(x => String(x.id) === String(uc.id) && x.type === 'ai_usecase');
   };
 
   const activeProfile = profile || {

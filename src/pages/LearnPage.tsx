@@ -17,29 +17,21 @@ export default function LearnPage({
   onNavigateCourse: (id: number) => void;
   onNavigateCertificates: () => void;
 }) {
-  const { savedItems, setSavedItems, journeyStages, learningActivities, activityProgress, activeMissions, completeMission } = useApp();
+  const { savedItems, toggleBookmark, journeyStages, learningActivities, activityProgress, activeMissions, completeMission } = useApp();
 
   const activeLearnMission = (activeMissions || []).find(
     (m: any) => m.status === 'in_progress' && (m.type === 'LEARNING' || m.type === 'QUIZ')
   );
 
-  const handleToggleBookmark = (course: any) => {
-    const isSaved = (savedItems || []).some(x => Number(x.id) === Number(course.id) && x.type === 'course');
-    if (isSaved) {
-      setSavedItems(prev => prev.filter(x => !(Number(x.id) === Number(course.id) && x.type === 'course')));
-    } else {
-      setSavedItems(prev => [
-        ...prev,
-        {
-          id: course.id,
-          type: 'course',
-          title: course.title,
-          desc: `Journey guided by ${course.instructor || 'L&D Instructor'}.`,
-          category: 'Journeys',
-          page: 'learn'
-        }
-      ]);
-    }
+  const handleToggleBookmark = async (course: any) => {
+    await toggleBookmark({
+      id: String(course.id),
+      type: 'course',
+      title: course.title,
+      desc: `Journey guided by ${course.instructor || 'L&D Instructor'}.`,
+      category: 'Journeys',
+      page: 'learn'
+    });
   };
 
   const [activeTab, setActiveTab] = useState<'my_learning' | 'catalog'>('my_learning');

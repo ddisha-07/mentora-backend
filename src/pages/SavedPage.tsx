@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bookmark, Search, Trash2, ArrowRight, BookOpen, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { useApp } from '../../App';
 import { Card, EmptyState, SkeletonLoader } from '../components/reusable';
+import { supabase } from '../lib/supabaseClient';
 
 export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void }) {
-  const { profile, savedItems, toggleBookmark, setSelectedSopId } = useApp();
+  const { profile, savedItems, setSavedItems, toggleBookmark, setSelectedSopId, courses, knowledgeQuestions, user } = useApp();
 
   const activeProfile = profile || {
     name: 'Learner',
@@ -18,6 +19,84 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Dynamic resolution state for database resolution of bookmarks
+  const [sopsList, setSopsList] = useState<any[]>([]);
+  const [resolving, setResolving] = useState(true);
+
+  // Fetch SOPs on mount and when savedItems changes
+  useEffect(() => {
+    const fetchSops = async () => {
+      setResolving(true);
+      try {
+        const { data, error } = await supabase
+          .from("knowledge_articles")
+          .select("*");
+        if (!error && data) {
+          setSopsList(data);
+        }
+      } catch (err) {
+        console.error("Error fetching SOPs for resolution:", err);
+      } finally {
+        setResolving(false);
+      }
+    };
+    fetchSops();
+  }, [savedItems]);
+
+  // Resolve savedItems against database/global context lists
+  const resolvedItems = (savedItems || []).map((bookmark: any) => {
+    if (bookmark.type === 'sop') {
+      const matchedSop = sopsList.find(a => String(a.id) === String(bookmark.id));
+      if (matchedSop) {
+        return {
+          id: bookmark.id,
+          type: 'sop',
+          title: matchedSop.title,
+          sopCode: matchedSop.sop_code,
+          department: matchedSop.department,
+          category: matchedSop.category,
+          isOfficial: matchedSop.is_official,
+          isPreserved: matchedSop.is_preserved,
+          desc: matchedSop.description || (matchedSop.is_preserved ? "Preserved Expert Knowledge" : "Official SOP Document"),
+          page: 'knowledge'
+        };
+      }
+    } else if (bookmark.type === 'course') {
+      const matchedCourse = (courses || []).find(c => String(c.id) === String(bookmark.id));
+      if (matchedCourse) {
+        return {
+          id: bookmark.id,
+          type: 'course',
+          title: matchedCourse.title,
+          desc: matchedCourse.description,
+          category: matchedCourse.category || 'Courses',
+          page: 'courses'
+        };
+      }
+    } else if (bookmark.type === 'question') {
+      const matchedQuestion = (knowledgeQuestions || []).find(q => String(q.id) === String(bookmark.id));
+      if (matchedQuestion) {
+        return {
+          id: bookmark.id,
+          type: 'question',
+          title: matchedQuestion.title,
+          desc: matchedQuestion.description,
+          category: matchedQuestion.topic || 'Knowledge Exchange',
+          page: 'knowledge-exchange'
+        };
+      }
+    }
+    // Fallback to bookmark fields if not resolved yet
+    return {
+      id: bookmark.id,
+      type: bookmark.type,
+      title: bookmark.title,
+      desc: bookmark.desc,
+      category: bookmark.category,
+      page: bookmark.page
+    };
+  });
+
   const handleRemove = async (item: any) => {
     await toggleBookmark({
       id: item.id,
@@ -29,25 +108,43 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
     });
   };
 
-  // Filter bookmarked items
-  const filteredItems = (savedItems || []).filter(item => {
+  // Filter resolved items
+  const filteredItems = resolvedItems.filter(item => {
     const matchesSearch = (item.title || "").toLowerCase().includes(search.toLowerCase()) ||
                           (item.desc || "").toLowerCase().includes(search.toLowerCase());
     const matchesTab = subTab === 'all' || item.type === subTab;
     return matchesSearch && matchesTab;
   });
-  console.log("SAVED PAGE RENDER", { savedItems, filteredItems, subTab, search });
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    if (!user) return;
     setLoading(true);
     setError(null);
-    setTimeout(() => {
-      setLoading(false);
-      // Randomly trigger mock error 15% of the time to demonstrate the error state!
-      if (Math.random() < 0.15) {
-        setError('Connection timeout. Failed to sync bookmarks from Jamshedpur cloud server.');
+    try {
+      const { data: savedData, error: savedErr } = await supabase
+        .from("saved_items")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (savedErr) throw savedErr;
+
+      if (savedData) {
+        const mappedSaved = savedData.map((item: any) => ({
+          id: item.item_id,
+          type: item.item_type,
+          title: item.title,
+          desc: item.desc_content,
+          category: item.category,
+          page: item.page_route
+        }));
+        setSavedItems(mappedSaved);
       }
-    }, 1000);
+    } catch (err: any) {
+      console.error("Error refreshing saved items:", err);
+      setError(err.message || 'Failed to sync bookmarks from cloud server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Personalized recommendations database
@@ -155,7 +252,7 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
 
           {/* List display */}
           <div className="space-y-3">
-            {loading ? (
+            {loading || resolving ? (
               // Skeleton Loader State
               <div className="space-y-4">
                 <SkeletonLoader />
@@ -182,6 +279,24 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
                       <span className="text-[8px] bg-background border border-border px-2 py-0.5 rounded font-black text-primary uppercase tracking-wider">
                         {item.category || item.type}
                       </span>
+                      {item.type === 'sop' && (
+                        <>
+                          {item.sopCode && (
+                            <span className="text-[8px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                              {item.sopCode}
+                            </span>
+                          )}
+                          {item.isOfficial ? (
+                            <span className="text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                              Official SOP
+                            </span>
+                          ) : (
+                            <span className="text-[8px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                              Preserved Expert Knowledge
+                            </span>
+                          )}
+                        </>
+                      )}
                     </div>
                     <h4 className="text-xs md:text-sm font-bold text-foreground hover:text-primary transition-colors leading-snug">
                       {item.title}
