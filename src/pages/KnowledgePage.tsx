@@ -209,7 +209,7 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
                 { name: 'Mechanical Maintenance', count: 22 },
                 { name: 'Electrical & PLC Manuals', count: 18 },
                 { name: 'Software Architecture Guides', count: 8 },
-                { name: 'Preserved Legacy Logs', count: baseArticles.length + (preservedKnowledge?.length || 0) }
+                { name: 'Preserved Legacy Logs', count: articles.length + (preservedKnowledge?.length || 0) }
               ].map(dir => (
                 <div
                   key={dir.name}
