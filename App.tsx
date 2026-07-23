@@ -79,6 +79,7 @@ export type AppContextType = {
   setNotifsState: React.Dispatch<React.SetStateAction<any[]>>;
   page: Page;
   setPage: React.Dispatch<React.SetStateAction<Page>>;
+  toggleBookmark: (item: { id: string | number; type: string; title: string; desc: string; category: string; page: Page }) => Promise<void>;
 
   // Journey context fields
   journeyStages: any[];
@@ -4984,6 +4985,24 @@ export default function App() {
       if (biteProgData) {
         setBiteProgress(biteProgData);
       }
+
+      // 5. Fetch Saved Bookmarks
+      const { data: savedData, error: savedErr } = await supabase
+        .from("saved_items")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (!savedErr && savedData) {
+        const mappedSaved = savedData.map((item: any) => ({
+          id: item.item_id,
+          type: item.item_type,
+          title: item.title,
+          desc: item.desc_content,
+          category: item.category,
+          page: item.page_route
+        }));
+        setSavedItems(mappedSaved);
+      }
     } catch (err) {
       console.error("Error in fetchProfileAndData:", err);
     }
@@ -5220,12 +5239,47 @@ export default function App() {
     }
   };
 
+  const toggleBookmark = async (item: { id: string | number; type: string; title: string; desc: string; category: string; page: Page }) => {
+    if (!user) return;
+    const isSaved = (savedItems || []).some(x => String(x.id) === String(item.id) && x.type === item.type);
+    try {
+      if (isSaved) {
+        const { error } = await supabase
+          .from("saved_items")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("item_id", String(item.id))
+          .eq("item_type", item.type);
+        if (error) throw error;
+        setSavedItems(prev => prev.filter(x => !(String(x.id) === String(item.id) && x.type === item.type)));
+      } else {
+        const { error } = await supabase
+          .from("saved_items")
+          .insert({
+            user_id: user.id,
+            item_id: String(item.id),
+            item_type: item.type,
+            title: item.title,
+            desc_content: item.desc || "",
+            category: item.category,
+            page_route: item.page
+          });
+        if (error) throw error;
+        setSavedItems(prev => [...prev, item]);
+      }
+    } catch (err: any) {
+      console.error("Error toggling bookmark:", err);
+      alert("Failed to update bookmark: " + (err.message || err));
+    }
+  };
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
       setEnrollments([]);
+      setSavedItems([]);
       navigateTo("landing");
     } catch (err) {
       console.error("Error signing out:", err);
@@ -5273,6 +5327,7 @@ export default function App() {
       setNotifsState,
       page,
       setPage,
+      toggleBookmark,
       
       journeyStages,
       setJourneyStages,

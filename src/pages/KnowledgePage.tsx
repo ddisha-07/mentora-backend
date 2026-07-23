@@ -1,49 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Database, Search, FileText, ExternalLink, ShieldCheck, Bookmark, ArrowRight } from 'lucide-react';
 import { useApp } from '../../App';
 import { Card } from '../components/reusable';
+import { supabase } from '../lib/supabaseClient';
 
 export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) => void }) {
   const [search, setSearch] = useState('');
-  const { preservedKnowledge, savedItems, setSavedItems, activeMissions, completeMission } = useApp();
+  const { preservedKnowledge, savedItems, activeMissions, completeMission, toggleBookmark } = useApp();
+  
+  const [articles, setArticles] = useState<any[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+
+  useEffect(() => {
+    const loadArticles = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("knowledge_articles")
+          .select("*")
+          .order("id", { ascending: true });
+        
+        if (!error && data) {
+          setArticles(data);
+        }
+      } catch (err) {
+        console.error("Error loading knowledge articles:", err);
+      } finally {
+        setLoadingArticles(false);
+      }
+    };
+    loadArticles();
+  }, []);
 
   const activeHubMission = (activeMissions || []).find(
     (m: any) => m.status === 'in_progress' && (m.type === 'SOP_READING' || m.type === 'EXPERIENCE_SHARING')
   );
 
-  const handleToggleBookmark = (article: any) => {
-    const isSaved = (savedItems || []).some(x => x.id === article.id && x.type === 'sop');
-    if (isSaved) {
-      setSavedItems(prev => prev.filter(x => !(x.id === article.id && x.type === 'sop')));
-    } else {
-      setSavedItems(prev => [
-        ...prev,
-        {
-          id: article.id,
-          type: 'sop',
-          title: article.title,
-          desc: `Official document by ${article.author}.`,
-          category: 'SOPs',
-          page: 'knowledge'
-        }
-      ]);
-    }
+  const handleToggleBookmark = async (article: any) => {
+    await toggleBookmark({
+      id: String(article.id),
+      type: 'sop',
+      title: article.title,
+      desc: article.isPreserved ? `Preserved by expert ${article.author}.` : `Official document by ${article.author}.`,
+      category: 'SOPs',
+      page: 'knowledge'
+    });
   };
 
   const isBookmarked = (article: any) => {
-    return (savedItems || []).some(x => x.id === article.id && x.type === 'sop');
+    return (savedItems || []).some(x => String(x.id) === String(article.id) && x.type === 'sop');
   };
 
-  const baseArticles = [
-    { id: 1, title: 'Standard Boiler Valve Override Procedure', dept: 'Maintenance', views: 320, author: 'Devendra Prasad', content: 'Manual mechanical lock overrides: isolation of breaker panel 4B is required before using the override lever beneath the pressure gauge.' },
-    { id: 2, title: 'Modbus Gateway Telemetry Configuration Guidelines', dept: 'R&D / IT', views: 180, author: 'Arjun Mehta', content: 'Standard configuration steps for mapping Modbus registers into the SCADA console over RS-485 interfaces.' },
-    { id: 3, title: 'Safe Lockout/Tagout (LOTO) Protocols 2026', dept: 'Safety & EHS', views: 540, author: 'Sarah Chen', content: 'Centralized safety regulations detailing key-lock placements and color-coded tag indicators.' },
-    { id: 4, title: 'Turbine Thermal Expansion & Shaft Vibration Safety Limits', dept: 'Engineering', views: 210, author: 'Devendra Prasad', content: 'A guidelines memo outlining maximum operational vibration limits and temperature cooldown periods.' }
-  ];
-
-  // Combine default articles with expert preserved Q&A entries
+  // Combine database articles with expert preserved Q&A entries
   const allArticles = [
-    ...baseArticles,
+    ...articles,
     ...(preservedKnowledge || []).map((pk: any) => ({
       id: 'preserved_' + pk.id,
       title: pk.title,
@@ -56,9 +65,9 @@ export default function KnowledgePage({ onNavigate }: { onNavigate: (p: string) 
   ];
 
   const filteredArticles = allArticles.filter(a =>
-    a.title.toLowerCase().includes(search.toLowerCase()) ||
-    a.content.toLowerCase().includes(search.toLowerCase()) ||
-    a.author.toLowerCase().includes(search.toLowerCase())
+    (a.title || "").toLowerCase().includes(search.toLowerCase()) ||
+    (a.content || "").toLowerCase().includes(search.toLowerCase()) ||
+    (a.author || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const [activeArticle, setActiveArticle] = useState<any | null>(null);

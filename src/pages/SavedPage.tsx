@@ -4,7 +4,7 @@ import { useApp } from '../../App';
 import { Card, EmptyState, SkeletonLoader } from '../components/reusable';
 
 export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void }) {
-  const { profile, savedItems, setSavedItems } = useApp();
+  const { profile, savedItems, toggleBookmark } = useApp();
 
   const activeProfile = profile || {
     name: 'Learner',
@@ -18,8 +18,15 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleRemove = (id: any) => {
-    setSavedItems(prev => prev.filter(x => x.id !== id));
+  const handleRemove = async (item: any) => {
+    await toggleBookmark({
+      id: item.id,
+      type: item.type,
+      title: item.title,
+      desc: item.desc,
+      category: item.category,
+      page: item.page
+    });
   };
 
   // Filter bookmarked items
@@ -177,7 +184,7 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
                   </div>
 
                   <button
-                    onClick={() => handleRemove(item.id)}
+                    onClick={() => handleRemove(item)}
                     className="p-2 bg-background border border-border hover:border-rose-500/20 text-muted-foreground hover:text-rose-400 rounded-xl transition-all"
                     title="Remove Bookmark"
                   >

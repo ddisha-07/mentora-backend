@@ -1,47 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Shield, FileText, CheckCircle, Zap, BookOpen, Clock, Play } from 'lucide-react';
-import { mockService } from '../services/mockData';
 import { Skill, User, UserRole } from '../types';
 import { SkillProgress, RoleBadge, StreakIndicator } from '../components/reusable';
+import { supabase } from '../lib/supabaseClient';
 
 export default function SkillPassportPage({ userProfile }: { userProfile: User }) {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    mockService
-      .fetchSkills(userProfile.id)
-      .then(data => {
-        setSkills(data);
+    const loadSkills = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("user_skills_progress")
+          .select(`
+            progress,
+            skill_id,
+            skills (
+              id,
+              name,
+              category,
+              proficiency
+            )
+          `)
+          .eq("user_id", userProfile.id);
+
+        if (!error && data) {
+          const mappedSkills: Skill[] = data.map((row: any) => ({
+            id: row.skills?.id || row.skill_id,
+            name: row.skills?.name || 'Unknown Skill',
+            category: row.skills?.category || 'General',
+            proficiency: row.skills?.proficiency || 'Beginner',
+            progress: row.progress || 0
+          }));
+          setSkills(mappedSkills);
+        }
+      } catch (err) {
+        console.error("Error fetching skills progress:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      }
+    };
+    loadSkills();
   }, [userProfile.id]);
 
   const getNextSkillRecommendation = (role: UserRole) => {
     switch (role) {
       case 'SHOP_FLOOR_WORKER':
         return {
-          name: 'Emergency Boiler Valve Shutdown',
+          id: 202,
+          name: 'Safety Compliance',
           reason: 'Required for active shifts in Boiler Room Plant 2.',
           relevance: 'Ensures operational compliance with 2026 EHS standards.',
           time: '2 hours',
-          difficulty: 'Intermediate'
+          difficulty: 'Expert'
         };
       case 'JUNIOR_EMPLOYEE':
         return {
-          name: 'Zod Run-time Verification',
+          id: 205,
+          name: 'TypeScript & ES6+',
           reason: 'Recommended for mapping dynamic Supabase JSONB tables.',
           relevance: 'Guarantees typescript boundaries are validated on mount.',
           time: '4 hours',
-          difficulty: 'Beginner'
+          difficulty: 'Intermediate'
         };
       case 'SENIOR_EMPLOYEE':
         return {
-          name: 'Industrial SCADA Telemetry Systems',
+          id: 207,
+          name: 'Industrial IoT',
           reason: 'Needed for configuring the upcoming Pune Plant IIoT gateways.',
           relevance: 'Core competency for automation team leadership.',
           time: '8 hours',
@@ -49,15 +75,17 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
         };
       case 'OFFICER_MANAGER':
         return {
-          name: 'Strategic L&D Skill-Gap Analytics',
+          id: 208,
+          name: 'Curriculum Planning',
           reason: 'To optimize course allocation and talent mapping across departments.',
           relevance: 'Essential for tracking training progression.',
           time: '3 hours',
-          difficulty: 'Intermediate'
+          difficulty: 'Expert'
         };
       case 'RETIRED_EMPLOYEE':
         return {
-          name: 'Boiler Operation Archives preservation',
+          id: 209,
+          name: 'Steam Boiler Advising',
           reason: 'To record undocumented steam valve procedures.',
           relevance: 'Secures critical legacy turbine knowledge.',
           time: '5 hours',
@@ -65,7 +93,8 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
         };
       default:
         return {
-          name: 'Basic Platform Administration',
+          id: 201,
+          name: 'Machine Operations',
           reason: 'System operations check.',
           relevance: 'Provides full visibility over role audits.',
           time: '2 hours',
@@ -76,17 +105,38 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
 
   const nextSkill = getNextSkillRecommendation(userProfile.role);
 
-  const handleStartLearning = () => {
-    alert(`Enrolled in "${nextSkill.name}" Skill Track! Added to in-progress passport.`);
-    // Simulate adding skill to list
-    const newSkill: Skill = {
-      id: Date.now(),
-      name: nextSkill.name,
-      category: 'Recommended',
-      proficiency: nextSkill.difficulty as any,
-      progress: 5
-    };
-    setSkills(prev => [...prev, newSkill]);
+  const handleStartLearning = async () => {
+    const alreadyEnrolled = skills.some(s => s.id === nextSkill.id);
+    if (alreadyEnrolled) {
+      alert(`You are already learning or completed "${nextSkill.name}".`);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("user_skills_progress")
+        .insert({
+          user_id: userProfile.id,
+          skill_id: nextSkill.id,
+          progress: 5
+        });
+
+      if (error) throw error;
+
+      alert(`Enrolled in "${nextSkill.name}" Skill Track! Added to in-progress passport.`);
+      
+      const newSkill: Skill = {
+        id: nextSkill.id,
+        name: nextSkill.name,
+        category: 'Recommended',
+        proficiency: nextSkill.difficulty as any,
+        progress: 5
+      };
+      setSkills(prev => [...prev, newSkill]);
+    } catch (err: any) {
+      console.error("Error enrolling in skill:", err);
+      alert("Failed to start skill: " + (err.message || err));
+    }
   };
 
   return (

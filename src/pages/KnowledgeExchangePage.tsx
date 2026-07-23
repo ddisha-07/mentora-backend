@@ -20,7 +20,8 @@ export default function KnowledgeExchangePage() {
     savedItems,
     setSavedItems,
     activeMissions,
-    completeMission
+    completeMission,
+    toggleBookmark: toggleBookmarkCtx
   } = useApp();
 
   const activeProfile = profile || {
@@ -126,23 +127,15 @@ export default function KnowledgeExchangePage() {
   };
 
   // Toggle bookmark / saved state
-  const toggleBookmark = (q: KnowledgeQuestion) => {
-    const isSaved = (savedItems || []).some(x => String(x.id) === String(q.id) && x.type === 'question');
-    if (isSaved) {
-      setSavedItems(prev => prev.filter(x => !(String(x.id) === String(q.id) && x.type === 'question')));
-    } else {
-      setSavedItems(prev => [
-        ...prev,
-        {
-          id: q.id,
-          type: 'question',
-          title: q.title,
-          desc: q.description || `Question posted by ${q.author}.`,
-          category: 'Knowledge Exchange',
-          page: 'knowledge-exchange'
-        }
-      ]);
-    }
+  const toggleBookmark = async (q: KnowledgeQuestion) => {
+    await toggleBookmarkCtx({
+      id: String(q.id),
+      type: 'question',
+      title: q.title,
+      desc: q.description || `Question posted by ${q.author}.`,
+      category: 'Knowledge Exchange',
+      page: 'knowledge-exchange'
+    });
   };
 
   // Ask Question Submission
