@@ -4873,29 +4873,55 @@ export default function App() {
     "dashboard", "courses", "course-detail", "lesson", "ai-chat",
     "quiz", "quiz-results", "certificates", "profile", "settings", "announcements",
     "learn", "knowledge", "knowledge-exchange", "training", "ai-in-my-work",
-    "leaderboard", "rewards", "skill-passport", "saved", "admin"
+    "leaderboard", "rewards", "skill-passport", "saved", "admin", "sop-detail"
   ];
+
+  const parsePathname = (pathname: string) => {
+    const sopMatch = pathname.match(/^\/knowledge\/sop\/(.+)$/);
+    if (sopMatch) {
+      setSelectedSopId(sopMatch[1]);
+      setPage("sop-detail");
+      return;
+    }
+    const cleanPath = pathname.replace("/", "");
+    const matchedPage = cleanPath === "" ? "landing" : cleanPath;
+    if (appPages.includes(matchedPage as Page) || matchedPage === "landing" || matchedPage === "login") {
+      setPage(matchedPage as Page);
+    } else {
+      setPage("dashboard");
+    }
+  };
 
   // Synchronize page state with URL pathname (clean hashless routing)
   useEffect(() => {
     const handlePopState = () => {
-      const path = window.location.pathname.replace("/", "");
-      const matchedPage = path === "" ? "landing" : path;
-      if (appPages.includes(matchedPage as Page) || matchedPage === "landing" || matchedPage === "login") {
-        setPage(matchedPage as Page);
-      }
+      parsePathname(window.location.pathname);
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const navigateTo = (newPage: Page) => {
-    setPage(newPage);
-    const path = newPage === "landing" ? "/" : `/${newPage}`;
+  // Sync state changes back to window history URL
+  useEffect(() => {
+    let path = page === "landing" ? "/" : `/${page}`;
+    if (page === "sop-detail") {
+      if (selectedSopId) {
+        path = `/knowledge/sop/${selectedSopId}`;
+      } else {
+        return;
+      }
+    }
     if (window.location.pathname !== path) {
       window.history.pushState(null, "", path);
     }
+    if (page !== "sop-detail" && selectedSopId !== null) {
+      setSelectedSopId(null);
+    }
+  }, [page, selectedSopId]);
+
+  const navigateTo = (newPage: Page) => {
+    setPage(newPage);
   };
 
   const fetchProfileAndData = async (userId: string) => {
@@ -5090,14 +5116,7 @@ export default function App() {
           setUser(currentUser);
           if (currentUser) {
             await fetchProfileAndData(currentUser.id);
-            const path = window.location.pathname.replace("/", "");
-            if (path === "" || path === "landing") {
-              setPage("landing");
-            } else if (appPages.includes(path as Page)) {
-              setPage(path as Page);
-            } else {
-              navigateTo("dashboard");
-            }
+            parsePathname(window.location.pathname);
           } else {
             const path = window.location.pathname.replace("/", "");
             if (path === "login") {
