@@ -5407,7 +5407,11 @@ export default function App() {
               animation: floatUp 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
             }
           `}</style>
-          {page === "landing" && <LandingPage onNavigate={navigateTo} user={user} />}
+          {page === "landing" && (
+            <div className="landing-page-root">
+              <LandingPage onNavigate={navigateTo} user={user} />
+            </div>
+          )}
           {page === "login" && <LoginPage onNavigate={navigateTo} />}
           {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
 

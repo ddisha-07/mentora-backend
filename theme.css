@@ -41,11 +41,21 @@
   --sidebar-border: transparent;
   --sidebar-ring: #E0186E;
   --surface: #F1F5F9;
+
+  /* ── Landing Page Design Tokens (Light) ── */
+  --lp-bg: #F8FAFC;
+  --lp-pink: #FF2B8A;
+  --lp-purple: #7C3AED;
+  --lp-cyan: #06B6D4;
+  --lp-orange: #F59E0B;
+  --lp-card-bg: rgba(255, 255, 255, 0.75);
+  --lp-card-border: rgba(15, 23, 42, 0.08);
+  --lp-card-blur: blur(12px);
 }
 
 .dark {
   /* ── Dark mode (Premium Midnight Aurora) ── */
-  --background: #020205;
+  --background: #030308;
   --foreground: #F8FAFC;
   --card: #0F0F1B;
   --card-foreground: #F8FAFC;
@@ -82,6 +92,16 @@
   --sidebar-border: transparent;
   --sidebar-ring: #F72585;
   --surface: #0A0A12;
+
+  /* ── Landing Page Design Tokens (Dark) ── */
+  --lp-bg: #030308;
+  --lp-pink: #FF2B8A;
+  --lp-purple: #7C3AED;
+  --lp-cyan: #22D3EE;
+  --lp-orange: #F59E0B;
+  --lp-card-bg: rgba(8, 8, 18, 0.65);
+  --lp-card-border: rgba(255, 255, 255, 0.08);
+  --lp-card-blur: blur(12px);
 }
 
 @theme inline {
@@ -127,6 +147,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-lp-bg: var(--lp-bg);
+  --color-lp-pink: var(--lp-pink);
+  --color-lp-purple: var(--lp-purple);
+  --color-lp-cyan: var(--lp-cyan);
+  --color-lp-orange: var(--lp-orange);
+  --color-lp-card: var(--lp-card-bg);
+  --color-lp-border: var(--lp-card-border);
 }
 
 @layer base {
@@ -291,4 +319,27 @@
   :root:not(.dark) .capability-desc {
     color: #4B5563 !important;
   }
+}
+
+/* ── LANDING PAGE GLOBAL VISUAL FOUNDATION ── */
+.landing-page-root {
+  background-color: var(--lp-bg);
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--foreground);
+}
+
+.lp-glass-card {
+  background: var(--lp-card-bg) !important;
+  border: 1px solid var(--lp-card-border) !important;
+  backdrop-filter: var(--lp-card-blur) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lp-glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
 }
