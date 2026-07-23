@@ -31,11 +31,12 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
 
   // Filter bookmarked items
   const filteredItems = (savedItems || []).filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase()) ||
-                          item.desc.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (item.title || "").toLowerCase().includes(search.toLowerCase()) ||
+                          (item.desc || "").toLowerCase().includes(search.toLowerCase());
     const matchesTab = subTab === 'all' || item.type === subTab;
     return matchesSearch && matchesTab;
   });
+  console.log("SAVED PAGE RENDER", { savedItems, filteredItems, subTab, search });
 
   const handleRefresh = () => {
     setLoading(true);

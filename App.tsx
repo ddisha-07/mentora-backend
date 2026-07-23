@@ -5026,7 +5026,10 @@ export default function App() {
         .select("*")
         .eq("user_id", userId);
 
-      if (!savedErr && savedData) {
+      if (savedErr) {
+        console.error("Error fetching saved items from Supabase:", savedErr);
+      }
+      if (savedData) {
         const mappedSaved = savedData.map((item: any) => ({
           id: item.item_id,
           type: item.item_type,
@@ -5035,6 +5038,7 @@ export default function App() {
           category: item.category,
           page: item.page_route
         }));
+        console.log("FETCHED BOOKMARKS FROM SUPABASE:", mappedSaved);
         setSavedItems(mappedSaved);
       }
     } catch (err) {
