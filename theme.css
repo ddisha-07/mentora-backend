@@ -323,10 +323,16 @@
 
 /* ── LANDING PAGE GLOBAL VISUAL FOUNDATION ── */
 .landing-page-root {
-  background-color: var(--lp-bg);
+  background: linear-gradient(180deg, var(--lp-bg) 0%, rgba(5, 5, 16, 0.98) 50%, rgba(8, 8, 18, 1) 100%);
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--foreground);
+  position: relative;
+  overflow-x: hidden;
+}
+
+:root:not(.dark) .landing-page-root {
+  background: linear-gradient(180deg, var(--lp-bg) 0%, #F1F5F9 50%, #E2E8F0 100%);
 }
 
 .lp-glass-card {
@@ -342,4 +348,80 @@
   border-color: rgba(255, 255, 255, 0.15) !important;
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ── Layer 2 & 3: Floating Ambient Orbs ── */
+@keyframes lp-float-orb-1 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3vw, 4vh) scale(1.05); }
+  66% { transform: translate(-2vw, 8vh) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes lp-float-orb-2 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4vw, -5vh) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes lp-float-orb-3 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5vw, -3vh) scale(1.08); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.lp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.5s ease;
+}
+
+:root:not(.dark) .lp-orb {
+  opacity: 0.015;
+  filter: blur(160px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-orb {
+    animation: none !important;
+  }
+}
+
+.lp-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: var(--lp-pink);
+  top: 10%;
+  left: 10%;
+  animation: lp-float-orb-1 25s infinite ease-in-out;
+}
+
+.lp-orb-2 {
+  width: 600px;
+  height: 600px;
+  background: var(--lp-purple);
+  top: 40%;
+  right: 5%;
+  animation: lp-float-orb-2 30s infinite ease-in-out;
+}
+
+.lp-orb-3 {
+  width: 550px;
+  height: 550px;
+  background: var(--lp-cyan);
+  bottom: 20%;
+  left: 15%;
+  animation: lp-float-orb-3 28s infinite ease-in-out;
+}
+
+/* ── Layer 4: Dot Grid Pattern ── */
+.lp-dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+:root:not(.dark) .lp-dot-grid {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px);
 }

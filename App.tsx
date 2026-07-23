@@ -611,7 +611,13 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   const iconSize = "clamp(1.4rem, 3.2vw, 2.8rem)";
 
   return (
-    <div className="bg-background text-foreground min-h-screen" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="bg-transparent text-foreground min-h-screen relative" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      {/* Global floating ambient background orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="lp-orb lp-orb-1" />
+        <div className="lp-orb lp-orb-2" />
+        <div className="lp-orb lp-orb-3" />
+      </div>
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
@@ -652,8 +658,13 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="min-h-screen flex flex-col pt-20 pb-0 relative overflow-hidden">
-        {/* Ambient glow */}
-        <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-primary/[0.04] rounded-full blur-[140px] pointer-events-none" />
+        {/* Section specific background overlays */}
+        <div className="absolute inset-0 lp-dot-grid opacity-[0.08] pointer-events-none z-0" />
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute left-[30%] top-[20%] w-[450px] h-[450px] rounded-full bg-lp-pink/5 blur-[120px]" />
+          <div className="absolute right-[20%] top-[40%] w-[550px] h-[550px] rounded-full bg-lp-purple/5 blur-[140px]" />
+          <div className="absolute left-[10%] bottom-[10%] w-[500px] h-[500px] rounded-full bg-lp-cyan/5 blur-[120px]" />
+        </div>
 
         <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 xl:px-16 pt-8">
           {/* Eyebrow pill */}
@@ -793,8 +804,12 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       </section>
 
       {/* Features */}
-      <section className="py-28 px-6 lg:px-10">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute right-[10%] top-[10%] w-[600px] h-[600px] rounded-full bg-lp-purple/5 blur-[150px]" />
+          <div className="absolute left-[20%] bottom-[20%] w-[500px] h-[500px] rounded-full bg-blue-500/4 blur-[130px]" />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <p className="text-2xl mb-2" style={{ color: "#F72585", fontFamily: "'Dancing Script', cursive" }}>Platform Capabilities</p>
             <h2 {...sg("text-4xl lg:text-5xl font-bold mb-4 text-foreground")}>Everything your team <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0" }}>needs</span> to grow</h2>
@@ -821,8 +836,13 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       </section>
 
       {/* AI Chat Preview */}
-      <section className="py-28 px-6 lg:px-10 bg-surface">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section className="py-28 px-6 lg:px-10 bg-transparent relative overflow-hidden">
+        <div className="absolute inset-0 lp-dot-grid opacity-[0.08] pointer-events-none z-0" />
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute left-[40%] top-[20%] w-[500px] h-[500px] rounded-full bg-lp-cyan/5 blur-[130px]" />
+          <div className="absolute right-[15%] bottom-[30%] w-[450px] h-[450px] rounded-full bg-violet-600/4 blur-[120px]" />
+        </div>
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div>
             <p {...cr("text-primary text-2xl mb-2")}>AI Assistant</p>
             <h2 {...sg("text-4xl lg:text-5xl font-bold mb-6")}>Your <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0", fontWeight: 700 }}>always-on</span><br />learning companion</h2>
@@ -890,8 +910,12 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       </section>
 
       {/* Course Preview */}
-      <section className="py-28 px-6 lg:px-10">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute left-[20%] top-[10%] w-[500px] h-[500px] rounded-full bg-lp-purple/4 blur-[130px]" />
+          <div className="absolute right-[30%] bottom-[10%] w-[400px] h-[400px] rounded-full bg-lp-orange/[0.03] blur-[110px]" />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-end justify-between mb-12">
             <div>
               <p {...cr("text-primary text-2xl mb-1")}>Course Library</p>
@@ -926,8 +950,11 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
 
       {/* FAQ */}
-      <section className="py-28 px-6 lg:px-10">
-        <div className="max-w-3xl mx-auto">
+      <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute right-[20%] top-[30%] w-[600px] h-[600px] rounded-full bg-slate-900/10 blur-[150px]" />
+        </div>
+        <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <p {...cr("text-primary text-2xl mb-1")}>FAQ</p>
             <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Common <span style={{ fontFamily: "'Dancing Script', cursive", color: "#A855F7" }}>questions</span></h2>
@@ -952,8 +979,11 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       </section>
 
       {/* CTA Banner */}
-      <section className="py-20 px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto text-center border border-border rounded-3xl p-16 bg-gradient-to-b from-secondary to-background relative overflow-hidden">
+      <section className="py-20 px-6 lg:px-10 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-r from-lp-pink/5 to-lp-purple/5 rounded-full blur-[140px]" />
+        </div>
+        <div className="max-w-4xl mx-auto text-center border border-border rounded-3xl p-16 bg-gradient-to-b from-secondary/40 to-background/20 backdrop-blur-md relative overflow-hidden z-10">
           <div className="absolute inset-0 bg-primary/3 pointer-events-none" />
           <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
             <NeuralNetSVG className="w-full" />
