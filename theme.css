@@ -287,37 +287,23 @@
     line-height: 1.5;
   }
 
-  /* Capability Tiles for Landing Page */
+  /* Capability Tiles for Landing Page (Translucent Glassmorphic Cards) */
   .capability-tile {
-    background-color: #0F0F1D !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+    background-color: var(--lp-card-bg) !important;
+    border: 1px solid var(--lp-card-border) !important;
+    backdrop-filter: var(--lp-card-blur) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
     border-radius: 16px !important;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .capability-tile:hover {
-    border-color: var(--primary) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(247, 37, 133, 0.2), 0 0 1px 1px rgba(247, 37, 133, 0.1) !important;
-  }
-
-  .capability-desc {
-    color: #94A3B8 !important;
-  }
-
-  /* Light mode overrides */
-  :root:not(.dark) .capability-tile {
-    background-color: #ffffff !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
-  }
-  :root:not(.dark) .capability-tile:hover {
-    border-color: var(--primary) !important;
     box-shadow: 0 10px 25px -5px rgba(247, 37, 133, 0.15) !important;
   }
 
-  :root:not(.dark) .capability-desc {
-    color: #4B5563 !important;
+  .capability-desc {
+    color: var(--muted-foreground) !important;
   }
 }
 
@@ -371,15 +357,15 @@
 .lp-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(140px);
-  opacity: 0.05;
+  filter: blur(150px);
+  opacity: 0.16; /* Increased opacity (12%-22% spec) to make the orbs clearly visible */
   pointer-events: none;
   z-index: 0;
   transition: opacity 0.5s ease;
 }
 
 :root:not(.dark) .lp-orb {
-  opacity: 0.015;
+  opacity: 0.03; /* Subtle light mode styling */
   filter: blur(160px);
 }
 
@@ -390,29 +376,29 @@
 }
 
 .lp-orb-1 {
-  width: 500px;
-  height: 500px;
-  background: var(--lp-pink);
-  top: 10%;
-  left: 10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--lp-purple) 0%, var(--lp-pink) 100%);
+  top: 5%;
+  left: 20%;
   animation: lp-float-orb-1 25s infinite ease-in-out;
 }
 
 .lp-orb-2 {
-  width: 600px;
-  height: 600px;
-  background: var(--lp-purple);
-  top: 40%;
-  right: 5%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, var(--lp-cyan) 0%, var(--lp-purple) 100%);
+  top: 15%;
+  right: -10%;
   animation: lp-float-orb-2 30s infinite ease-in-out;
 }
 
 .lp-orb-3 {
   width: 550px;
   height: 550px;
-  background: var(--lp-cyan);
-  bottom: 20%;
-  left: 15%;
+  background: radial-gradient(circle, var(--lp-pink) 0%, var(--lp-purple) 100%);
+  top: 45%;
+  left: -5%;
   animation: lp-float-orb-3 28s infinite ease-in-out;
 }
 
@@ -424,4 +410,12 @@
 
 :root:not(.dark) .lp-dot-grid {
   background-image: radial-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+}
+
+/* FAQ Accordion Item Styling */
+.landing-page-root .faq-item {
+  border: 1px solid var(--lp-card-border) !important;
+  background: var(--lp-card-bg) !important;
+  backdrop-filter: var(--lp-card-blur) !important;
+  transition: all 0.3s ease;
 }

@@ -629,7 +629,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             {["Blog", "About", "Process", "Contact"].map((item) => (
-              <a key={item} href="#" className="hover:text-foreground transition-colors">{item}</a>
+              <a key={item} href="#" onClick={e => e.preventDefault()} className="hover:text-foreground transition-colors">{item}</a>
             ))}
           </div>
           <div className="flex items-center gap-3">
@@ -638,12 +638,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
               title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            {user ? (
-              <button onClick={() => onNavigate("dashboard")}
-                className="text-sm font-bold text-primary hover:text-primary/95 transition-all px-4 py-2 hidden sm:block">
-                Dashboard
-              </button>
-            ) : (
+            {user ? null : (
               <button onClick={() => onNavigate("login")}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 hidden sm:block">
                 Login
@@ -725,8 +720,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {/* Card 1 — workshop card */}
             <div
-              className="rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ background: isDark ? "#100E25" : "#EDF0FF", border: `1.5px solid ${isDark ? "#221F4A" : "#C0D4F5"}`, minHeight: 180 }}
+              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+              style={{ minHeight: 180 }}
               onClick={() => onNavigate("login")}
             >
               <div>
@@ -744,8 +739,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
             {/* Card 2 — featured instructor card */}
             <div
-              className="rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ background: isDark ? "#150E30" : "#F2EEFF", border: `1.5px solid ${isDark ? "#3D1A7A" : "#C9B8F5"}`, minHeight: 180 }}
+              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+              style={{ minHeight: 180 }}
               onClick={() => onNavigate("login")}
             >
               <div className="flex -space-x-3 mb-4">
@@ -763,8 +758,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
             {/* Card 3 — teal accent card */}
             <div
-              className="rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ background: isDark ? "#0d1f1f" : "#E9F8FF", border: isDark ? "1.5px solid #F7258522" : "1.5px solid #BAE6FF", minHeight: 180 }}
+              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+              style={{ minHeight: 180 }}
               onClick={() => onNavigate("login")}
             >
               <div>
@@ -783,8 +778,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
             {/* Card 4 — amber stat card */}
             <div
-              className="rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ background: isDark ? "#1e1700" : "#FFF8EC", border: isDark ? "1.5px solid #F59E0B30" : "1.5px solid #FFD59B", minHeight: 180 }}
+              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+              style={{ minHeight: 180 }}
               onClick={() => onNavigate("login")}
             >
               <div>
@@ -806,8 +801,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* Features */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute right-[10%] top-[10%] w-[600px] h-[600px] rounded-full bg-lp-purple/5 blur-[150px]" />
-          <div className="absolute left-[20%] bottom-[20%] w-[500px] h-[500px] rounded-full bg-blue-500/4 blur-[130px]" />
+          <div className="absolute right-[10%] top-[10%] w-[600px] h-[600px] rounded-full bg-lp-purple/12 blur-[150px]" />
+          <div className="absolute left-[20%] bottom-[20%] w-[500px] h-[500px] rounded-full bg-blue-500/12 blur-[130px]" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
@@ -839,13 +834,13 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       <section className="py-28 px-6 lg:px-10 bg-transparent relative overflow-hidden">
         <div className="absolute inset-0 lp-dot-grid opacity-[0.08] pointer-events-none z-0" />
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-[40%] top-[20%] w-[500px] h-[500px] rounded-full bg-lp-cyan/5 blur-[130px]" />
-          <div className="absolute right-[15%] bottom-[30%] w-[450px] h-[450px] rounded-full bg-violet-600/4 blur-[120px]" />
+          <div className="absolute left-[40%] top-[20%] w-[500px] h-[500px] rounded-full bg-lp-cyan/15 blur-[130px]" />
+          <div className="absolute right-[15%] bottom-[30%] w-[450px] h-[450px] rounded-full bg-violet-600/12 blur-[120px]" />
         </div>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div>
             <p {...cr("text-primary text-2xl mb-2")}>AI Assistant</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-6")}>Your <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0", fontWeight: 700 }}>always-on</span><br />learning companion</h2>
+            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-6")}>Your <span style={{ fontFamily: "'Dancing Script', cursive", color: "#22D3EE", fontWeight: 700 }}>always-on</span><br />learning companion</h2>
             <p className="text-muted-foreground leading-relaxed mb-8">
               Ask questions about your courses, get instant explanations of complex concepts, receive personalized study plans, or discuss ideas — all within the context of your organization's knowledge.
             </p>
@@ -912,20 +907,20 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* Course Preview */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-[20%] top-[10%] w-[500px] h-[500px] rounded-full bg-lp-purple/4 blur-[130px]" />
-          <div className="absolute right-[30%] bottom-[10%] w-[400px] h-[400px] rounded-full bg-lp-orange/[0.03] blur-[110px]" />
+          <div className="absolute left-[20%] top-[10%] w-[500px] h-[500px] rounded-full bg-lp-purple/12 blur-[130px]" />
+          <div className="absolute right-[30%] bottom-[10%] w-[400px] h-[400px] rounded-full bg-lp-orange/[0.08] blur-[110px]" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <p {...cr("text-primary text-2xl mb-1")}>Course Library</p>
-              <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Learn from <span style={{ fontFamily: "'Dancing Script', cursive", color: "#F8961E" }}>the best</span></h2>
+              <p {...cr("text-primary text-2xl mb-1")}>Learning Journeys</p>
+              <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Personalized <span style={{ fontFamily: "'Dancing Script', cursive", color: "#FF9F1C" }}>Learning</span> Journeys</h2>
             </div>
-            <CyanButton onClick={() => onNavigate("login")} outline>View all courses</CyanButton>
+            <CyanButton onClick={() => onNavigate("login")} outline>View all Journeys</CyanButton>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {COURSES.slice(0, 3).map((course) => (
-              <Card key={course.id} className="overflow-hidden group cursor-pointer" onClick={() => onNavigate("login")}>
+              <Card key={course.id} className="lp-glass-card overflow-hidden group cursor-pointer" onClick={() => onNavigate("login")}>
                 <div className="h-44 overflow-hidden bg-surface">
                   <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
@@ -935,9 +930,9 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
                     <Badge color={course.difficulty === "Advanced" ? "red" : course.difficulty === "Intermediate" ? "yellow" : "green"}>{course.difficulty}</Badge>
                   </div>
                   <h3 {...sg("text-sm font-semibold mb-2 leading-snug group-hover:text-primary transition-colors")}>{course.title}</h3>
-                  <p className="text-xs text-muted-foreground mb-4">{course.instructor}</p>
+                  <p className="text-xs text-muted-foreground mb-4">Journey guided by {course.instructor}</p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock size={12} />{course.duration}</span>
+                    <span className="flex items-center gap-1"><Clock size={12} />{course.duration} · Bites</span>
                     <span className="flex items-center gap-1"><Star size={12} className="text-amber-400" />{course.rating}</span>
                     <span className="flex items-center gap-1"><Users size={12} />{course.students.toLocaleString()}</span>
                   </div>
@@ -952,16 +947,17 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* FAQ */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute right-[20%] top-[30%] w-[600px] h-[600px] rounded-full bg-slate-900/10 blur-[150px]" />
+          <div className="absolute right-[20%] top-[30%] w-[600px] h-[600px] rounded-full bg-slate-900/20 blur-[150px]" />
+          <div className="absolute left-[30%] bottom-[10%] w-[450px] h-[450px] rounded-full bg-lp-purple/12 blur-[120px]" />
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <p {...cr("text-primary text-2xl mb-1")}>FAQ</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Common <span style={{ fontFamily: "'Dancing Script', cursive", color: "#A855F7" }}>questions</span></h2>
+            <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Common <span style={{ fontFamily: "'Dancing Script', cursive", color: "#7C3AED" }}>questions</span></h2>
           </div>
           <div className="space-y-2">
             {faqs.map((faq, i) => (
-              <div key={i} className="border border-border rounded-xl overflow-hidden">
+              <div key={i} className="faq-item border border-border rounded-xl overflow-hidden">
                 <button className="w-full flex items-center justify-between px-6 py-4 text-left"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                   <span {...sg("text-sm font-medium")}>{faq.q}</span>
@@ -981,7 +977,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* CTA Banner */}
       <section className="py-20 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-r from-lp-pink/5 to-lp-purple/5 rounded-full blur-[140px]" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-r from-lp-pink/15 to-lp-purple/15 rounded-full blur-[140px]" />
         </div>
         <div className="max-w-4xl mx-auto text-center border border-border rounded-3xl p-16 bg-gradient-to-b from-secondary/40 to-background/20 backdrop-blur-md relative overflow-hidden z-10">
           <div className="absolute inset-0 bg-primary/3 pointer-events-none" />
@@ -1015,12 +1011,12 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               {["Privacy", "Terms", "Security", "Status"].map((l) => (
-                <a key={l} href="#" className="hover:text-foreground transition-colors">{l}</a>
+                <a key={l} href="#" onClick={e => e.preventDefault()} className="hover:text-foreground transition-colors">{l}</a>
               ))}
             </div>
             <div className="flex items-center gap-3">
               {[Twitter, Linkedin, Github].map((Icon, i) => (
-                <a key={i} href="#" className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all">
+                <a key={i} href="#" onClick={e => e.preventDefault()} className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all">
                   <Icon size={15} />
                 </a>
               ))}
