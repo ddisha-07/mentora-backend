@@ -149,6 +149,11 @@ export default function LearnPage({
             </div>
             <h4 className="text-sm font-bold text-foreground mt-1">{activeLearnMission.title}</h4>
             <p className="text-xs text-muted-foreground mt-0.5">{activeLearnMission.description}</p>
+            {Number(activeLearnMission.id) === 103 && (
+              <p className="text-[11px] text-yellow-500 font-semibold mt-1">
+                ⚠️ Required course "TypeScript Refactoring Module" is not configured in the system curriculum yet. Please perform your learning and click "Confirm Completion" manually below to complete this mission.
+              </p>
+            )}
           </div>
           <button
             onClick={async () => {

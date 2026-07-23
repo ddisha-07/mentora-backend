@@ -1572,6 +1572,8 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     setSelectedCourseId,
     activeMissions,
     completeMission,
+    startMission,
+    user,
     streakDays,
     journeyStages,
     learningActivities,
@@ -2120,7 +2122,8 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               {selectedMission.status === 'assigned' || !selectedMission.status ? (
                 <button
                   onClick={async () => {
-                    console.log("[StartMission] Clicked for ID:", selectedMission.id, "Type:", selectedMission.type);
+                    console.log("START BUTTON CLICKED", selectedMission);
+                    console.log("AUTH USER", user?.id);
                     if (!user) {
                       console.error("[StartMission] No authenticated user session found!");
                       alert("Authentication error: Please log in again to start missions.");
@@ -2128,7 +2131,6 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     }
                     try {
                       await startMission(selectedMission.id);
-                      console.log("[StartMission] DB upsert complete.");
                       
                       setSelectedMission(prev => prev ? { ...prev, status: 'in_progress' } : null);
                       const config = MISSION_CONFIGS[selectedMission.type];
@@ -2136,8 +2138,9 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                         if (config.redirectAction) {
                           config.redirectAction({ setSelectedCourseId });
                         }
-                        setPage(config.page);
-                        console.log("[StartMission] Routed contextually to:", config.page);
+                        const destination = config.page;
+                        console.log("NAVIGATING TO", destination);
+                        onNavigate(destination);
                       }
                       setSelectedMission(null);
                     } catch (err: any) {
@@ -2482,7 +2485,7 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 title: "Bite Completed! (+20 XP)"
               });
               const activeLearningMission = (activeMissions || []).find(
-                (m: any) => m.status === 'in_progress' && m.type === 'LEARNING'
+                (m: any) => m.status === 'in_progress' && m.type === 'LEARNING' && Number(m.id) !== 103
               );
               if (activeLearningMission) {
                 completeMission(activeLearningMission.id);
@@ -4740,9 +4743,10 @@ export default function App() {
   }, [profile, user]);
 
   const startMission = async (missionId: number) => {
+    console.log("STARTING MISSION", missionId);
     if (!user) return;
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("user_missions_progress")
         .upsert({
           user_id: user.id,
@@ -4751,7 +4755,10 @@ export default function App() {
           completed: false,
           completed_at: null,
           updated_at: new Date().toISOString()
-        }, { onConflict: "user_id,mission_id" });
+        }, { onConflict: "user_id,mission_id" })
+        .select();
+
+      console.log("SUPABASE RESULT", data, error);
 
       if (error) throw error;
 
