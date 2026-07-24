@@ -42,6 +42,78 @@ import SopDetailPage from "./src/pages/SopDetailPage";
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
 export const useTheme = () => useContext(ThemeCtx);
 
+// ─── Global Reusable AppBackground Component ──────────────────────────────────
+function AppBackground() {
+  const { isDark } = useTheme();
+  const orbRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let animationFrameId: number;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const updatePosition = () => {
+      currentX += (targetX - currentX) * 0.05;
+      currentY += (targetY - currentY) * 0.05;
+
+      if (orbRef.current) {
+        orbRef.current.style.transform = `translate3d(${currentX - 150}px, ${currentY - 150}px, 0)`;
+      }
+      animationFrameId = requestAnimationFrame(updatePosition);
+    };
+
+    updatePosition();
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" style={{ backgroundColor: "var(--lp-bg)" }}>
+      {/* Aurora gradients - Mesh-style with 4 oversized blurred animating layers */}
+      <div className="absolute inset-0 opacity-25 dark:opacity-18">
+        <div className="absolute top-[-15%] left-[-15%] w-[90%] h-[90%] rounded-full bg-lp-purple filter blur-[130px] animate-aurora-orb-1" />
+        <div className="absolute top-[25%] right-[-15%] w-[80%] h-[80%] rounded-full bg-lp-pink filter blur-[140px] animate-aurora-orb-2" />
+        <div className="absolute bottom-[-15%] left-[15%] w-[90%] h-[90%] rounded-full bg-lp-cyan filter blur-[130px] animate-aurora-orb-3" />
+        <div className="absolute top-[10%] left-[35%] w-[70%] h-[70%] rounded-full bg-lp-blue filter blur-[120px] animate-aurora-orb-4" />
+      </div>
+
+      {/* Breathing dot-grid */}
+      <div className="absolute inset-0 lp-dot-grid animate-lp-grid-breath" />
+
+      {/* SVG Turbulence noise */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.025] mix-blend-overlay" xmlns="http://www.w3.org/2000/svg">
+        <filter id="globalNoiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#globalNoiseFilter)" />
+      </svg>
+
+      {/* Cursor reactive radial glow */}
+      <div
+        ref={orbRef}
+        className="absolute w-[300px] h-[300px] rounded-full bg-gradient-to-r from-lp-cyan/8 to-lp-purple/8 filter blur-[80px] pointer-events-none opacity-0 md:opacity-100 transition-opacity duration-500"
+        style={{ willChange: "transform", transform: "translate3d(-999px, -999px, 0)" }}
+      />
+    </div>
+  );
+}
+
 // ─── App Context ──────────────────────────────────────────────────────────────
 export type AppContextType = {
   user: any;
@@ -612,21 +684,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
   return (
     <div className="bg-transparent text-foreground min-h-screen relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* ── GLOBAL PERSISTENT BACKGROUND CANVAS ──────────────────────── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Persistent slow-floating background orbs */}
-        <div className="lp-orb lp-orb-1" />
-        <div className="lp-orb lp-orb-2" />
-        <div className="lp-orb lp-orb-3" />
-
-        {/* Global SVG turbulence noise overlay */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none mix-blend-overlay" xmlns="http://www.w3.org/2000/svg">
-          <filter id="noiseFilter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" stitchTiles="stitch" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-        </svg>
-      </div>
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
@@ -1107,11 +1164,10 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       setAuthLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen bg-background text-foreground flex" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="min-h-screen bg-transparent text-foreground flex relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-secondary border-r border-border flex-col items-center justify-center p-16 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-secondary/40 backdrop-blur-md border-r border-border flex-col items-center justify-center p-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="relative z-10 text-center">
           <div onClick={() => onNavigate("landing")} className="flex items-center justify-center gap-2 mb-12 cursor-pointer hover:opacity-80 transition-opacity">
@@ -4454,7 +4510,7 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
   const isFullHeight = page === "lesson" || page === "ai-chat";
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="flex h-screen bg-transparent text-foreground overflow-hidden relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* Desktop Sidebar */}
       <div className="hidden md:flex h-full flex-shrink-0">
         <Sidebar activePage={page} onNavigate={onNavigate} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
@@ -5429,7 +5485,8 @@ export default function App() {
       setCurriculumError
     }}>
       <ThemeCtx.Provider value={{ isDark, toggle: () => setIsDark((d) => !d) }}>
-        <div className={isDark ? "dark text-foreground min-h-screen" : "text-foreground min-h-screen"} style={{ colorScheme: isDark ? "dark" : "light" }}>
+        <div className={isDark ? "dark text-foreground min-h-screen relative" : "text-foreground min-h-screen relative"} style={{ colorScheme: isDark ? "dark" : "light" }}>
+          <AppBackground />
           <style>{`
             ::-webkit-scrollbar { width: 5px; height: 5px; }
             ::-webkit-scrollbar-track { background: transparent; }
