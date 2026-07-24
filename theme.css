@@ -42,14 +42,15 @@
   --sidebar-ring: #E0186E;
   --surface: #F1F5F9;
 
-  /* ── Landing Page Design Tokens (Light) ── */
+  /* ── Landing Page Design Tokens (Light - Soft Airy Pastels) ── */
   --lp-bg: #F8FAFC;
-  --lp-pink: #FF2B8A;
-  --lp-purple: #7C3AED;
-  --lp-cyan: #06B6D4;
-  --lp-orange: #F59E0B;
-  --lp-card-bg: rgba(255, 255, 255, 0.75);
-  --lp-card-border: rgba(15, 23, 42, 0.08);
+  --lp-pink: rgba(255, 43, 138, 0.12);
+  --lp-purple: rgba(124, 58, 237, 0.12);
+  --lp-cyan: rgba(34, 211, 238, 0.08);
+  --lp-orange: rgba(255, 159, 28, 0.08);
+  --lp-blue: rgba(59, 130, 246, 0.10);
+  --lp-card-bg: rgba(255, 255, 255, 0.80);
+  --lp-card-border: rgba(15, 23, 42, 0.06);
   --lp-card-blur: blur(12px);
 }
 
@@ -93,13 +94,14 @@
   --sidebar-ring: #F72585;
   --surface: #0A0A12;
 
-  /* ── Landing Page Design Tokens (Dark) ── */
-  --lp-bg: #030308;
+  /* ── Landing Page Design Tokens (Dark - Vivid Colors) ── */
+  --lp-bg: #03030A;
   --lp-pink: #FF2B8A;
   --lp-purple: #7C3AED;
   --lp-cyan: #22D3EE;
-  --lp-orange: #F59E0B;
-  --lp-card-bg: rgba(8, 8, 18, 0.65);
+  --lp-orange: #FF9F1C;
+  --lp-blue: #3B82F6;
+  --lp-card-bg: rgba(10, 10, 25, 0.75);
   --lp-card-border: rgba(255, 255, 255, 0.08);
   --lp-card-blur: blur(12px);
 }
@@ -153,6 +155,7 @@
   --color-lp-purple: var(--lp-purple);
   --color-lp-cyan: var(--lp-cyan);
   --color-lp-orange: var(--lp-orange);
+  --color-lp-blue: var(--lp-blue);
   --color-lp-card: var(--lp-card-bg);
   --color-lp-border: var(--lp-card-border);
 }
@@ -309,7 +312,7 @@
 
 /* ── LANDING PAGE GLOBAL VISUAL FOUNDATION ── */
 .landing-page-root {
-  background: linear-gradient(180deg, var(--lp-bg) 0%, rgba(5, 5, 16, 0.98) 50%, rgba(8, 8, 18, 1) 100%);
+  background: linear-gradient(180deg, #03030A 0%, #050511 50%, #070718 100%) !important;
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--foreground);
@@ -318,59 +321,99 @@
 }
 
 :root:not(.dark) .landing-page-root {
-  background: linear-gradient(180deg, var(--lp-bg) 0%, #F1F5F9 50%, #E2E8F0 100%);
+  background: linear-gradient(180deg, #F8FAFC 0%, #F5F7FB 100%) !important;
 }
 
+/* Glassmorphic card styling on Landing Page */
+.capability-tile,
 .lp-glass-card {
-  background: var(--lp-card-bg) !important;
+  background-color: var(--lp-card-bg) !important;
   border: 1px solid var(--lp-card-border) !important;
   backdrop-filter: var(--lp-card-blur) !important;
+  -webkit-backdrop-filter: var(--lp-card-blur) !important;
   border-radius: 16px !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
+.capability-tile:hover,
 .lp-glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 30px -5px rgba(124, 58, 237, 0.22), 0 0 2px 1px rgba(124, 58, 237, 0.1) !important;
+}
+
+:root:not(.dark) .capability-tile,
+:root:not(.dark) .lp-glass-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+}
+
+:root:not(.dark) .capability-tile:hover,
+:root:not(.dark) .lp-glass-card:hover {
+  border-color: rgba(124, 58, 237, 0.25) !important;
+  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08) !important;
+}
+
+/* FAQ Accordion Item Styling */
+.landing-page-root .faq-item {
+  border: 1px solid var(--lp-card-border) !important;
+  background: var(--lp-card-bg) !important;
+  backdrop-filter: var(--lp-card-blur) !important;
+  -webkit-backdrop-filter: var(--lp-card-blur) !important;
+  transition: all 0.25s ease !important;
+  border-radius: 12px !important;
+}
+
+.landing-page-root .faq-item:hover {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+:root:not(.dark) .landing-page-root .faq-item:hover {
+  border-color: rgba(124, 58, 237, 0.2) !important;
 }
 
 /* ── Layer 2 & 3: Floating Ambient Orbs ── */
-@keyframes lp-float-orb-1 {
+@keyframes lp-float-slow-1 {
   0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(3vw, 4vh) scale(1.05); }
-  66% { transform: translate(-2vw, 8vh) scale(0.95); }
+  50% { transform: translate(15px, 20px) scale(1.03); }
   100% { transform: translate(0, 0) scale(1); }
 }
-@keyframes lp-float-orb-2 {
+@keyframes lp-float-slow-2 {
   0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-4vw, -5vh) scale(0.95); }
+  50% { transform: translate(-20px, -15px) scale(0.97); }
   100% { transform: translate(0, 0) scale(1); }
 }
-@keyframes lp-float-orb-3 {
+@keyframes lp-float-slow-3 {
   0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(5vw, -3vh) scale(1.08); }
+  50% { transform: translate(25px, -10px) scale(1.04); }
   100% { transform: translate(0, 0) scale(1); }
+}
+
+.lp-section-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .lp-orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(150px);
-  opacity: 0.16; /* Increased opacity (12%-22% spec) to make the orbs clearly visible */
+  opacity: 0.16; /* Clearly visible 12%-22% opacity scale */
   pointer-events: none;
   z-index: 0;
   transition: opacity 0.5s ease;
 }
 
 :root:not(.dark) .lp-orb {
-  opacity: 0.03; /* Subtle light mode styling */
+  opacity: 0.03; /* Subtle pastel styling */
   filter: blur(160px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-orb {
+  .lp-orb,
+  .lp-section-glow {
     animation: none !important;
   }
 }
@@ -381,7 +424,7 @@
   background: radial-gradient(circle, var(--lp-purple) 0%, var(--lp-pink) 100%);
   top: 5%;
   left: 20%;
-  animation: lp-float-orb-1 25s infinite ease-in-out;
+  animation: lp-float-slow-1 25s infinite ease-in-out;
 }
 
 .lp-orb-2 {
@@ -390,7 +433,7 @@
   background: radial-gradient(circle, var(--lp-cyan) 0%, var(--lp-purple) 100%);
   top: 15%;
   right: -10%;
-  animation: lp-float-orb-2 30s infinite ease-in-out;
+  animation: lp-float-slow-2 30s infinite ease-in-out;
 }
 
 .lp-orb-3 {
@@ -399,23 +442,184 @@
   background: radial-gradient(circle, var(--lp-pink) 0%, var(--lp-purple) 100%);
   top: 45%;
   left: -5%;
-  animation: lp-float-orb-3 28s infinite ease-in-out;
+  animation: lp-float-slow-3 28s infinite ease-in-out;
 }
 
-/* ── Layer 4: Dot Grid Pattern ── */
+/* ── Layer 4: Dot Grid Pattern & Masks ── */
 .lp-dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.11) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 :root:not(.dark) .lp-dot-grid {
-  background-image: radial-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.07) 1.2px, transparent 1.2px);
 }
 
-/* FAQ Accordion Item Styling */
-.landing-page-root .faq-item {
-  border: 1px solid var(--lp-card-border) !important;
-  background: var(--lp-card-bg) !important;
-  backdrop-filter: var(--lp-card-blur) !important;
-  transition: all 0.3s ease;
+.lp-dot-grid-hero {
+  mask-image: radial-gradient(circle at 80% 40%, black 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 80% 40%, black 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+}
+
+.lp-dot-grid-capabilities {
+  mask-image: linear-gradient(180deg, transparent 0%, black 25%, black 75%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 25%, black 75%, transparent 100%);
+}
+
+.lp-dot-grid-kai {
+  mask-image: radial-gradient(circle at 50% 50%, black 0%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 0%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+}
+
+/* ── Layer 5: Section Specific Glows ── */
+.lp-glow-hero-purple {
+  top: 15%;
+  left: 20%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, var(--lp-purple) 0%, transparent 70%);
+  opacity: 0.24;
+  filter: blur(140px);
+  animation: lp-float-slow-1 25s infinite ease-in-out;
+}
+
+.lp-glow-hero-pink {
+  top: 35%;
+  left: 35%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--lp-pink) 0%, transparent 70%);
+  opacity: 0.18;
+  filter: blur(120px);
+  animation: lp-float-slow-2 30s infinite ease-in-out;
+}
+
+.lp-glow-hero-cyan {
+  top: 5%;
+  right: 5%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, var(--lp-cyan) 0%, transparent 70%);
+  opacity: 0.14;
+  filter: blur(130px);
+  animation: lp-float-slow-3 28s infinite ease-in-out;
+}
+
+.lp-glow-features {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.12) 0%, rgba(5, 5, 17, 0.4) 100%);
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+:root:not(.dark) .lp-glow-features {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.06) 0%, rgba(255, 255, 255, 0.4) 100%);
+}
+
+.lp-glow-cap-purple {
+  right: 5%;
+  top: 10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, var(--lp-purple) 0%, transparent 70%);
+  opacity: 0.16;
+  filter: blur(150px);
+  animation: lp-float-slow-2 30s infinite ease-in-out;
+}
+
+.lp-glow-cap-blue {
+  left: 15%;
+  bottom: 15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--lp-blue) 0%, transparent 70%);
+  opacity: 0.14;
+  filter: blur(130px);
+  animation: lp-float-slow-1 25s infinite ease-in-out;
+}
+
+.lp-glow-kai-cyan {
+  left: 35%;
+  top: 15%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, var(--lp-cyan) 0%, transparent 70%);
+  opacity: 0.18;
+  filter: blur(140px);
+  animation: lp-float-slow-3 28s infinite ease-in-out;
+}
+
+.lp-glow-kai-purple {
+  right: 10%;
+  bottom: 25%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, var(--lp-purple) 0%, transparent 70%);
+  opacity: 0.15;
+  filter: blur(130px);
+  animation: lp-float-slow-1 25s infinite ease-in-out;
+}
+
+.lp-glow-journey-purple {
+  left: 15%;
+  top: 10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--lp-purple) 0%, transparent 70%);
+  opacity: 0.16;
+  filter: blur(140px);
+  animation: lp-float-slow-2 30s infinite ease-in-out;
+}
+
+.lp-glow-journey-orange {
+  right: 25%;
+  bottom: 10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--lp-orange) 0%, transparent 70%);
+  opacity: 0.09;
+  filter: blur(120px);
+  animation: lp-float-slow-3 28s infinite ease-in-out;
+}
+
+.lp-glow-faq-navy {
+  right: 15%;
+  top: 25%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, #0F172A 0%, transparent 70%);
+  opacity: 0.40;
+  filter: blur(170px);
+}
+
+:root:not(.dark) .lp-glow-faq-navy {
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.05) 0%, transparent 70%);
+  opacity: 0.15;
+}
+
+.lp-glow-faq-purple {
+  left: 20%;
+  bottom: 15%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, var(--lp-purple) 0%, transparent 70%);
+  opacity: 0.15;
+  filter: blur(140px);
+  animation: lp-float-slow-1 25s infinite ease-in-out;
+}
+
+.lp-glow-cta {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) !important;
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(circle, var(--lp-pink) 0%, var(--lp-purple) 60%, transparent 100%);
+  opacity: 0.22;
+  filter: blur(150px);
 }

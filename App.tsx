@@ -611,12 +611,21 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   const iconSize = "clamp(1.4rem, 3.2vw, 2.8rem)";
 
   return (
-    <div className="bg-transparent text-foreground min-h-screen relative" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* Global floating ambient background orbs */}
+    <div className="bg-transparent text-foreground min-h-screen relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      {/* ── GLOBAL PERSISTENT BACKGROUND CANVAS ──────────────────────── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Persistent slow-floating background orbs */}
         <div className="lp-orb lp-orb-1" />
         <div className="lp-orb lp-orb-2" />
         <div className="lp-orb lp-orb-3" />
+
+        {/* Global SVG turbulence noise overlay */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none mix-blend-overlay" xmlns="http://www.w3.org/2000/svg">
+          <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" stitchTiles="stitch" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+        </svg>
       </div>
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
@@ -654,11 +663,11 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="min-h-screen flex flex-col pt-20 pb-0 relative overflow-hidden">
         {/* Section specific background overlays */}
-        <div className="absolute inset-0 lp-dot-grid opacity-[0.08] pointer-events-none z-0" />
+        <div className="lp-dot-grid lp-dot-grid-hero" />
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-[30%] top-[20%] w-[450px] h-[450px] rounded-full bg-lp-pink/5 blur-[120px]" />
-          <div className="absolute right-[20%] top-[40%] w-[550px] h-[550px] rounded-full bg-lp-purple/5 blur-[140px]" />
-          <div className="absolute left-[10%] bottom-[10%] w-[500px] h-[500px] rounded-full bg-lp-cyan/5 blur-[120px]" />
+          <div className="lp-section-glow lp-glow-hero-purple" />
+          <div className="lp-section-glow lp-glow-hero-pink" />
+          <div className="lp-section-glow lp-glow-hero-cyan" />
         </div>
 
         <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 xl:px-16 pt-8">
@@ -716,8 +725,9 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
         </div>
 
         {/* ── Course preview cards floating at the bottom ── */}
-        <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0 relative">
+          <div className="lp-glow-features" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 relative z-10">
             {/* Card 1 — workshop card */}
             <div
               className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
@@ -800,9 +810,10 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* Features */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
+        <div className="lp-dot-grid lp-dot-grid-capabilities" />
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute right-[10%] top-[10%] w-[600px] h-[600px] rounded-full bg-lp-purple/12 blur-[150px]" />
-          <div className="absolute left-[20%] bottom-[20%] w-[500px] h-[500px] rounded-full bg-blue-500/12 blur-[130px]" />
+          <div className="lp-section-glow lp-glow-cap-purple" />
+          <div className="lp-section-glow lp-glow-cap-blue" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
@@ -832,10 +843,10 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* AI Chat Preview */}
       <section className="py-28 px-6 lg:px-10 bg-transparent relative overflow-hidden">
-        <div className="absolute inset-0 lp-dot-grid opacity-[0.08] pointer-events-none z-0" />
+        <div className="lp-dot-grid lp-dot-grid-kai" />
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-[40%] top-[20%] w-[500px] h-[500px] rounded-full bg-lp-cyan/15 blur-[130px]" />
-          <div className="absolute right-[15%] bottom-[30%] w-[450px] h-[450px] rounded-full bg-violet-600/12 blur-[120px]" />
+          <div className="lp-section-glow lp-glow-kai-cyan" />
+          <div className="lp-section-glow lp-glow-kai-purple" />
         </div>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div>
@@ -907,8 +918,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* Course Preview */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-[20%] top-[10%] w-[500px] h-[500px] rounded-full bg-lp-purple/12 blur-[130px]" />
-          <div className="absolute right-[30%] bottom-[10%] w-[400px] h-[400px] rounded-full bg-lp-orange/[0.08] blur-[110px]" />
+          <div className="lp-section-glow lp-glow-journey-purple" />
+          <div className="lp-section-glow lp-glow-journey-orange" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-end justify-between mb-12">
@@ -947,8 +958,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* FAQ */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute right-[20%] top-[30%] w-[600px] h-[600px] rounded-full bg-slate-900/20 blur-[150px]" />
-          <div className="absolute left-[30%] bottom-[10%] w-[450px] h-[450px] rounded-full bg-lp-purple/12 blur-[120px]" />
+          <div className="lp-section-glow lp-glow-faq-navy" />
+          <div className="lp-section-glow lp-glow-faq-purple" />
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-16">
@@ -977,7 +988,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {/* CTA Banner */}
       <section className="py-20 px-6 lg:px-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-r from-lp-pink/15 to-lp-purple/15 rounded-full blur-[140px]" />
+          <div className="lp-section-glow lp-glow-cta" />
         </div>
         <div className="max-w-4xl mx-auto text-center border border-border rounded-3xl p-16 bg-gradient-to-b from-secondary/40 to-background/20 backdrop-blur-md relative overflow-hidden z-10">
           <div className="absolute inset-0 bg-primary/3 pointer-events-none" />
