@@ -648,13 +648,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="min-h-screen flex flex-col pt-20 pb-0 relative overflow-hidden">
-        {/* Section specific background overlays */}
-        <div className="lp-dot-grid lp-dot-grid-hero" />
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="lp-section-glow lp-glow-hero-purple" />
-          <div className="lp-section-glow lp-glow-hero-pink" />
-          <div className="lp-section-glow lp-glow-hero-cyan" />
-        </div>
 
         <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 xl:px-16 pt-8">
           {/* Eyebrow pill */}
@@ -711,9 +704,8 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
         </div>
 
         {/* ── Course preview cards floating at the bottom ── */}
-        <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0 relative">
-          <div className="lp-glow-features" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 relative z-10">
+        <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {/* Card 1 — workshop card */}
             <div
               className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
@@ -796,11 +788,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* Features */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
-        <div className="lp-dot-grid lp-dot-grid-capabilities" />
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="lp-section-glow lp-glow-cap-purple" />
-          <div className="lp-section-glow lp-glow-cap-blue" />
-        </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <p className="text-2xl mb-2" style={{ color: "#F72585", fontFamily: "'Dancing Script', cursive" }}>Platform Capabilities</p>
@@ -829,11 +816,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* AI Chat Preview */}
       <section className="py-28 px-6 lg:px-10 bg-transparent relative overflow-hidden">
-        <div className="lp-dot-grid lp-dot-grid-kai" />
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="lp-section-glow lp-glow-kai-cyan" />
-          <div className="lp-section-glow lp-glow-kai-purple" />
-        </div>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div>
             <p {...cr("text-primary text-2xl mb-2")}>AI Assistant</p>
@@ -903,10 +885,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* Course Preview */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="lp-section-glow lp-glow-journey-purple" />
-          <div className="lp-section-glow lp-glow-journey-orange" />
-        </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-end justify-between mb-12">
             <div>
@@ -943,10 +921,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* FAQ */}
       <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="lp-section-glow lp-glow-faq-navy" />
-          <div className="lp-section-glow lp-glow-faq-purple" />
-        </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <p {...cr("text-primary text-2xl mb-1")}>FAQ</p>
@@ -973,9 +947,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       {/* CTA Banner */}
       <section className="py-20 px-6 lg:px-10 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="lp-section-glow lp-glow-cta" />
-        </div>
         <div className="max-w-4xl mx-auto text-center border border-border rounded-3xl p-16 bg-gradient-to-b from-secondary/40 to-background/20 backdrop-blur-md relative overflow-hidden z-10">
           <div className="absolute inset-0 bg-primary/3 pointer-events-none" />
           <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
