@@ -55,7 +55,7 @@ export function LearningBitePlayer({
           .eq("activity_id", activityId);
 
         if (progress && progress.length > 0) {
-          const sortedBites = [...bites].sort((a, b) => a.order_index - b.order_index);
+          const sortedBites = [...bites].sort((a, b) => a.orderIndex - b.orderIndex);
           const firstIncompleteIdx = sortedBites.findIndex(b => {
             const p = progress.find((prog: any) => Number(prog.bite_id) === Number(b.id));
             return !p || p.status !== "completed";
@@ -180,7 +180,7 @@ export function LearningBitePlayer({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const xpEarned = activeBite.xp_reward || 20;
+      const xpEarned = activeBite.xpReward || 20;
 
       // Check if this bite has already been completed in the database
       const { data: existingBite } = await supabase
@@ -398,7 +398,7 @@ export function LearningBitePlayer({
         {step === 7 && (
           <BiteCompletionSection 
             title={activeBite.title}
-            xpReward={activeBite.xp_reward}
+            xpReward={activeBite.xpReward}
             isSaving={isSaving}
             onClaim={handleClaimXp}
           />

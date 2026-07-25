@@ -99,8 +99,8 @@ export default function LearnPage({
 
   // Helper to resolve journey-specific stats dynamically
   const getJourneyStats = (courseId: number) => {
-    const courseStages = (journeyStages || []).filter(s => Number(s.course_id) === Number(courseId));
-    const courseActivities = (learningActivities || []).filter(a => Number(a.course_id) === Number(courseId));
+    const courseStages = (journeyStages || []).filter(s => Number(s.courseId) === Number(courseId));
+    const courseActivities = (learningActivities || []).filter(a => Number(a.courseId) === Number(courseId));
     const courseProgress = (activityProgress || []).filter(p => Number(p.course_id) === Number(courseId));
     
     const earnedXp = courseProgress.reduce((sum, p) => sum + (p.xp_earned || 0), 0);
@@ -108,18 +108,18 @@ export default function LearnPage({
     let currentStage = 'Beginner';
     if (courseActivities.length > 0) {
       const incompleteRequired = courseActivities
-        .filter(a => a.is_required)
-        .sort((a, b) => a.order_index - b.order_index)
+        .filter(a => a.isRequired)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
         .find(a => {
           const prog = courseProgress.find(p => Number(p.activity_id) === Number(a.id));
           return !prog || prog.status !== 'completed';
         });
       
       if (incompleteRequired) {
-        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stage_id));
+        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stageId));
         if (stage) currentStage = stage.title;
       } else {
-        const lastStage = courseStages.sort((a, b) => b.order_index - a.order_index)[0];
+        const lastStage = courseStages.sort((a, b) => b.orderIndex - a.orderIndex)[0];
         if (lastStage) currentStage = lastStage.title;
       }
     }

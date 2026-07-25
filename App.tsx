@@ -614,7 +614,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   return (
     <div className="bg-transparent text-foreground min-h-screen relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* Navbar */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/95 backdrop-blur-md border-b border-border" : ""}`}>
+      <nav className="fixed top-0 left-0 right-0 z-50 premium-navbar">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <div onClick={() => onNavigate("landing")} className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
@@ -1705,8 +1705,8 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   };
 
   const getJourneyStats = (courseId: number) => {
-    const courseStages = (journeyStages || []).filter(s => Number(s.course_id) === Number(courseId));
-    const courseActivities = (learningActivities || []).filter(a => Number(a.course_id) === Number(courseId));
+    const courseStages = (journeyStages || []).filter(s => Number(s.courseId) === Number(courseId));
+    const courseActivities = (learningActivities || []).filter(a => Number(a.courseId) === Number(courseId));
     const courseProgress = (activityProgress || []).filter(p => Number(p.course_id) === Number(courseId));
     
     const earnedXp = courseProgress.reduce((sum, p) => sum + (p.xp_earned || 0), 0);
@@ -1714,18 +1714,18 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     let currentStage = 'Beginner';
     if (courseActivities.length > 0) {
       const incompleteRequired = courseActivities
-        .filter(a => a.is_required)
-        .sort((a, b) => a.order_index - b.order_index)
+        .filter(a => a.isRequired)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
         .find(a => {
           const prog = courseProgress.find(p => Number(p.activity_id) === Number(a.id));
           return !prog || prog.status !== 'completed';
         });
       
       if (incompleteRequired) {
-        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stage_id));
+        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stageId));
         if (stage) currentStage = stage.title;
       } else {
-        const lastStage = courseStages.sort((a, b) => b.order_index - a.order_index)[0];
+        const lastStage = courseStages.sort((a, b) => b.orderIndex - a.orderIndex)[0];
         if (lastStage) currentStage = lastStage.title;
       }
     }
@@ -2402,11 +2402,11 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   
   // Load journey stages, activities, and user progress
   const courseStages = (journeyStages || [])
-    .filter(s => Number(s.course_id) === Number(course.id))
-    .sort((a, b) => a.order_index - b.order_index);
+    .filter(s => Number(s.courseId) === Number(course.id))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
   const courseActivities = (learningActivities || [])
-    .filter(a => Number(a.course_id) === Number(course.id))
-    .sort((a, b) => a.order_index - b.order_index);
+    .filter(a => Number(a.courseId) === Number(course.id))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
   const progressRecords = (activityProgress || []).filter(p => Number(p.course_id) === Number(course.id));
   
   const completedActivities = courseActivities.filter(a => {
@@ -2456,11 +2456,11 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     
     // Check if this activity has learning bites
     const bitesForActivity = (learningBites || []).filter(
-      (b: any) => Number(b.activity_id) === Number(activity.id)
+      (b: any) => Number(b.activityId) === Number(activity.id)
     );
 
     if (bitesForActivity.length > 0) {
-      const sortedBites = [...bitesForActivity].sort((a, b) => a.order_index - b.order_index);
+      const sortedBites = [...bitesForActivity].sort((a, b) => a.orderIndex - b.orderIndex);
       setActiveBites(sortedBites);
       setActiveActivity(activity);
     } else {
@@ -2671,21 +2671,21 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                                       </div>
                                     ) : (
                                       <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                                        <span className="capitalize font-mono">{act.activity_type.replace('_', ' ')}</span>
+                                        <span className="capitalize font-mono">{act.activityType.replace('_', ' ')}</span>
                                         <span>&bull;</span>
-                                        <span>{act.estimated_minutes} min</span>
+                                        <span>{act.estimatedMinutes} min</span>
                                       </div>
                                     )}
                                   </div>
                                 </div>
                                 
-                                {act.xp_reward > 0 && (
+                                {act.xpReward > 0 && (
                                   <div className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
                                     status === 'completed'
                                       ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
                                       : 'text-primary bg-primary/10 border border-primary/20'
                                   }`}>
-                                    +{act.xp_reward} XP
+                                    +{act.xpReward} XP
                                   </div>
                                 )}
                               </div>
@@ -2822,7 +2822,7 @@ function ActivityPlayer({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const xpReward = activity.xp_reward || 20;
+      const xpReward = activity.xpReward || 20;
 
       // 1. Upsert progress record
       const { error: progError } = await supabase
@@ -5109,9 +5109,53 @@ export default function App() {
         }
 
         if (active) {
-          if (stagesData) setJourneyStages(stagesData);
-          if (actsData) setLearningActivities(actsData);
-          if (bitesData) setLearningBites(bitesData);
+          if (stagesData) {
+            const mappedStages = stagesData.map((s: any) => ({
+              id: s.id,
+              courseId: s.course_id,
+              title: s.title,
+              description: s.description,
+              stageLevel: s.stage_level,
+              orderIndex: s.order_index,
+              xpRequired: s.xp_required
+            }));
+            setJourneyStages(mappedStages);
+          }
+          if (actsData) {
+            const mappedActs = actsData.map((a: any) => ({
+              id: a.id,
+              stageId: a.stage_id,
+              courseId: a.course_id,
+              title: a.title,
+              description: a.description,
+              activityType: a.activity_type,
+              content: a.content,
+              orderIndex: a.order_index,
+              xpReward: a.xp_reward,
+              estimatedMinutes: a.estimated_minutes,
+              isRequired: a.is_required
+            }));
+            setLearningActivities(mappedActs);
+          }
+          if (bitesData) {
+            const mappedBites = bitesData.map((b: any) => ({
+              id: b.id,
+              activityId: b.activity_id,
+              courseId: b.course_id,
+              stageId: b.stage_id,
+              title: b.title,
+              subtitle: b.subtitle,
+              biteType: b.bite_type,
+              content: b.content,
+              orderIndex: b.order_index,
+              estimatedMinutes: b.estimated_minutes,
+              xpReward: b.xp_reward,
+              isRequired: b.is_required,
+              createdAt: b.created_at,
+              updatedAt: b.updated_at
+            }));
+            setLearningBites(mappedBites);
+          }
         }
       } catch (err: any) {
         console.error("Error loading courses or journey metadata on mount:", err);
