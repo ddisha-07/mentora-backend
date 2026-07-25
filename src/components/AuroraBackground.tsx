@@ -111,11 +111,12 @@ export function AuroraBackground() {
           filter: blur(200px); /* Massive blur radius to dissolve shapes naturally */
           transform: translate3d(0,0,0);
           will-change: transform;
-          opacity: 0.20;
+          opacity: 0.45;
           transition: opacity 0.5s ease;
+          pointer-events: none;
         }
         .dark .aurora-blobs {
-          opacity: 0.16;
+          opacity: 0.32;
         }
       `}</style>
 
