@@ -43,15 +43,15 @@
   --surface: #F1F5F9;
 
   /* ── Landing Page Design Tokens (Light - Soft Airy Pastels) ── */
-  --lp-bg: #F8FAFC;
-  --lp-pink: rgba(255, 43, 138, 0.12);
-  --lp-purple: rgba(124, 58, 237, 0.12);
-  --lp-cyan: rgba(34, 211, 238, 0.08);
-  --lp-orange: rgba(255, 159, 28, 0.08);
-  --lp-blue: rgba(59, 130, 246, 0.10);
-  --lp-card-bg: rgba(255, 255, 255, 0.80);
-  --lp-card-border: rgba(15, 23, 42, 0.06);
-  --lp-card-blur: blur(12px);
+  --lp-bg: #FAFAF9;
+  --lp-pink: rgba(244, 63, 94, 0.05);
+  --lp-purple: rgba(139, 92, 246, 0.05);
+  --lp-cyan: rgba(6, 182, 212, 0.04);
+  --lp-orange: rgba(245, 158, 11, 0.03);
+  --lp-blue: rgba(59, 130, 246, 0.04);
+  --lp-card-bg: rgba(255, 255, 255, 0.70);
+  --lp-card-border: rgba(15, 23, 42, 0.04);
+  --lp-card-blur: blur(20px);
 }
 
 .dark {
@@ -102,8 +102,8 @@
   --lp-orange: #FF9F1C;
   --lp-blue: #3B82F6;
   --lp-card-bg: rgba(10, 10, 25, 0.75);
-  --lp-card-border: rgba(255, 255, 255, 0.08);
-  --lp-card-blur: blur(12px);
+  --lp-card-border: rgba(255, 255, 255, 0.04);
+  --lp-card-blur: blur(20px);
 }
 
 @theme inline {
@@ -324,6 +324,22 @@
   background: transparent !important;
 }
 
+/* Premium Glass Navbar styling */
+.premium-navbar {
+  background-color: rgba(3, 3, 10, 0.45) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+:root:not(.dark) .premium-navbar {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
 /* Glassmorphic card styling on Landing Page */
 .capability-tile,
 .lp-glass-card {
@@ -332,20 +348,26 @@
   backdrop-filter: var(--lp-card-blur) !important;
   -webkit-backdrop-filter: var(--lp-card-blur) !important;
   border-radius: 16px !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2) !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.capability-tile:hover,
-.lp-glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  transform: translateY(-3px) !important;
-  box-shadow: 0 12px 30px -5px rgba(124, 58, 237, 0.22), 0 0 2px 1px rgba(124, 58, 237, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 30px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 :root:not(.dark) .capability-tile,
 :root:not(.dark) .lp-glass-card {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+}
+
+.capability-tile:hover,
+.lp-glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 30px -5px rgba(124, 58, 237, 0.22), 0 0 2px 1px rgba(124, 58, 237, 0.1) !important;
+}
+
+:root:not(.dark) .capability-tile:hover,
+:root:not(.dark) .lp-glass-card:hover {
+  border-color: rgba(124, 58, 237, 0.15) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 12px 25px -5px rgba(124, 58, 237, 0.10) !important;
 }
 
 :root:not(.dark) .capability-tile:hover,
