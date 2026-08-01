@@ -1205,6 +1205,64 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
             </div>
           </section>
 
+          {/* Final Call to Action */}
+          <section className="py-32 px-6 lg:px-10 relative overflow-hidden border-t border-border/5 text-center">
+            {/* Visual decorative background glows behind final CTA */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-gradient-to-tr from-[#FF2B8A]/10 to-[#7C3AED]/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse" style={{ animationDuration: "8s" }} />
+
+            <div className="max-w-4xl mx-auto relative z-10">
+              
+              {/* Eyebrow pill */}
+              <div className="mb-6">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold uppercase tracking-wider" {...mono()}>
+                  <Sparkles size={11} /> Start Today
+                </span>
+              </div>
+
+              {/* Headline */}
+              <h2 
+                className="font-bold tracking-tight text-foreground leading-[1.1] mb-6"
+                style={{ 
+                  fontFamily: "'Raleway', sans-serif", 
+                  fontSize: "clamp(2.2rem, 5vw, 3.8rem)"
+                }}
+              >
+                Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED]">Upskill Smarter</span>?
+              </h2>
+
+              {/* Description */}
+              <p className="text-base text-muted-foreground leading-relaxed mb-10 max-w-lg mx-auto">
+                Join Mentora and start learning with AI-powered guidance.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                {/* Primary Button */}
+                <motion.button
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => onNavigate(user ? "dashboard" : "login")}
+                  className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white flex items-center gap-2 shadow-xl shadow-pink-500/20 transition-all duration-300 hover:shadow-pink-500/30 cursor-pointer"
+                  style={{ fontFamily: "'Raleway', sans-serif" }}
+                >
+                  Start Learning <ArrowRight size={16} />
+                </motion.button>
+
+                {/* Secondary Button */}
+                <motion.button
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => onNavigate(user ? "dashboard" : "login")}
+                  className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-[#0F0F1B]/40 hover:bg-[#0F0F1B]/70 border border-white/10 text-foreground transition-all duration-300 cursor-pointer"
+                  style={{ fontFamily: "'Raleway', sans-serif" }}
+                >
+                  Explore Learning Journeys
+                </motion.button>
+              </div>
+
+            </div>
+          </section>
+
         </>
       )}
 
