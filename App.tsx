@@ -1210,32 +1210,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
       <LandingFuture />
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12 px-6 lg:px-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between flex-wrap gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
-              </div>
-              <span {...sg("font-bold tracking-tight")}>Mentora</span>
-              <span className="text-muted-foreground text-xs ml-2">© 2024 Mentora Inc.</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              {["Privacy", "Terms", "Security", "Status"].map((l) => (
-                <a key={l} href="#" onClick={e => e.preventDefault()} className="hover:text-foreground transition-colors">{l}</a>
-              ))}
-            </div>
-            <div className="flex items-center gap-3">
-              {[Twitter, Linkedin, Github].map((Icon, i) => (
-                <a key={i} href="#" onClick={e => e.preventDefault()} className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all">
-                  <Icon size={15} />
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }
