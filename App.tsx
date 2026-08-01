@@ -1011,35 +1011,6 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
             </div>
           </section>
 
-          {/* Testimonials */}
-          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
-            <div className="max-w-7xl mx-auto relative z-10">
-              <div className="text-center mb-16">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
-                  Success Stories
-                </span>
-                <h2 className="text-4xl lg:text-5xl font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                  Loved by <span className="text-primary">operators</span> worldwide
-                </h2>
-              </div>
-              <div className="grid md:grid-cols-3 gap-6">
-                {TESTIMONIALS.map((t, idx) => (
-                  <div key={idx} className="lp-glass-card p-6 flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-6 italic">
-                      "\`${t.text}\`"
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover border border-border/10" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
-                        <p className="text-[10px] text-muted-foreground">{t.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
 
           {/* FAQ */}
           <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
