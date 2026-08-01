@@ -19,11 +19,6 @@ export function LandingFuture() {
       desc: "Submit credentials directly to Kai for plant job recommendations and resume feedback."
     },
     {
-      icon: <MessageSquare size={18} />,
-      title: "AI Mock Interviews",
-      desc: "Simulate emergency response panel evaluations with situational interview checkpoints."
-    },
-    {
       icon: <Sparkles size={18} />,
       title: "Voice with Kai",
       desc: "Review valve layouts hands-free on the plant floor using vocal queries and voice bites."
@@ -37,11 +32,6 @@ export function LandingFuture() {
       icon: <ShieldAlert size={18} />,
       title: "AI Team Analytics",
       desc: "Provide team leaders with dashboards detailing safety compliance risks and speed scores."
-    },
-    {
-      icon: <Smartphone size={18} />,
-      title: "Mentora Mobile App",
-      desc: "Access bite players, quick quizzes, and notifications directly on native iOS/Android devices."
     }
   ];
 
