@@ -13,7 +13,9 @@ import {
   BookOpen,
   HelpCircle,
   ShieldAlert,
-  Bookmark
+  Bookmark,
+  Search,
+  ChevronRight
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { ROLES_CONFIG } from '../config/roles';
@@ -258,7 +260,7 @@ export function CourseCard({
   return (
     <div
       onClick={onNavigate}
-      className={`bg-card border border-border rounded-2xl overflow-hidden group transition-all duration-300 relative ${onNavigate ? 'cursor-pointer hover:border-primary/30' : ''}`}
+      className={"premium-glass-card overflow-hidden group transition-all duration-300 relative " + (onNavigate ? "cursor-pointer hover:scale-[1.02]" : "")}
     >
       <div className="h-40 overflow-hidden relative">
         <img
@@ -542,16 +544,25 @@ export function EmptyState({
   onAction?: () => void;
 }) {
   return (
-    <div className="border border-border border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center max-w-md mx-auto my-8">
-      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4">
-        {icon || <HelpCircle size={20} />}
+    <div className="premium-glass-card max-w-md mx-auto my-8 p-10 flex flex-col items-center justify-center text-center relative overflow-hidden border border-border/10">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-400/5 rounded-full blur-2xl pointer-events-none" />
+      
+      <div className="w-16 h-16 rounded-2xl bg-secondary/25 border border-border/5 flex items-center justify-center text-primary mb-6 shadow-inner relative z-10">
+        {icon || <HelpCircle size={24} />}
       </div>
-      <h4 className="text-sm font-bold text-foreground mb-1 leading-snug">{title}</h4>
-      <p className="text-xs text-muted-foreground leading-relaxed mb-6">{message}</p>
+      
+      <h4 className="text-base font-bold text-foreground mb-2 leading-snug relative z-10" style={{ fontFamily: "'Raleway', sans-serif" }}>
+        {title}
+      </h4>
+      <p className="text-xs text-muted-foreground leading-relaxed mb-6 max-w-xs relative z-10">
+        {message}
+      </p>
+      
       {actionText && onAction && (
         <button
           onClick={onAction}
-          className="text-xs font-semibold text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-xl transition-all active:scale-95"
+          className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-xs font-bold text-white shadow-lg shadow-primary/10 transition-all cursor-pointer active:scale-95 relative z-10"
         >
           {actionText}
         </button>
@@ -605,30 +616,116 @@ export function ErrorState({
 // ----------------------------------------------------
 export function SkeletonLoader({ className = '' }: { className?: string }) {
   return (
-    <div className={`bg-card/50 border border-border/50 rounded-2xl p-5 space-y-3 animate-pulse ${className}`}>
+    <div className={"premium-glass-card p-5 space-y-4 animate-pulse relative overflow-hidden " + className}>
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" style={{ animationDuration: "1.5s" }} />
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-muted rounded-full" />
-        <div className="space-y-1.5 flex-1">
-          <div className="h-3.5 bg-muted rounded w-1/3" />
-          <div className="h-2.5 bg-muted rounded w-1/4" />
+        <div className="w-10 h-10 bg-secondary/35 rounded-xl" />
+        <div className="space-y-2 flex-1">
+          <div className="h-3.5 bg-secondary/35 rounded-md w-1/3" />
+          <div className="h-2.5 bg-secondary/25 rounded-md w-1/4" />
         </div>
       </div>
-      <div className="space-y-2 pt-2">
-        <div className="h-3 bg-muted rounded w-full" />
-        <div className="h-3 bg-muted rounded w-5/6" />
-        <div className="h-3 bg-muted rounded w-2/3" />
+      <div className="space-y-2.5 pt-2">
+        <div className="h-3 bg-secondary/35 rounded-md w-full" />
+        <div className="h-3 bg-secondary/35 rounded-md w-11/12" />
+        <div className="h-3 bg-secondary/25 rounded-md w-2/3" />
       </div>
     </div>
   );
 }
+
 
 // ----------------------------------------------------
 // 18. REUSABLE CARD
 // ----------------------------------------------------
 export function Card({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <div onClick={onClick} className={`bg-card border border-border rounded-2xl p-5 ${className}`}>
+    <div onClick={onClick} className={"premium-glass-card p-5 " + className}>
       {children}
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+// 19. PAGE HEADER
+// ----------------------------------------------------
+interface BreadcrumbItem {
+  label: string;
+  onClick?: () => void;
+}
+
+export function PageHeader({
+  title,
+  description,
+  breadcrumbs = [],
+  primaryAction,
+  secondaryAction
+}: {
+  title: string;
+  description?: string;
+  breadcrumbs?: BreadcrumbItem[];
+  primaryAction?: {
+    label: string;
+    onClick: () => void;
+    icon?: React.ReactNode;
+  };
+  secondaryAction?: {
+    label: string;
+    onClick: () => void;
+    icon?: React.ReactNode;
+  };
+}) {
+  return (
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="space-y-1.5">
+        {breadcrumbs.length > 0 && (
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span>/</span>}
+                {crumb.onClick ? (
+                  <button onClick={crumb.onClick} className="hover:text-primary transition-colors cursor-pointer">
+                    {crumb.label}
+                  </button>
+                ) : (
+                  <span>{crumb.label}</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+        <h1 className="text-2xl font-black text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+          {title}
+        </h1>
+        {description && (
+          <p className="text-muted-foreground text-xs leading-relaxed max-w-3xl">
+            {description}
+          </p>
+        )}
+      </div>
+
+      {(primaryAction || secondaryAction) && (
+        <div className="flex items-center gap-2">
+          {secondaryAction && (
+            <button
+              onClick={secondaryAction.onClick}
+              className="bg-secondary/35 border border-border/10 hover:bg-secondary/50 text-foreground text-xs font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              {secondaryAction.icon}
+              {secondaryAction.label}
+            </button>
+          )}
+          {primaryAction && (
+            <button
+              onClick={primaryAction.onClick}
+              className="bg-primary hover:bg-primary/95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-primary/20"
+            >
+              {primaryAction.icon}
+              {primaryAction.label}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -184,22 +184,71 @@
 
   /* Card Accent Gradients for Visual Differentiation */
   .card-primary {
-    background: linear-gradient(135deg, rgba(247, 37, 133, 0.18) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(247, 37, 133, 0.18) 0%, rgba(15, 15, 27, 0.45) 60%) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
   }
   .card-cyan {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(15, 15, 27, 0.45) 60%) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
   }
   .card-amber {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(15, 15, 27, 0.45) 60%) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
   }
   .card-purple {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, rgba(15, 15, 27, 0.45) 60%) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
   }
   .card-green {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(15, 15, 27, 0.45) 60%) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
   }
   .card-blue {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, var(--card) 60%) !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(15, 15, 27, 0.45) 60%) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
+  }
+
+  :root:not(.dark) .card-primary {
+    background: linear-gradient(135deg, rgba(247, 37, 133, 0.12) 0%, rgba(255, 255, 255, 0.5) 60%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  }
+  :root:not(.dark) .card-cyan {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(255, 255, 255, 0.5) 60%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  }
+  :root:not(.dark) .card-amber {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(255, 255, 255, 0.5) 60%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  }
+  :root:not(.dark) .card-purple {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(255, 255, 255, 0.5) 60%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  }
+  :root:not(.dark) .card-green {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(255, 255, 255, 0.5) 60%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  }
+  :root:not(.dark) .card-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(255, 255, 255, 0.5) 60%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.06) !important;
   }
 
   /* Global input outline / border removal */
@@ -647,4 +696,33 @@
   opacity: 0.22;
   filter: blur(150px);
 }
+
+/* ── PREMIUM AUTHENTICATED DESIGN SYSTEM ── */
+.premium-glass-card {
+  background: rgba(15, 15, 27, 0.45) !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+:root:not(.dark) .premium-glass-card {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+.premium-glass-card:hover {
+  border-color: rgba(247, 37, 133, 0.2) !important;
+}
+
+:root:not(.dark) .premium-glass-card:hover {
+  border-color: rgba(247, 37, 133, 0.3) !important;
+}
+
 

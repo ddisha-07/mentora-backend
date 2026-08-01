@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Bookmark, Search, Trash2, ArrowRight, BookOpen, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../../App';
-import { Card, EmptyState, SkeletonLoader } from '../components/reusable';
+import { Card, EmptyState, SkeletonLoader, PageHeader } from '../components/reusable';
 import { supabase } from '../lib/supabaseClient';
+
+interface Transaction {
+  id: string | number;
+  rewardId?: number | string;
+  description: string;
+  amount: number;
+  type: 'earn' | 'spend' | 'transfer';
+  date: string;
+}
 
 export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void }) {
   const { profile, savedItems, setSavedItems, toggleBookmark, setSelectedSopId, courses, knowledgeQuestions, user } = useApp();
@@ -147,7 +157,6 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
     }
   };
 
-  // Personalized recommendations database
   const getRecommendations = () => {
     const role = activeProfile.role;
     const dept = activeProfile.department || 'Safety & EHS';
@@ -179,54 +188,73 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
 
   const recs = getRecommendations();
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Bookmark className="text-primary" size={24} /> Bookmarks &amp; Saved
-          </h2>
-          <p className="text-muted-foreground text-sm">Access your saved courses, SOP manuals, expert Q&amp;As, and AI use cases.</p>
-        </div>
-        <button
-          onClick={handleRefresh}
-          className="bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 active:scale-95"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Sync Cloud Items
-        </button>
-      </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 max-w-7xl mx-auto space-y-6"
+    >
+      {/* Page Header */}
+      <PageHeader
+        title="Bookmarks &amp; Saved"
+        description="Access and manage your bookmarks, pinned SOP manuals, verified Q&amp;As, and active learning paths."
+        breadcrumbs={[{ label: "Mentora" }, { label: "Saved" }]}
+        primaryAction={{
+          label: "Sync Cloud Items",
+          onClick: handleRefresh,
+          icon: <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+        }}
+      />
 
       {/* Error state display */}
       {error && (
-        <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-start gap-3 text-xs text-rose-400">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-rose-500/10 border border-rose-500/25 p-4 rounded-2xl flex items-start gap-3 text-xs text-rose-400"
+        >
           <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <h4 className="font-bold">Sync Synchronization Error</h4>
             <p className="mt-1 opacity-90">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="mt-2 font-bold underline hover:opacity-100 opacity-80"
+              className="mt-2 font-bold underline hover:opacity-100 opacity-80 cursor-pointer"
             >
               Dismiss
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Main Grid: Left Bookmarks list, Right Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left pane: Bookmarks list */}
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Col: Saved list */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Search and filters bar */}
-          <div className="flex flex-wrap gap-4 items-center justify-between bg-card/45 border border-border p-4 rounded-2xl">
+          
+          {/* Filters panel */}
+          <div className="premium-glass-card p-4 flex flex-wrap gap-4 items-center justify-between">
             <div className="relative w-full md:w-64">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 placeholder="Search saved items..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="bg-background border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder-muted-foreground w-full outline-none focus:border-primary/50 transition-all"
+                className="bg-secondary/35 border border-border/10 focus:border-primary/30 rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder-muted-foreground w-full outline-none transition-all"
               />
             </div>
 
@@ -242,7 +270,11 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
                 <button
                   key={tab.id}
                   onClick={() => setSubTab(tab.id as any)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${subTab === tab.id ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all border ${
+                    subTab === tab.id
+                      ? 'bg-primary/10 text-primary border-primary/20'
+                      : 'bg-secondary/10 border-border/10 text-muted-foreground hover:text-foreground hover:border-border/30'
+                  }`}
                 >
                   {tab.label}
                 </button>
@@ -253,101 +285,107 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
           {/* List display */}
           <div className="space-y-3">
             {loading || resolving ? (
-              // Skeleton Loader State
               <div className="space-y-4">
                 <SkeletonLoader />
                 <SkeletonLoader />
               </div>
             ) : filteredItems.length > 0 ? (
-              filteredItems.map(item => (
-                <div
-                  key={item.id}
-                  className="bg-card border border-border hover:border-primary/10 rounded-2xl p-4 flex items-center justify-between gap-4 transition-all"
-                >
-                  <div
-                    onClick={() => {
-                      if (item.type === 'sop') {
-                        setSelectedSopId(item.id);
-                        onNavigate('sop-detail');
-                      } else {
-                        onNavigate(item.page || 'learn');
-                      }
-                    }}
-                    className="flex-1 cursor-pointer space-y-1"
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="space-y-3"
+              >
+                {filteredItems.map(item => (
+                  <motion.div
+                    key={item.id}
+                    variants={itemVariants}
+                    className="premium-glass-card p-4.5 flex items-center justify-between gap-4 transition-all border border-border/10 hover:scale-[1.01]"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-[8px] bg-background border border-border px-2 py-0.5 rounded font-black text-primary uppercase tracking-wider">
-                        {item.category || item.type}
-                      </span>
-                      {item.type === 'sop' && (
-                        <>
-                          {item.sopCode && (
-                            <span className="text-[8px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                              {item.sopCode}
-                            </span>
-                          )}
-                          {item.isOfficial ? (
-                            <span className="text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                              Official SOP
-                            </span>
-                          ) : (
-                            <span className="text-[8px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                              Preserved Expert Knowledge
-                            </span>
-                          )}
-                        </>
-                      )}
+                    <div
+                      onClick={() => {
+                        if (item.type === 'sop') {
+                          setSelectedSopId(item.id);
+                          onNavigate('sop-detail');
+                        } else {
+                          onNavigate(item.page || 'learn');
+                        }
+                      }}
+                      className="flex-1 cursor-pointer space-y-1.5 min-w-0"
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[8px] bg-secondary border border-border/10 px-2 py-0.5 rounded-md font-bold text-primary uppercase tracking-wider">
+                          {item.category || item.type}
+                        </span>
+                        {item.type === 'sop' && (
+                          <>
+                            {item.sopCode && (
+                              <span className="text-[8px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                                {item.sopCode}
+                              </span>
+                            )}
+                            {item.isOfficial ? (
+                              <span className="text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                                Official SOP
+                              </span>
+                            ) : (
+                              <span className="text-[8px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                                Preserved Expert Knowledge
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <h4 className="text-xs md:text-sm font-bold text-foreground hover:text-primary transition-colors leading-snug truncate" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                        {item.title}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground leading-normal line-clamp-1">
+                        {item.desc}
+                      </p>
                     </div>
-                    <h4 className="text-xs md:text-sm font-bold text-foreground hover:text-primary transition-colors leading-snug">
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground leading-normal line-clamp-1">
-                      {item.desc}
-                    </p>
-                  </div>
 
-                  <button
-                    onClick={() => handleRemove(item)}
-                    className="p-2 bg-background border border-border hover:border-rose-500/20 text-muted-foreground hover:text-rose-400 rounded-xl transition-all"
-                    title="Remove Bookmark"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ))
+                    <button
+                      onClick={() => handleRemove(item)}
+                      className="p-2 bg-secondary/20 border border-border/10 hover:border-rose-500/20 text-muted-foreground hover:text-rose-400 rounded-xl transition-all cursor-pointer"
+                      title="Remove Bookmark"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </motion.div>
+                ))}
+              </motion.div>
             ) : (
-              // Empty State
               <EmptyState
                 title="No saved items found"
                 message="Your bookmark list in this category is currently empty. Star items in the library or SOP manuals to track them here."
-                actionText="Explore Learning catalog"
+                actionText="Explore Learning Catalog"
                 onAction={() => onNavigate('learn')}
               />
             )}
           </div>
         </div>
 
-        {/* Right pane: Personalized Recommendations */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border rounded-2xl p-5 space-y-5">
+        {/* Right Col: Recommendations */}
+        <div className="space-y-6 lg:col-span-1">
+          <div className="premium-glass-card p-5 space-y-5 border border-border/10">
             <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                <Sparkles size={14} className="text-primary fill-primary" /> Personalized for You
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                <Sparkles size={14} className="text-primary fill-primary" /> Personalized Suggestions
               </h3>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Recommendations mapped to your skill passport gaps.</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Recommendations mapped to your skill passport profile.</p>
             </div>
 
             <div className="space-y-4">
               {recs.map(rec => (
-                <div key={rec.id} className="p-3 bg-background border border-border rounded-xl space-y-2 text-xs">
+                <div key={rec.id} className="p-3.5 bg-secondary/15 border border-border/5 rounded-xl space-y-2.5 text-xs">
                   <span className="text-[8px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                     Target Suggestion
                   </span>
-                  <h4 className="font-bold text-foreground leading-tight">{rec.title}</h4>
-                  <p className="text-[10px] text-muted-foreground leading-normal">{rec.reason}</p>
+                  <h4 className="font-bold text-foreground leading-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>{rec.title}</h4>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{rec.reason}</p>
                   <button
                     onClick={() => onNavigate(rec.page as any)}
-                    className="w-full bg-card border border-border hover:bg-muted text-[10px] font-bold py-1.5 rounded-lg flex items-center justify-center gap-1 text-foreground transition-all"
+                    className="w-full bg-secondary/35 border border-border/10 hover:bg-secondary/50 text-[10px] font-bold py-2 rounded-lg flex items-center justify-center gap-1 text-foreground transition-all cursor-pointer"
                   >
                     {rec.action} <ArrowRight size={10} />
                   </button>
@@ -356,7 +394,8 @@ export default function SavedPage({ onNavigate }: { onNavigate: (p: any) => void
             </div>
           </div>
         </div>
+
       </div>
-    </div>
+    </motion.div>
   );
 }

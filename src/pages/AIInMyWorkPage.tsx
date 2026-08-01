@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
   Sparkles, ShieldCheck, Cpu, Play, CheckCircle, RefreshCw, BarChart2,
-  FileText, Activity, AlertTriangle, BookOpen, MessageSquare, Layers, HelpCircle, Bookmark
+  FileText, Activity, AlertTriangle, BookOpen, MessageSquare, Layers, HelpCircle, Bookmark, ChevronRight
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../../App';
-import { Card } from '../components/reusable';
+import { Card, PageHeader, EmptyState, SkeletonLoader } from '../components/reusable';
 
 interface UseCase {
   id: string;
@@ -45,7 +46,6 @@ export default function AIInMyWorkPage() {
 
   const userDept = activeProfile.department || 'Maintenance';
 
-  // State to support selecting different departments manually for testing/grading
   const [selectedDept, setSelectedDept] = useState<string>(userDept);
   const [selectedUseCase, setSelectedUseCase] = useState<UseCase | null>(null);
 
@@ -179,7 +179,6 @@ export default function AIInMyWorkPage() {
     ]
   };
 
-  // Get active use cases based on selected department tab
   const useCases = USE_CASES_BY_DEPT[selectedDept] || USE_CASES_BY_DEPT.Maintenance;
 
   const handleRunSimulation = (useCase: UseCase) => {
@@ -220,18 +219,37 @@ Action: Proceed to cooling cycles.`);
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="text-primary" size={24} /> AI in My Work
-          </h2>
-          <p className="text-muted-foreground text-sm">Personalized artificial intelligence models and predictive tools tailored to your daily operations.</p>
-        </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 max-w-7xl mx-auto space-y-6"
+    >
+      {/* Page Header */}
+      <PageHeader
+        title="AI in My Work"
+        description="Run specialized artificial intelligence models, play with simulators, and analyze telemetry overrides tailored to your sector."
+        breadcrumbs={[{ label: "Mentora" }, { label: "AI in My Work" }]}
+      />
+
+      {/* Select Department bar */}
+      <div className="premium-glass-card p-4 flex flex-wrap gap-4 items-center justify-between">
+        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Configure Plant Sector</span>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground font-semibold">Active Department:</span>
+          <span className="text-xs text-muted-foreground font-semibold">Department:</span>
           <select
             value={selectedDept}
             onChange={e => {
@@ -239,7 +257,7 @@ Action: Proceed to cooling cycles.`);
               setSelectedUseCase(null);
               setSimOutput('Adjust variables to trigger real-time AI modeling...');
             }}
-            className="bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground outline-none focus:border-primary/50"
+            className="bg-secondary/35 border border-border/10 rounded-xl px-3 py-2 text-xs text-foreground outline-none focus:border-primary/40 cursor-pointer"
           >
             {DEPARTMENTS.map(d => (
               <option key={d} value={d}>
@@ -251,242 +269,261 @@ Action: Proceed to cooling cycles.`);
       </div>
 
       {/* Main Grid: Left use cases list, Right Details/Simulation Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
         {/* Left column: Use cases cards */}
         <div className="lg:col-span-1 space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Available Models for {selectedDept} ({useCases.length})
           </h3>
-          <div className="space-y-3">
+          
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="space-y-3"
+          >
             {useCases.map(uc => (
-              <div
+              <motion.div
                 key={uc.id}
+                variants={itemVariants}
                 onClick={() => {
                   setSelectedUseCase(uc);
                   setSimOutput('Adjust variables to trigger real-time AI modeling...');
                 }}
-                className={`bg-card border rounded-2xl p-5 hover:border-primary/20 transition-all cursor-pointer flex flex-col justify-between h-40 relative ${selectedUseCase?.id === uc.id ? 'border-primary/50' : 'border-border'}`}
+                className={`premium-glass-card p-5 cursor-pointer hover:scale-[1.01] transition-all flex flex-col justify-between h-40 relative border ${
+                  selectedUseCase?.id === uc.id ? 'border-primary/45 shadow-lg shadow-primary/5' : 'border-border/10'
+                }`}
               >
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleToggleBookmark(uc);
                   }}
-                  className="absolute top-4 right-4 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all z-10"
+                  className="absolute top-4 right-4 p-1.5 rounded-xl bg-secondary/35 border border-border/10 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all z-10"
                   title="Bookmark Use Case"
                 >
                   <Bookmark size={12} className={isBookmarked(uc) ? "fill-primary text-primary" : ""} />
                 </button>
 
                 <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5" style={{ fontFamily: "'Raleway', sans-serif" }}>
                     <Cpu size={15} className="text-primary" /> {uc.title}
                   </h4>
                   <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                     {uc.shortDesc}
                   </p>
                 </div>
-                <div className="text-[10px] font-bold text-primary text-right uppercase tracking-wider mt-2">
-                  Explore Model &rarr;
+                <div className="text-[10px] font-bold text-primary flex items-center gap-0.5 justify-end uppercase tracking-wider mt-2">
+                  Explore Model <ChevronRight size={12} />
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Right column: Use case workspaces */}
         <div className="lg:col-span-2 space-y-6">
-          {selectedUseCase ? (
-            <div className="space-y-6">
-              {/* Detailed Specs Panel */}
-              <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-bold text-foreground flex items-center gap-1.5">
-                      <Sparkles size={16} className="text-primary fill-primary" /> {selectedUseCase.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">Specialized AI application in {selectedDept}</p>
-                  </div>
-                </div>
-
-                {/* Explanation details list */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs border-t border-border/50 pt-5">
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">What is it?</span>
-                    <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.whatIsIt}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">Why is it useful?</span>
-                    <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.whyUseful}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">How does it apply to this field?</span>
-                    <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.howApplies}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">Real-world example</span>
-                    <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.realWorldExample}</p>
-                  </div>
-                </div>
-
-                {/* References & Recommended courses */}
-                <div className="border-t border-border/50 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs text-muted-foreground">
-                  <div className="space-y-2">
-                    <span className="text-foreground uppercase font-bold text-[9px] tracking-wider block">Related SOPs</span>
+          <AnimatePresence mode="wait">
+            {selectedUseCase ? (
+              <motion.div
+                key={selectedUseCase.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="space-y-6"
+              >
+                {/* Detailed Specs Panel */}
+                <div className="premium-glass-card p-6 space-y-6 border border-border/10">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="space-y-1">
-                      {selectedUseCase.relatedSOPs.map(sop => (
-                        <div key={sop} className="flex items-center gap-1 text-[11px] font-mono text-primary bg-primary/5 p-1 rounded border border-primary/10">
-                          📋 {sop}
-                        </div>
-                      ))}
+                      <h3 className="text-base font-bold text-foreground flex items-center gap-1.5" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                        <Sparkles size={16} className="text-primary fill-primary" /> {selectedUseCase.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">Specialized AI application in {selectedDept}</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <span className="text-foreground uppercase font-bold text-[9px] tracking-wider block">Recommended Learning</span>
+
+                  {/* Explanation details list */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs border-t border-border/10 pt-5">
                     <div className="space-y-1">
-                      {selectedUseCase.recommendedCourses.map(course => (
-                        <div key={course} className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground hover:text-primary transition-colors cursor-pointer">
-                          <BookOpen size={11} className="text-primary" /> {course}
-                        </div>
-                      ))}
+                      <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">What is it?</span>
+                      <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.whatIsIt}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">Why is it useful?</span>
+                      <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.whyUseful}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">How does it apply to this field?</span>
+                      <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.howApplies}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground uppercase font-bold text-[9px] tracking-wider">Real-world example</span>
+                      <p className="text-foreground leading-relaxed font-semibold">{selectedUseCase.realWorldExample}</p>
                     </div>
                   </div>
-                </div>
 
-                {/* Actions Bar */}
-                <div className="flex gap-2 border-t border-border/50 pt-4 flex-wrap">
-                  <button
-                    onClick={() => setPage('learn')}
-                    className="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-primary/95 transition-all flex items-center gap-1 active:scale-95"
-                  >
-                    <BookOpen size={13} /> Learn Now
-                  </button>
-                  <button
-                    onClick={() => setPage('ai-chat')}
-                    className="bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-1 active:scale-95"
-                  >
-                    <MessageSquare size={13} /> Ask Kai Chatbot
-                  </button>
-                </div>
-              </div>
-
-              {/* Simulation Sandbox Sandbox */}
-              <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
-                <h4 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
-                  <Activity size={15} className="text-primary animate-pulse" /> Live Telemetry ML Simulator
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Simulation controls */}
-                  <div className="space-y-4">
-                    {selectedUseCase.simulationType === 'vibration' && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Vibration Frequency (Hz)</span>
-                          <strong className="text-foreground">{vibrationVal} Hz</strong>
-                        </div>
-                        <input
-                          type="range"
-                          min="10"
-                          max="150"
-                          value={vibrationVal}
-                          onChange={e => setVibrationVal(Number(e.target.value))}
-                          className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <div className="flex justify-between text-[8px] text-muted-foreground font-semibold pt-1">
-                          <span>10 Hz (Safe)</span>
-                          <span>100 Hz (Threshold)</span>
-                          <span>150 Hz (Failure risk)</span>
-                        </div>
+                  {/* References & Recommended courses */}
+                  <div className="border-t border-border/10 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs text-muted-foreground">
+                    <div className="space-y-2">
+                      <span className="text-foreground uppercase font-bold text-[9px] tracking-wider block">Related SOPs</span>
+                      <div className="space-y-1.5">
+                        {selectedUseCase.relatedSOPs.map(sop => (
+                          <div key={sop} className="flex items-center gap-1 text-[11px] font-mono text-primary bg-primary/5 p-1 px-2 rounded border border-primary/10 w-fit">
+                            📋 {sop}
+                          </div>
+                        ))}
                       </div>
-                    )}
-
-                    {selectedUseCase.simulationType === 'loto' && (
-                      <div className="space-y-3 text-xs">
-                        <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
-                          <input
-                            type="checkbox"
-                            checked={hasHelmet}
-                            onChange={e => setHasHelmet(e.target.checked)}
-                            className="rounded bg-background border-border text-primary focus:ring-0"
-                          />
-                          <span>Helmet PPE Secured</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
-                          <input
-                            type="checkbox"
-                            checked={breakerIsolated}
-                            onChange={e => setBreakerIsolated(e.target.checked)}
-                            className="rounded bg-background border-border text-primary focus:ring-0"
-                          />
-                          <span>Breaker Isolated (lockout tag on)</span>
-                        </label>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-foreground uppercase font-bold text-[9px] tracking-wider block">Recommended Learning</span>
+                      <div className="space-y-1.5">
+                        {selectedUseCase.recommendedCourses.map(course => (
+                          <div key={course} className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground hover:text-primary transition-colors cursor-pointer">
+                            <BookOpen size={11} className="text-primary" /> {course}
+                          </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  </div>
 
-                    {selectedUseCase.simulationType === 'purity' && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Raw Material Purity (%)</span>
-                          <strong className="text-foreground">{purityVal}%</strong>
-                        </div>
-                        <input
-                          type="range"
-                          min="80"
-                          max="100"
-                          value={purityVal}
-                          onChange={e => setPurityVal(Number(e.target.value))}
-                          className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <div className="flex justify-between text-[8px] text-muted-foreground font-semibold pt-1">
-                          <span>80% (Poor Quality)</span>
-                          <span>95% (Minimum Standard)</span>
-                          <span>100% (High Purity)</span>
-                        </div>
-                      </div>
-                    )}
-
+                  {/* Actions Bar */}
+                  <div className="flex gap-2 border-t border-border/10 pt-4 flex-wrap">
                     <button
-                      onClick={() => handleRunSimulation(selectedUseCase)}
-                      className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1 active:scale-95"
+                      onClick={() => setPage('learn')}
+                      className="bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-primary/95 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-primary/20"
                     >
-                      <RefreshCw size={12} /> Run Predictive Inference
+                      <BookOpen size={13} /> Learn Now
+                    </button>
+                    <button
+                      onClick={() => setPage('ai-chat')}
+                      className="bg-secondary/35 border border-border/10 hover:bg-secondary/50 text-foreground text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <MessageSquare size={13} className="text-primary" /> Ask Kai Chatbot
                     </button>
                   </div>
+                </div>
 
-                  {/* Prediction Output Display */}
-                  <div className="p-4 rounded-xl border border-border/80 bg-background flex flex-col justify-between min-h-[140px]">
-                    <div className="space-y-1">
-                      <span className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground block">
-                        Real-time AI Inference Output
-                      </span>
-                      <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap mt-2">
-                        {simOutput}
-                      </p>
+                {/* Simulation Sandbox */}
+                <div className="premium-glass-card p-6 space-y-6 border border-border/10">
+                  <h4 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                    <Activity size={15} className="text-primary animate-pulse" /> Live Telemetry ML Simulator
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Simulation controls */}
+                    <div className="space-y-4">
+                      {selectedUseCase.simulationType === 'vibration' && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Vibration Frequency (Hz)</span>
+                            <strong className="text-foreground">{vibrationVal} Hz</strong>
+                          </div>
+                          <input
+                            type="range"
+                            min="10"
+                            max="150"
+                            value={vibrationVal}
+                            onChange={e => setVibrationVal(Number(e.target.value))}
+                            className="w-full h-1 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                          <div className="flex justify-between text-[8px] text-muted-foreground font-semibold pt-1 uppercase tracking-wider">
+                            <span>10 Hz (Safe)</span>
+                            <span>100 Hz (Threshold)</span>
+                            <span>150 Hz (Failure risk)</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedUseCase.simulationType === 'loto' && (
+                        <div className="space-y-3 text-xs">
+                          <label className="flex items-center gap-2.5 cursor-pointer text-muted-foreground font-semibold">
+                            <input
+                              type="checkbox"
+                              checked={hasHelmet}
+                              onChange={e => setHasHelmet(e.target.checked)}
+                              className="rounded bg-secondary border-border/15 text-primary focus:ring-0 cursor-pointer"
+                            />
+                            <span>Helmet PPE Secured</span>
+                          </label>
+                          <label className="flex items-center gap-2.5 cursor-pointer text-muted-foreground font-semibold">
+                            <input
+                              type="checkbox"
+                              checked={breakerIsolated}
+                              onChange={e => setBreakerIsolated(e.target.checked)}
+                              className="rounded bg-secondary border-border/15 text-primary focus:ring-0 cursor-pointer"
+                            />
+                            <span>Breaker Isolated (LOTO tag active)</span>
+                          </label>
+                        </div>
+                      )}
+
+                      {selectedUseCase.simulationType === 'purity' && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Raw Material Purity (%)</span>
+                            <strong className="text-foreground">{purityVal}%</strong>
+                          </div>
+                          <input
+                            type="range"
+                            min="80"
+                            max="100"
+                            value={purityVal}
+                            onChange={e => setPurityVal(Number(e.target.value))}
+                            className="w-full h-1 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                          <div className="flex justify-between text-[8px] text-muted-foreground font-semibold pt-1 uppercase tracking-wider">
+                            <span>80% (Poor Quality)</span>
+                            <span>95% (Minimum Standard)</span>
+                            <span>100% (High Purity)</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => handleRunSimulation(selectedUseCase)}
+                        className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-primary/20 cursor-pointer"
+                      >
+                        <RefreshCw size={12} /> Run Predictive Inference
+                      </button>
                     </div>
-                    {simOutput.includes('🟢') && (
-                      <div className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-center mt-2">
-                        ✓ Safety Bounds Clear
+
+                    {/* Prediction Output Display */}
+                    <div className="p-4 rounded-xl border border-border/10 bg-secondary/15 flex flex-col justify-between min-h-[140px]">
+                      <div className="space-y-1">
+                        <span className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground block">
+                          Real-time AI Inference Output
+                        </span>
+                        <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap mt-2.5">
+                          {simOutput}
+                        </p>
                       </div>
-                    )}
-                    {simOutput.includes('🔴') && (
-                      <div className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-center mt-2 animate-pulse">
-                        ⚠️ Alert Override Necessary
-                      </div>
-                    )}
+                      {simOutput.includes('🟢') && (
+                        <div className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-center mt-2.5">
+                          ✓ Safety Bounds Clear
+                        </div>
+                      )}
+                      {simOutput.includes('🔴') && (
+                        <div className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-center mt-2.5 animate-pulse">
+                          ⚠️ Alert Override Necessary
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+              </motion.div>
+            ) : (
+              <div className="premium-glass-card p-12 text-center text-muted-foreground border border-border/10">
+                <Cpu size={36} className="mx-auto mb-3 opacity-55 text-primary" />
+                <h4 className="text-sm font-bold text-foreground">Select an AI/ML Use Case</h4>
+                <p className="text-xs mt-1">Pick any model from the department list on the left to calibrate simulated inputs, view related training modules, and execute predictive ML modeling.</p>
               </div>
-            </div>
-          ) : (
-            <div className="bg-card border border-border border-dashed rounded-2xl p-12 text-center text-muted-foreground">
-              <Cpu size={36} className="mx-auto mb-3 opacity-50" />
-              <h4 className="text-sm font-bold text-foreground">Select an AI/ML Use Case</h4>
-              <p className="text-xs mt-1">Pick any model from the department list on the left to calibrate simulated inputs, view related training modules, and execute predictive ML modeling.</p>
-            </div>
-          )}
+            )}
+          </AnimatePresence>
         </div>
+
       </div>
-    </div>
+    </motion.div>
   );
 }

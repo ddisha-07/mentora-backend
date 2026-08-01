@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   HelpCircle, MessageSquare, ArrowUp, Check, Award, PlusCircle, X, Search,
-  Filter, Bookmark, AlertCircle, ShieldCheck, Share2, Compass, Heart, Archive, Send
+  Filter, Bookmark, AlertCircle, ShieldCheck, Share2, Compass, Heart, Archive, Send, Sparkles, Bot, Clock, ChevronRight
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../../App';
 import { KnowledgeQuestion, KnowledgeAnswer, UserRole } from '../types';
-import { StatusBadge, AnswerTypeBadge, Card } from '../components/reusable';
+import { StatusBadge, AnswerTypeBadge, Card, PageHeader, EmptyState } from '../components/reusable';
 import { supabase } from '../lib/supabaseClient';
 
 export default function KnowledgeExchangePage() {
@@ -51,7 +52,7 @@ export default function KnowledgeExchangePage() {
   
   const savedQuestionIds = (savedItems || [])
     .filter(x => x.type === 'question')
-    .map(x => String(x.id)); // Initial mock bookmark
+    .map(x => String(x.id));
 
   // Legacy directory state
   const [legacySearch, setLegacySearch] = useState('');
@@ -67,7 +68,6 @@ export default function KnowledgeExchangePage() {
   const [isSopSource, setIsSopSource] = useState(false);
   const [sopSourceText, setSopSourceText] = useState('');
 
-  // 1. MOCK EXPERTS DIRECTORY
   const MOCK_EXPERTS = [
     {
       id: 'exp_1',
@@ -113,7 +113,6 @@ export default function KnowledgeExchangePage() {
     }
   ];
 
-  // Sync answers when selectedQuestion changes or global knowledgeAnswers updates
   useEffect(() => {
     if (selectedQuestion) {
       const list = knowledgeAnswers[selectedQuestion.id] || [];
@@ -121,12 +120,10 @@ export default function KnowledgeExchangePage() {
     }
   }, [selectedQuestion, knowledgeAnswers]);
 
-  // Handle Q&A selection
   const handleSelectQuestion = (q: KnowledgeQuestion) => {
     setSelectedQuestion(q);
   };
 
-  // Toggle bookmark / saved state
   const toggleBookmark = async (q: KnowledgeQuestion) => {
     await toggleBookmarkCtx({
       id: String(q.id),
@@ -138,7 +135,6 @@ export default function KnowledgeExchangePage() {
     });
   };
 
-  // Ask Question Submission
   const handleCreateQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
@@ -239,7 +235,6 @@ export default function KnowledgeExchangePage() {
     }
   };
 
-  // Submit Answer / Follow-up
   const handleSubmitAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedQuestion || !newAnswerText.trim()) return;
@@ -308,7 +303,6 @@ export default function KnowledgeExchangePage() {
           }
         }
 
-        // Automatically complete active KNOWLEDGE_SHARING mission
         const activeKMission = (activeMissions || []).find(
           (m: any) => m.status === 'in_progress' && m.type === 'KNOWLEDGE_SHARING'
         );
@@ -326,7 +320,6 @@ export default function KnowledgeExchangePage() {
     }
   };
 
-  // Mark answer helpful
   const handleMarkHelpful = async (answerId: number) => {
     if (!selectedQuestion) return;
     try {
@@ -357,7 +350,6 @@ export default function KnowledgeExchangePage() {
     }
   };
 
-  // Verify Answer Flow
   const handleVerifyAnswer = async (answerId: number) => {
     if (!selectedQuestion) return;
     try {
@@ -383,7 +375,6 @@ export default function KnowledgeExchangePage() {
     }
   };
 
-  // Escalate to Expert Flow
   const handleEscalateQuestion = async () => {
     if (!selectedQuestion) return;
     try {
@@ -404,7 +395,6 @@ export default function KnowledgeExchangePage() {
     }
   };
 
-  // Preserve in Knowledge Base Flow
   const handlePreserveKnowledge = async (ans: KnowledgeAnswer) => {
     if (!selectedQuestion) return;
     try {
@@ -440,19 +430,12 @@ export default function KnowledgeExchangePage() {
     }
   };
 
-  // Filter Q&A questions list
   const filteredQuestions = (knowledgeQuestions || []).filter(q => {
-    // 1. Search Query
     const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           q.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // 2. Department filter
     const matchesDept = deptFilter === 'All' || q.department === deptFilter;
-
-    // 3. Topic filter
     const matchesTopic = topicFilter === 'All' || q.topic === topicFilter;
 
-    // 4. Sub-Tab filters
     const answersList = knowledgeAnswers[q.id] || [];
     let matchesTab = true;
     if (qaSubTab === 'unanswered') {
@@ -468,13 +451,11 @@ export default function KnowledgeExchangePage() {
     return matchesSearch && matchesDept && matchesTopic && matchesTab;
   });
 
-  // Filter legacy directory experts
   const filteredExperts = MOCK_EXPERTS.filter(exp =>
     exp.name.toLowerCase().includes(legacySearch.toLowerCase()) ||
     exp.expertise.some(e => e.toLowerCase().includes(legacySearch.toLowerCase()))
   );
 
-  // Expert Console values
   const matchingExpertiseQuestions = (knowledgeQuestions || []).filter(q =>
     q.status === 'open' &&
     activeProfile.expertise &&
@@ -485,602 +466,690 @@ export default function KnowledgeExchangePage() {
     q.status === 'open' && q.department === activeProfile.department
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <HelpCircle className="text-primary" size={24} /> Knowledge Exchange
-          </h2>
-          <p className="text-muted-foreground text-sm flex items-center gap-1.5">
-            Two-way collaborative forum: learn from experts, preserve legacy operations, and verify answers.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setAskModalOpen(true)}
-            className="bg-primary text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-primary/95 transition-all flex items-center gap-1.5 active:scale-95 shadow-lg shadow-primary/20"
-          >
-            <PlusCircle size={15} /> Ask a Question
-          </button>
-        </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 max-w-7xl mx-auto space-y-6"
+    >
+      {/* Page Header */}
+      <PageHeader
+        title="Knowledge Exchange"
+        description="Collaborative forum where plant workers post operational issues, AI proposes drafts, and senior experts verify decisions."
+        breadcrumbs={[{ label: "Mentora" }, { label: "Exchange" }]}
+        primaryAction={{
+          label: "Ask a Question",
+          onClick: () => setAskModalOpen(true),
+          icon: <PlusCircle size={14} />
+        }}
+      />
+
+      {/* Main Tabs Navigation */}
+      <div className="flex border-b border-border/15">
+        {[
+          { id: 'exchange', label: 'Q&A Discussion Board' },
+          { id: 'legacy', label: 'Legacy Experts Directory' },
+          { id: 'expert_console', label: 'Expert Workspace Console', hide: !isExpert }
+        ].map(tab => {
+          if (tab.hide) return null;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveMainTab(tab.id as any)}
+              className={`px-5 py-3 text-xs font-bold transition-all border-b-2 -mb-px ${
+                activeMainTab === tab.id
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Main navigation tabs */}
-      <div className="flex border-b border-border">
-        <button
-          onClick={() => setActiveMainTab('exchange')}
-          className={`px-5 py-3 text-xs font-bold transition-all border-b-2 ${activeMainTab === 'exchange' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          Q&amp;A Board
-        </button>
-        <button
-          onClick={() => setActiveMainTab('legacy')}
-          className={`px-5 py-3 text-xs font-bold transition-all border-b-2 ${activeMainTab === 'legacy' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          Legacy Experts Directory
-        </button>
-        {isExpert && (
-          <button
-            onClick={() => setActiveMainTab('expert_console')}
-            className={`px-5 py-3 text-xs font-bold transition-all border-b-2 ${activeMainTab === 'expert_console' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+      <AnimatePresence mode="wait">
+        {/* VIEW 1: Q&A DISCUSSION BOARD */}
+        {activeMainTab === 'exchange' && (
+          <motion.div
+            key="exchange"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-6"
           >
-            🛠️ Expert Console
-          </button>
-        )}
-      </div>
-
-      {/* VIEW 1: Q&A BOARD */}
-      {activeMainTab === 'exchange' && (
-        <div className="space-y-6">
-          {/* Active Mission Banner */}
-          {(() => {
-            const activeKMission = (activeMissions || []).find(
-              (m: any) => m.status === 'in_progress' && (m.type === 'KNOWLEDGE_SHARING' || m.type === 'MENTORING')
-            );
-            if (!activeKMission) return null;
-            return (
-              <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between gap-4 relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-                <div>
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
-                    🎯 Active Daily Mission In Progress
-                  </div>
-                  <h4 className="text-sm font-bold text-foreground mt-1">{activeKMission.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">{activeKMission.description}</p>
-                </div>
-                <button
-                  onClick={async () => {
-                    await completeMission(activeKMission.id);
-                  }}
-                  className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all cursor-pointer shadow-md shadow-primary/20"
-                >
-                  Confirm Completion
-                </button>
-              </div>
-            );
-          })()}
-
-          {/* Filters Bar */}
-          <div className="flex flex-wrap gap-4 items-center justify-between bg-card/45 border border-border p-4 rounded-2xl">
-            <div className="relative w-full md:w-64">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                placeholder="Search questions..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="bg-background border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder-muted-foreground w-full outline-none focus:border-primary/50 transition-all"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 overflow-x-auto max-w-full pb-1">
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-semibold">
-                <Filter size={12} /> Filter:
-              </div>
-              <select
-                value={deptFilter}
-                onChange={e => setDeptFilter(e.target.value)}
-                className="bg-background border border-border rounded-lg px-2.5 py-1 text-[10px] text-foreground outline-none"
-              >
-                <option value="All">All Departments</option>
-                <option value="Software Engineering">Software Eng</option>
-                <option value="Assembly Line A">Assembly Line A</option>
-                <option value="Robotics R&D">Robotics R&D</option>
-                <option value="Maintenance & Boilers">Maintenance</option>
-              </select>
-              <select
-                value={topicFilter}
-                onChange={e => setTopicFilter(e.target.value)}
-                className="bg-background border border-border rounded-lg px-2.5 py-1 text-[10px] text-foreground outline-none"
-              >
-                <option value="All">All Topics</option>
-                <option value="Safety Procedures">Safety</option>
-                <option value="Database Schema & Coding">Database &amp; Coding</option>
-                <option value="Turbine Diagnostics">Turbines</option>
-                <option value="General Ops">General Ops</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Sub-navigation categories */}
-          <div className="flex gap-2 items-center overflow-x-auto pb-1 max-w-full">
-            {[
-              { id: 'all', label: 'All Questions' },
-              { id: 'unanswered', label: 'Unanswered' },
-              { id: 'verified', label: 'Expert Verified' },
-              { id: 'my_questions', label: 'My Questions' },
-              { id: 'saved', label: 'Saved Discussions' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setQaSubTab(tab.id as any)}
-                className={`px-3.5 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all ${qaSubTab === tab.id ? 'bg-primary text-white' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Questions list */}
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Q&amp;A Threads ({filteredQuestions.length})
-              </h3>
-              <div className="space-y-3">
-                {filteredQuestions.map(q => {
-                  const answersList = knowledgeAnswers[q.id] || [];
-                  const isSaved = savedQuestionIds.includes(String(q.id));
-
-                  return (
-                    <div
-                      key={q.id}
-                      onClick={() => handleSelectQuestion(q)}
-                      className={`bg-card border rounded-2xl p-5 hover:border-primary/20 transition-all cursor-pointer relative ${selectedQuestion?.id === q.id ? 'border-primary/50' : 'border-border'}`}
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleBookmark(q);
-                        }}
-                        className={`absolute top-4 right-4 text-xs ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        <Bookmark size={15} className={isSaved ? 'fill-primary' : ''} />
-                      </button>
-
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] px-2 py-0.5 rounded bg-background border border-border text-muted-foreground font-semibold">
-                          {q.topic}
-                        </span>
-                        <StatusBadge status={q.status} />
-                      </div>
-
-                      <h4 className="text-sm font-bold text-foreground hover:text-primary transition-colors leading-snug mb-2 pr-6">
-                        {q.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-4">
-                        {q.description}
-                      </p>
-
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/50 pt-3">
-                        <span>Asked by <strong className="text-foreground">{q.author}</strong> ({q.department})</span>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-0.5">💬 {answersList.length} Answers</span>
-                          <span>{q.createdAt}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {filteredQuestions.length === 0 && (
-                  <div className="text-center py-16 border border-dashed border-border rounded-2xl bg-card/20">
-                    <HelpCircle size={40} className="text-border mx-auto mb-3" />
-                    <h4 className="text-sm font-bold mb-1 text-foreground">No questions found</h4>
-                    <p className="text-muted-foreground text-xs">Try launching a different filter or posting your question!</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Selected question detail */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Thread Workspace</h3>
-              {selectedQuestion ? (
-                <div className="bg-card border border-border rounded-2xl p-5 space-y-5 relative">
+            {/* Active Mission Banner */}
+            {(() => {
+              const activeKMission = (activeMissions || []).find(
+                (m: any) => m.status === 'in_progress' && (m.type === 'KNOWLEDGE_SHARING' || m.type === 'MENTORING')
+              );
+              if (!activeKMission) return null;
+              return (
+                <div className="premium-glass-card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden border border-primary/20">
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary" />
                   <div>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-background border border-border text-muted-foreground font-semibold">{selectedQuestion.topic}</span>
-                      <button
-                        onClick={() => toggleBookmark(selectedQuestion)}
-                        className={`text-xs ${savedQuestionIds.includes(String(selectedQuestion.id)) ? 'text-primary' : 'text-muted-foreground'}`}
-                      >
-                        <Bookmark size={15} className={savedQuestionIds.includes(String(selectedQuestion.id)) ? 'fill-primary' : ''} />
-                      </button>
-                    </div>
-                    <h4 className="text-base font-bold text-foreground mt-3 leading-snug">{selectedQuestion.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-wrap">{selectedQuestion.description}</p>
-                    <div className="text-[10px] text-muted-foreground mt-4 flex justify-between border-b border-border/50 pb-3">
-                      <span>Author: {selectedQuestion.author} ({selectedQuestion.department})</span>
-                      <span>{selectedQuestion.createdAt}</span>
-                    </div>
-                  </div>
-
-                  {/* Answers Section */}
-                  <div className="space-y-4">
-                    <h5 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
-                      <MessageSquare size={13} /> Responses ({answers.length})
-                    </h5>
-
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                      {answers.map(ans => (
-                        <div key={ans.id} className="p-3.5 rounded-xl border border-border bg-background space-y-2.5 relative overflow-hidden">
-                          {ans.verified && (
-                            <div className="absolute top-0 right-0 bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-bl text-[8px] font-bold border-l border-b border-emerald-500/20 flex items-center gap-0.5">
-                              <Check size={8} strokeWidth={3} /> Verified
-                            </div>
-                          )}
-
-                          <div className="flex justify-between items-center gap-3">
-                            <div>
-                              <span className="text-[10px] font-bold text-foreground">{ans.author}</span>
-                              <span className="text-[9px] text-muted-foreground block">{ans.authorRole}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {/* Verify Answer CTA visible to experts */}
-                              {isExpert && !ans.verified && (
-                                <button
-                                  onClick={() => handleVerifyAnswer(ans.id)}
-                                  className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20 hover:bg-emerald-500/25 transition-all"
-                                >
-                                  Verify
-                                </button>
-                              )}
-                              {/* Preserve in knowledge base CTA visible to experts */}
-                              {isExpert && ans.verified && (
-                                <button
-                                  onClick={() => handlePreserveKnowledge(ans)}
-                                  className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 hover:bg-primary/25 transition-all flex items-center gap-0.5"
-                                  title="Archive as SOP"
-                                >
-                                  <Archive size={9} /> Preserve
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">{ans.content}</p>
-
-                          {ans.source && (
-                            <p className="text-[9px] text-primary/70 font-mono bg-primary/5 p-1 px-2 rounded border border-primary/10">
-                              📋 Source: {ans.source}
-                            </p>
-                          )}
-
-                          <div className="flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground">
-                            <button
-                              onClick={() => handleMarkHelpful(ans.id)}
-                              className="flex items-center gap-1 text-primary bg-primary/5 hover:bg-primary/10 px-2.5 py-0.5 rounded transition-all"
-                            >
-                              <ArrowUp size={10} /> Helpful ({ans.helpfulCount})
-                            </button>
-                            <AnswerTypeBadge type={ans.answerType} />
-                          </div>
-
-                          {/* Escalate button next to AI answers */}
-                          {ans.answerType === 'ai_generated' && selectedQuestion.status !== 'open' && (
-                            <button
-                              onClick={handleEscalateQuestion}
-                              className="w-full text-center text-[9px] text-rose-400 hover:text-rose-300 font-bold bg-rose-500/10 border border-rose-500/20 py-1.5 rounded-lg transition-all"
-                            >
-                              Unsatisfied with AI? Escalate to Expert
-                            </button>
-                          )}
-                        </div>
-                      ))}
-
-                      {answers.length === 0 && (
-                        <p className="text-xs text-muted-foreground italic text-center py-4">No answers yet. Share your knowledge below!</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Submission form */}
-                  <form onSubmit={handleSubmitAnswer} className="border-t border-border/50 pt-4 space-y-3">
-                    <h5 className="text-[10px] uppercase font-bold text-foreground">Post Your Answer / Insight</h5>
-                    <textarea
-                      rows={3}
-                      placeholder="Type your explanation, override steps, or legacy logs here..."
-                      value={newAnswerText}
-                      onChange={e => setNewAnswerText(e.target.value)}
-                      className="w-full bg-background border border-border rounded-xl p-3 text-xs text-foreground outline-none focus:border-primary/50 transition-colors resize-none"
-                    />
-
-                    {/* SOP Toggle checkbox */}
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isSopSource}
-                          onChange={e => setIsSopSource(e.target.checked)}
-                          className="rounded bg-background border-border text-primary focus:ring-0"
-                        />
-                        <span>Check if citing an official SOP / Manual</span>
-                      </label>
-                      {isSopSource && (
-                        <input
-                          placeholder="e.g. Standard Operations Boiler Manual, Section 14"
-                          value={sopSourceText}
-                          onChange={e => setSopSourceText(e.target.value)}
-                          className="w-full bg-background border border-border rounded-lg p-2 text-[10px] text-foreground outline-none"
-                        />
-                      )}
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all active:scale-95"
-                    >
-                      <Send size={11} /> Submit Answer
-                    </button>
-                  </form>
-                </div>
-              ) : (
-                <div className="bg-card border border-border border-dashed rounded-2xl p-8 text-center text-muted-foreground">
-                  <MessageSquare size={32} className="mx-auto mb-3 opacity-50" />
-                  <p className="text-xs">Select a question thread from the list to view expert answers, verify solutions, or submit insights.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 2: LEGACY DIRECTORY */}
-      {activeMainTab === 'legacy' && (
-        <div className="space-y-6">
-          <div className="bg-card/45 border border-border p-4 rounded-2xl max-w-md">
-            <div className="relative">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                placeholder="Search experts by name, department, or expertise..."
-                value={legacySearch}
-                onChange={e => setLegacySearch(e.target.value)}
-                className="bg-background border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder-muted-foreground w-full outline-none focus:border-primary/50 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredExperts.map(exp => (
-              <Card key={exp.id} className="p-5 flex flex-col justify-between space-y-4 hover:border-primary/20 transition-all">
-                <div className="space-y-3">
-                  <div className="flex gap-3 items-center">
-                    <img src={exp.avatar} alt={exp.name} className="w-12 h-12 rounded-full object-cover border border-border" />
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground leading-tight">{exp.name}</h4>
-                      <p className="text-[10px] text-primary font-semibold mt-0.5">{exp.formerDesignation}</p>
-                      <p className="text-[9px] text-muted-foreground">{exp.department}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[9px] text-muted-foreground uppercase font-semibold">Expertise Domains</span>
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {exp.expertise.map(t => (
-                        <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-background border border-border text-foreground font-medium">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Recognition Badges */}
-                  <div className="space-y-1">
-                    <span className="text-[9px] text-muted-foreground uppercase font-semibold">Honorable Badges</span>
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {exp.badges.map(b => (
-                        <span key={b} className="text-[9px] bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full font-bold">
-                          🏅 {b}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 text-center text-[10px] border-t border-border/50 pt-3 mt-1">
-                  <div>
-                    <span className="text-muted-foreground block text-[8px]">Answers</span>
-                    <strong className="text-foreground text-xs">{exp.questionsAnswered}</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[8px]">Verified</span>
-                    <strong className="text-emerald-400 text-xs">{exp.verifiedAnswers}</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[8px]">Helped</span>
-                    <strong className="text-primary text-xs">{exp.employeesHelped}</strong>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 3: EXPERT CONSOLE */}
-      {activeMainTab === 'expert_console' && isExpert && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main workspace widgets */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Today's Knowledge Mission */}
-            <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 p-5 rounded-2xl space-y-3 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl" />
-              <div className="flex items-center gap-1.5 text-[9px] font-bold text-primary uppercase tracking-wider">
-                💡 Expert Daily Challenge
-              </div>
-              <h4 className="text-sm font-bold text-foreground">Today's Knowledge Mission</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Review at least 1 open question thread from your department, submit your legacy operations overrides, and mark it verified to earn +20 Knowledge Credits!
-              </p>
-            </div>
-
-            {/* Questions Waiting for You */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Questions waiting for you ({waitingForYouQuestions.length})
-              </h3>
-              <div className="space-y-3">
-                {waitingForYouQuestions.map(q => (
-                  <div
-                    key={q.id}
-                    onClick={() => {
-                      setSelectedQuestion(q);
-                      setActiveMainTab('exchange');
-                    }}
-                    className="bg-card border border-border hover:border-primary/20 p-4 rounded-2xl cursor-pointer transition-all flex justify-between items-center gap-4"
-                  >
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground line-clamp-1">{q.title}</h4>
-                      <p className="text-[10px] text-muted-foreground mt-1">Asked in: {q.topic} &bull; Date: {q.createdAt}</p>
-                    </div>
-                    <span className="text-[9px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-lg flex-shrink-0">
-                      Answer Thread
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-bold text-primary uppercase tracking-wider">
+                      🎯 Active Daily Mission
                     </span>
+                    <h4 className="text-sm font-bold text-foreground mt-1.5">{activeKMission.title}</h4>
+                    <p className="text-xs text-muted-foreground">{activeKMission.description}</p>
                   </div>
-                ))}
-                {waitingForYouQuestions.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">No open threads waiting in your department.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Questions matching expertise */}
-            <div className="space-y-4 border-t border-border/50 pt-6">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Questions matching your expertise ({matchingExpertiseQuestions.length})
-              </h3>
-              <div className="space-y-3">
-                {matchingExpertiseQuestions.map(q => (
-                  <div
-                    key={q.id}
-                    onClick={() => {
-                      setSelectedQuestion(q);
-                      setActiveMainTab('exchange');
+                  <button
+                    onClick={async () => {
+                      await completeMission(activeKMission.id);
                     }}
-                    className="bg-card border border-border hover:border-primary/20 p-4 rounded-2xl cursor-pointer transition-all flex justify-between items-center gap-4"
+                    className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all cursor-pointer shadow-md shadow-primary/20"
                   >
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground line-clamp-1">{q.title}</h4>
-                      <p className="text-[10px] text-muted-foreground mt-1">Tags match your skill profile</p>
-                    </div>
-                    <span className="text-[9px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-lg flex-shrink-0">
-                      Submit Insight
-                    </span>
-                  </div>
-                ))}
-                {matchingExpertiseQuestions.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">No questions currently match your listed expertise domains.</p>
-                )}
-              </div>
-            </div>
-          </div>
+                    Confirm Completion
+                  </button>
+                </div>
+              );
+            })()}
 
-          {/* Right column: Recent contributions */}
-          <div className="space-y-6">
-            <Card className="p-5 space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50 pb-2">
-                Your Recent Contributions
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-background border border-border rounded-xl space-y-1">
-                  <h4 className="text-[10px] font-bold text-emerald-400">✓ Expert Verified</h4>
-                  <p className="text-[11px] text-foreground leading-tight line-clamp-2">"Uneven thermal rotor shafts will resolve when slowly turned at 2 RPM using barring gears..."</p>
-                  <span className="text-[9px] text-muted-foreground block mt-1">Topic: Turbine oscillations</span>
-                </div>
-                <div className="p-3 bg-background border border-border rounded-xl space-y-1">
-                  <h4 className="text-[10px] font-bold text-primary">Peer Approved</h4>
-                  <p className="text-[11px] text-foreground leading-tight line-clamp-2">"Verify isolated breakers first before manually rotating override valve handles..."</p>
-                  <span className="text-[9px] text-muted-foreground block mt-1">Topic: LOTOoverride overrides</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Impact stats */}
-            <Card className="p-5 space-y-3">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Expert Impact summary</h3>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Knowledge Credits</span>
-                  <span className="font-bold text-foreground">+{activeProfile.knowledgeCredits || 0} KC</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Peer helpful votes</span>
-                  <span className="font-bold text-foreground">42 Helpful</span>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* Ask Question Modal */}
-      {askModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-foreground">Ask a New Question</h3>
-              <button onClick={() => setAskModalOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <X size={18} />
-              </button>
-            </div>
-            <form onSubmit={handleCreateQuestion} className="space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-foreground">Question Title</label>
+            {/* Filter and search bar */}
+            <div className="premium-glass-card p-4 flex flex-wrap gap-4 items-center justify-between">
+              <div className="relative w-full md:w-72">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
-                  required
-                  placeholder="e.g. How to calibrate SCADA sensors in Assembly Line B?"
-                  value={newTitle}
-                  onChange={e => setNewTitle(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl p-3 text-foreground outline-none focus:border-primary/50 transition-colors"
+                  placeholder="Search discussion threads..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="bg-secondary/35 border border-border/10 focus:border-primary/30 rounded-xl pl-9 pr-4 py-2.5 text-xs text-foreground placeholder-muted-foreground w-full outline-none transition-all"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="font-bold text-foreground">Topic Category</label>
+
+              <div className="flex items-center gap-3 overflow-x-auto max-w-full pb-1">
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                  <Filter size={11} /> Filter:
+                </div>
                 <select
-                  value={newTopic}
-                  onChange={e => setNewTopic(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl p-3 text-foreground outline-none focus:border-primary/50"
+                  value={deptFilter}
+                  onChange={e => setDeptFilter(e.target.value)}
+                  className="bg-secondary/25 border border-border/10 rounded-lg px-2.5 py-1 text-xs text-foreground outline-none cursor-pointer"
                 >
-                  <option value="Safety Procedures">Safety Procedures</option>
-                  <option value="Mechanical Maintenance">Mechanical Maintenance</option>
+                  <option value="All">All Departments</option>
+                  <option value="Software Engineering">Software Eng</option>
+                  <option value="Assembly Line A">Assembly Line A</option>
+                  <option value="Robotics R&D">Robotics R&D</option>
+                  <option value="Maintenance & Boilers">Maintenance</option>
+                </select>
+                <select
+                  value={topicFilter}
+                  onChange={e => setTopicFilter(e.target.value)}
+                  className="bg-secondary/25 border border-border/10 rounded-lg px-2.5 py-1 text-xs text-foreground outline-none cursor-pointer"
+                >
+                  <option value="All">All Topics</option>
+                  <option value="Safety Procedures">Safety</option>
                   <option value="Database Schema & Coding">Database &amp; Coding</option>
-                  <option value="Turbine Diagnostics">Turbine Diagnostics</option>
-                  <option value="AI Exploration">AI Exploration</option>
+                  <option value="Turbine Diagnostics">Turbines</option>
                   <option value="General Ops">General Ops</option>
                 </select>
               </div>
-              <div className="space-y-1">
-                <label className="font-bold text-foreground">Details &amp; Context</label>
-                <textarea
-                  rows={4}
-                  placeholder="Describe your issue or question. Provide machine models, error codes, or environment logs."
-                  value={newDesc}
-                  onChange={e => setNewDesc(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl p-3 text-foreground outline-none focus:border-primary/50 transition-colors resize-none"
+            </div>
+
+            {/* Sub Tabs */}
+            <div className="flex gap-2 items-center overflow-x-auto pb-1 max-w-full">
+              {[
+                { id: 'all', label: 'All Discussion Threads' },
+                { id: 'unanswered', label: 'Unanswered Gaps' },
+                { id: 'verified', label: 'Verified Solutions' },
+                { id: 'my_questions', label: 'My Threads' },
+                { id: 'saved', label: 'Bookmarks' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setQaSubTab(tab.id as any)}
+                  className={`px-3.5 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all border ${
+                    qaSubTab === tab.id
+                      ? 'bg-primary/10 text-primary border-primary/20 font-extrabold'
+                      : 'bg-secondary/10 border-border/10 text-muted-foreground hover:text-foreground hover:border-border/30'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Discussion feed layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Questions Feed list */}
+              <div className="lg:col-span-2 space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Active Q&amp;A Threads ({filteredQuestions.length})
+                </h3>
+                
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-3.5"
+                >
+                  {filteredQuestions.map(q => {
+                    const answersList = knowledgeAnswers[q.id] || [];
+                    const isSaved = savedQuestionIds.includes(String(q.id));
+                    const isVerified = answersList.some(ans => ans.verified);
+
+                    return (
+                      <motion.div
+                        key={q.id}
+                        variants={itemVariants}
+                        onClick={() => handleSelectQuestion(q)}
+                        className={`premium-glass-card p-5 cursor-pointer hover:scale-[1.01] transition-all relative ${
+                          selectedQuestion?.id === q.id ? 'border-primary/45 shadow-lg shadow-primary/5' : 'border-border/10'
+                        }`}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBookmark(q);
+                          }}
+                          className={`absolute top-4 right-4 text-xs ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                          <Bookmark size={15} className={isSaved ? 'fill-primary' : ''} />
+                        </button>
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] px-2 py-0.5 rounded-md bg-secondary/35 border border-border/10 text-muted-foreground font-bold uppercase tracking-wider">
+                              {q.topic}
+                            </span>
+                            {isVerified ? (
+                              <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                                <Check size={8} strokeWidth={3} /> Verified Answer
+                              </span>
+                            ) : (
+                              <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                                <Clock size={8} /> Open Gap
+                              </span>
+                            )}
+                          </div>
+                          
+                          <h4 className="text-sm font-bold text-foreground leading-snug hover:text-primary transition-colors pr-6">
+                            {q.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {q.description}
+                          </p>
+
+                          <div className="flex items-center justify-between text-[10px] text-muted-foreground font-medium border-t border-border/10 pt-3 mt-2">
+                            <span>Asked by {q.author} ({q.department})</span>
+                            <span className="flex items-center gap-1">
+                              💬 {answersList.length} response{answersList.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+
+                  {filteredQuestions.length === 0 && (
+                    <EmptyState
+                      title="No discussions found"
+                      message="Try searching for a different phrase or create a new question thread."
+                      icon={<HelpCircle size={24} />}
+                      actionText="Ask a Question"
+                      onAction={() => setAskModalOpen(true)}
+                    />
+                  )}
+                </motion.div>
+              </div>
+
+              {/* Right Side: Selected thread preview */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Thread Workspace</h3>
+                {selectedQuestion ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="premium-glass-card p-5 space-y-5 border border-border/15 relative"
+                  >
+                    {/* Selected thread header */}
+                    <div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-[9px] px-2 py-0.5 rounded bg-secondary/35 border border-border/10 text-muted-foreground font-bold uppercase tracking-wider">
+                          {selectedQuestion.topic}
+                        </span>
+                        <button
+                          onClick={() => toggleBookmark(selectedQuestion)}
+                          className={`text-xs ${savedQuestionIds.includes(String(selectedQuestion.id)) ? 'text-primary' : 'text-muted-foreground'}`}
+                        >
+                          <Bookmark size={15} className={savedQuestionIds.includes(String(selectedQuestion.id)) ? 'fill-primary' : ''} />
+                        </button>
+                      </div>
+                      
+                      <h4 className="text-base font-bold text-foreground mt-3 leading-snug" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                        {selectedQuestion.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-wrap">
+                        {selectedQuestion.description}
+                      </p>
+                      
+                      <div className="text-[10px] text-muted-foreground mt-4 flex justify-between border-b border-border/10 pb-3.5">
+                        <span>By {selectedQuestion.author} ({selectedQuestion.department})</span>
+                        <span>{selectedQuestion.createdAt}</span>
+                      </div>
+                    </div>
+
+                    {/* Answers feed */}
+                    <div className="space-y-4">
+                      <h5 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <MessageSquare size={13} className="text-primary" /> Responses ({answers.length})
+                      </h5>
+
+                      <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
+                        {answers.map(ans => {
+                          const isAI = ans.answerType === 'ai_generated';
+                          return (
+                            <div
+                              key={ans.id}
+                              className={`p-4 rounded-xl border relative overflow-hidden transition-all ${
+                                isAI
+                                  ? 'border-primary/25 bg-gradient-to-br from-primary/5 to-secondary/5 shadow-inner'
+                                  : 'border-border/10 bg-secondary/5'
+                              }`}
+                            >
+                              {ans.verified && (
+                                <div className="absolute top-0 right-0 bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-bl text-[8px] font-bold border-l border-b border-emerald-500/20 flex items-center gap-0.5">
+                                  <Check size={8} strokeWidth={3} /> Verified
+                                </div>
+                              )}
+
+                              <div className="flex justify-between items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  {isAI && <Bot size={14} className="text-primary animate-pulse" />}
+                                  <div>
+                                    <span className="text-[10px] font-bold text-foreground block">{ans.author}</span>
+                                    <span className="text-[9px] text-muted-foreground block leading-tight">{ans.authorRole}</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  {isExpert && !ans.verified && (
+                                    <button
+                                      onClick={() => handleVerifyAnswer(ans.id)}
+                                      className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20 hover:bg-emerald-500/25 transition-all"
+                                    >
+                                      Verify
+                                    </button>
+                                  )}
+                                  {isExpert && ans.verified && (
+                                    <button
+                                      onClick={() => handlePreserveKnowledge(ans)}
+                                      className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 hover:bg-primary/25 transition-all flex items-center gap-0.5"
+                                      title="Archive as SOP"
+                                    >
+                                      <Archive size={9} /> Preserve
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap mt-2.5">
+                                {ans.content}
+                              </p>
+
+                              {ans.source && (
+                                <p className="text-[9px] text-primary/70 font-mono bg-primary/5 p-1 px-2 rounded border border-primary/10 mt-2">
+                                  📋 Source: {ans.source}
+                                </p>
+                              )}
+
+                              <div className="flex items-center justify-between border-t border-border/10 pt-2.5 mt-3 text-[10px] text-muted-foreground">
+                                <button
+                                  onClick={() => handleMarkHelpful(ans.id)}
+                                  className="flex items-center gap-1 text-primary bg-primary/5 hover:bg-primary/10 px-2.5 py-0.5 rounded transition-all"
+                                >
+                                  <ArrowUp size={10} /> Helpful ({ans.helpfulCount})
+                                </button>
+                                <AnswerTypeBadge type={ans.answerType} />
+                              </div>
+
+                              {isAI && selectedQuestion.status !== 'resolved' && (
+                                <button
+                                  onClick={handleEscalateQuestion}
+                                  className="w-full text-center text-[9px] text-rose-400 hover:text-rose-300 font-bold bg-rose-500/10 border border-rose-500/20 py-1.5 rounded-lg transition-all mt-3"
+                                >
+                                  Unsatisfied with AI? Escalate to Expert
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Answer reply input form */}
+                    <form onSubmit={handleSubmitAnswer} className="space-y-3.5 border-t border-border/10 pt-4 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-bold text-foreground">Post a Response</label>
+                        <textarea
+                          rows={3}
+                          required
+                          placeholder="Provide troubleshooting steps, share legacy manual knowledge, or post observations..."
+                          value={newAnswerText}
+                          onChange={e => setNewAnswerText(e.target.value)}
+                          className="w-full bg-secondary/35 border border-border/10 rounded-xl p-3 text-foreground outline-none focus:border-primary/40 transition-colors resize-none text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="inline-flex items-center gap-2 text-[10px] font-semibold text-muted-foreground cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isSopSource}
+                            onChange={e => setIsSopSource(e.target.checked)}
+                            className="rounded border-border bg-background text-primary focus:ring-primary focus:ring-offset-background"
+                          />
+                          Reference official SOP or manual source
+                        </label>
+
+                        {isSopSource && (
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. SOP-14.2 Boiler Overrides"
+                            value={sopSourceText}
+                            onChange={e => setSopSourceText(e.target.value)}
+                            className="w-full bg-secondary/35 border border-border/10 rounded-xl p-2.5 text-foreground outline-none text-xs focus:border-primary/40"
+                          />
+                        )}
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/20"
+                      >
+                        <Send size={12} /> Submit Response
+                      </button>
+                    </form>
+                  </motion.div>
+                ) : (
+                  <div className="premium-glass-card p-8 text-center text-muted-foreground border border-border/10">
+                    <MessageSquare size={32} className="mx-auto mb-3 opacity-55 text-primary" />
+                    <p className="text-xs">Select an active question thread from the left board to view detailed overrides, verify solutions, or submit operations observations.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* VIEW 2: LEGACY EXPERTS DIRECTORY */}
+        {activeMainTab === 'legacy' && (
+          <motion.div
+            key="legacy"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-6"
+          >
+            <div className="premium-glass-card p-4 max-w-md">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  placeholder="Search experts by name, department, or expertise..."
+                  value={legacySearch}
+                  onChange={e => setLegacySearch(e.target.value)}
+                  className="bg-secondary/35 border border-border/10 focus:border-primary/30 rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder-muted-foreground w-full outline-none transition-all"
                 />
               </div>
-              <button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-primary/20"
-              >
-                Post Question
-              </button>
-            </form>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredExperts.map(exp => (
+                <div key={exp.id} className="premium-glass-card p-5 flex flex-col justify-between space-y-4 hover:scale-[1.01] transition-all border border-border/10">
+                  <div className="space-y-3.5">
+                    <div className="flex gap-3.5 items-center">
+                      <img src={exp.avatar} alt={exp.name} className="w-12 h-12 rounded-2xl object-cover border border-border/15" />
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground leading-tight">{exp.name}</h4>
+                        <p className="text-[10px] text-primary font-bold mt-0.5">{exp.formerDesignation}</p>
+                        <p className="text-[9px] text-muted-foreground">{exp.department}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Expertise Domains</span>
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {exp.expertise.map(t => (
+                          <span key={t} className="text-[9px] px-2 py-0.5 rounded-md bg-secondary/35 border border-border/5 text-foreground font-semibold">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Honorable Badges</span>
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {exp.badges.map(b => (
+                          <span key={b} className="text-[9px] bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                            🏅 {b}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px] border-t border-border/10 pt-3.5 mt-1 font-medium">
+                    <div>
+                      <span className="text-muted-foreground block text-[8px] uppercase tracking-wider">Answers</span>
+                      <strong className="text-foreground text-xs">{exp.questionsAnswered}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[8px] uppercase tracking-wider">Verified</span>
+                      <strong className="text-emerald-400 text-xs">{exp.verifiedAnswers}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[8px] uppercase tracking-wider">Helped</span>
+                      <strong className="text-primary text-xs">{exp.employeesHelped}</strong>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* VIEW 3: EXPERT CONSOLE */}
+        {activeMainTab === 'expert_console' && isExpert && (
+          <motion.div
+            key="expert_console"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          >
+            {/* Left Main items */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Daily Challenge card */}
+              <div className="premium-glass-card p-5 space-y-3 relative overflow-hidden border border-primary/20">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl" />
+                <div className="flex items-center gap-1.5 text-[9px] font-bold text-primary uppercase tracking-wider">
+                  💡 Expert Daily Challenge
+                </div>
+                <h4 className="text-sm font-bold text-foreground">Verify Open Gaps</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Review at least 1 open question thread from your department, submit your legacy operations overrides, and mark it verified to earn +20 Knowledge Credits!
+                </p>
+              </div>
+
+              {/* Questions Waiting for You */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Questions waiting for you ({waitingForYouQuestions.length})
+                </h3>
+                <div className="space-y-3">
+                  {waitingForYouQuestions.map(q => (
+                    <div
+                      key={q.id}
+                      onClick={() => {
+                        setSelectedQuestion(q);
+                        setActiveMainTab('exchange');
+                      }}
+                      className="premium-glass-card hover:scale-[1.01] p-4.5 cursor-pointer transition-all flex justify-between items-center gap-4 border border-border/10"
+                    >
+                      <div>
+                        <h4 className="text-xs font-bold text-foreground line-clamp-1">{q.title}</h4>
+                        <p className="text-[10px] text-muted-foreground mt-1">Asked in: {q.topic} &bull; Date: {q.createdAt}</p>
+                      </div>
+                      <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-lg flex-shrink-0">
+                        Answer Thread
+                      </span>
+                    </div>
+                  ))}
+                  {waitingForYouQuestions.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">No open threads waiting in your department.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Questions matching expertise */}
+              <div className="space-y-4 border-t border-border/10 pt-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Questions matching your expertise ({matchingExpertiseQuestions.length})
+                </h3>
+                <div className="space-y-3">
+                  {matchingExpertiseQuestions.map(q => (
+                    <div
+                      key={q.id}
+                      onClick={() => {
+                        setSelectedQuestion(q);
+                        setActiveMainTab('exchange');
+                      }}
+                      className="premium-glass-card hover:scale-[1.01] p-4.5 cursor-pointer transition-all flex justify-between items-center gap-4 border border-border/10"
+                    >
+                      <div>
+                        <h4 className="text-xs font-bold text-foreground line-clamp-1">{q.title}</h4>
+                        <p className="text-[10px] text-muted-foreground mt-1">Tags match your skill profile</p>
+                      </div>
+                      <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-lg flex-shrink-0">
+                        Submit Insight
+                      </span>
+                    </div>
+                  ))}
+                  {matchingExpertiseQuestions.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">No questions currently match your listed expertise domains.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right sidebar */}
+            <div className="space-y-6">
+              <div className="premium-glass-card p-5 space-y-4 border border-border/10">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/10 pb-2.5">
+                  Your Recent Contributions
+                </h3>
+                <div className="space-y-3.5">
+                  <div className="p-3 bg-secondary/15 border border-border/10 rounded-xl space-y-1">
+                    <h4 className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5">✓ Expert Verified</h4>
+                    <p className="text-[11px] text-foreground leading-tight line-clamp-2">"Uneven thermal rotor shafts will resolve when slowly turned at 2 RPM using barring gears..."</p>
+                    <span className="text-[9px] text-muted-foreground block mt-1">Topic: Turbine oscillations</span>
+                  </div>
+                  <div className="p-3 bg-secondary/15 border border-border/10 rounded-xl space-y-1">
+                    <h4 className="text-[9px] font-bold text-primary flex items-center gap-0.5">Peer Approved</h4>
+                    <p className="text-[11px] text-foreground leading-tight line-clamp-2">"Verify isolated breakers first before manually rotating override valve handles..."</p>
+                    <span className="text-[9px] text-muted-foreground block mt-1">Topic: LOTO overrides</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="premium-glass-card p-5 space-y-3.5 border border-border/10">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Expert Impact Summary</h3>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Knowledge Credits</span>
+                    <span className="font-bold text-foreground">+{activeProfile.knowledgeCredits || 0} KC</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Peer helpful votes</span>
+                    <span className="font-bold text-foreground">42 Helpful</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ask Question Dialog Modal */}
+      <AnimatePresence>
+        {askModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="premium-glass-card border border-border/15 w-full max-w-lg p-6 space-y-4 shadow-2xl overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
+              <div className="flex items-center justify-between pb-3 border-b border-border/10">
+                <h3 className="text-base font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Ask a New Question</h3>
+                <button onClick={() => setAskModalOpen(false)} className="text-muted-foreground hover:text-foreground cursor-pointer">
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleCreateQuestion} className="space-y-4 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-foreground">Question Title</label>
+                  <input
+                    required
+                    placeholder="e.g. How to calibrate SCADA sensors in Assembly Line B?"
+                    value={newTitle}
+                    onChange={e => setNewTitle(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 rounded-xl p-3 text-foreground outline-none focus:border-primary/40 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-foreground">Topic Category</label>
+                  <select
+                    value={newTopic}
+                    onChange={e => setNewTopic(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 rounded-xl p-3 text-foreground outline-none cursor-pointer"
+                  >
+                    <option value="Safety Procedures">Safety Procedures</option>
+                    <option value="Mechanical Maintenance">Mechanical Maintenance</option>
+                    <option value="Database Schema & Coding">Database &amp; Coding</option>
+                    <option value="Turbine Diagnostics">Turbine Diagnostics</option>
+                    <option value="AI Exploration">AI Exploration</option>
+                    <option value="General Ops">General Ops</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-foreground">Details &amp; Context</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Describe your issue or question. Provide machine models, error codes, or environment logs."
+                    value={newDesc}
+                    onChange={e => setNewDesc(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 rounded-xl p-3 text-foreground outline-none focus:border-primary/40 transition-colors resize-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20 cursor-pointer active:scale-95"
+                >
+                  Post Question
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

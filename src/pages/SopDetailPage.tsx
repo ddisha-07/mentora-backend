@@ -4,7 +4,9 @@ import {
   ShieldAlert, Award, AlertTriangle, AlertCircle, LifeBuoy, 
   CheckCircle2, Link2, Clock, Check
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../../App';
+import { Card, PageHeader, EmptyState, SkeletonLoader } from '../components/reusable';
 import { supabase } from '../lib/supabaseClient';
 
 export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) => void }) {
@@ -57,18 +59,30 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
     });
   };
 
-  // Check if there is an active daily mission for SOP reading that matches
   const activeSopMission = (activeMissions || []).find(
     (m: any) => m.status === 'in_progress' && m.type === 'SOP_READING'
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   if (loading) {
     return (
       <div className="p-6 max-w-4xl mx-auto space-y-6 animate-pulse">
-        <div className="h-8 bg-muted rounded w-1/4" />
-        <div className="h-12 bg-muted rounded w-3/4" />
-        <div className="h-32 bg-muted rounded" />
-        <div className="h-64 bg-muted rounded" />
+        <div className="h-8 bg-secondary/35 rounded-xl w-1/4" />
+        <div className="h-12 bg-secondary/35 rounded-xl w-3/4" />
+        <div className="h-32 bg-secondary/35 rounded-2xl" />
+        <div className="h-64 bg-secondary/35 rounded-2xl" />
       </div>
     );
   }
@@ -78,7 +92,7 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
       <div className="p-6 max-w-4xl mx-auto space-y-4">
         <button
           onClick={() => onNavigate('knowledge')}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-all"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-all cursor-pointer"
         >
           <ArrowLeft size={14} /> Back to Knowledge Hub
         </button>
@@ -93,7 +107,6 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
     );
   }
 
-  // Parse structured JSON sections if available
   let structuredContent: any = null;
   let parseFailed = false;
 
@@ -118,28 +131,32 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
     { key: 'equipmentPPE', label: '6. Required Equipment / PPE', icon: <ShieldAlert size={16} className="text-rose-500" /> },
     { key: 'procedure', label: '7. Step-by-Step Procedure', icon: <CheckCircle2 size={16} className="text-primary" /> },
     { key: 'warnings', label: '8. Warnings / Precautions', icon: <AlertTriangle size={16} className="text-yellow-500" /> },
-    { key: 'emergencyProcedure', label: '9. Emergency / Escalation Procedure', icon: <LifeBuoy size={16} className="text-rose-400" /> },
+    { key: 'emergencyProcedure', label: '9. Emergency / Escalation', icon: <LifeBuoy size={16} className="text-rose-400" /> },
     { key: 'verificationChecklist', label: '10. Verification Checklist', icon: <CheckCircle2 size={16} className="text-emerald-500" /> },
     { key: 'references', label: '11. References', icon: <Link2 size={16} /> },
     { key: 'revisionHistory', label: '12. Revision History', icon: <Clock size={16} /> }
   ];
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 max-w-5xl mx-auto space-y-6"
+    >
       {/* Top Navigation Row */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => onNavigate('knowledge')}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-all cursor-pointer font-bold"
         >
-          <ArrowLeft size={14} /> Back to Knowledge Hub
+          <ArrowLeft size={14} className="text-primary" /> Back to Knowledge Hub
         </button>
         <button
           onClick={handleToggleBookmark}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-4.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
             isBookmarked 
-              ? 'bg-primary/10 border-primary/30 text-primary' 
-              : 'bg-card border-border hover:bg-muted text-muted-foreground'
+              ? 'bg-primary/10 border-primary/20 text-primary shadow-md shadow-primary/5' 
+              : 'bg-secondary/15 border-border/10 hover:bg-secondary/25 text-muted-foreground hover:text-foreground'
           }`}
         >
           <Bookmark size={14} className={isBookmarked ? 'fill-primary text-primary' : ''} />
@@ -147,16 +164,20 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
         </button>
       </div>
 
-      {/* active Daily Mission banner */}
+      {/* Active SOP Daily Mission */}
       {activeSopMission && (
-        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between gap-4 relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="premium-glass-card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden border border-primary/20"
+        >
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary" />
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-bold text-primary uppercase tracking-wider">
               🎯 Active Daily Mission In Progress
-            </div>
-            <h4 className="text-sm font-bold text-foreground mt-1">{activeSopMission.title}</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">{activeSopMission.description}</p>
+            </span>
+            <h4 className="text-sm font-bold text-foreground mt-1.5">{activeSopMission.title}</h4>
+            <p className="text-xs text-muted-foreground">{activeSopMission.description}</p>
           </div>
           <button
             onClick={async () => {
@@ -164,34 +185,35 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
             }}
             className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all cursor-pointer shadow-md shadow-primary/20 flex items-center gap-1"
           >
-            <Check size={14} /> Confirm SOP Read / Complete Mission
+            <Check size={14} /> Confirm SOP Read
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* SOP Header Container */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="premium-glass-card p-6 space-y-4 border border-border/10 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded text-[10px] font-bold text-primary tracking-wider uppercase">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-primary/10 border border-primary/25 px-2 py-0.5 rounded text-[10px] font-bold text-primary tracking-wider uppercase">
                 {sop.sop_code || 'SOP-GEN'}
               </span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold border tracking-wider uppercase ${
                 sop.is_preserved 
-                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
-                  : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                  ? 'bg-amber-500/10 border-amber-500/25 text-amber-500' 
+                  : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
               }`}>
                 {sop.is_preserved ? 'Preserved Expert Knowledge' : 'Official SOP Document'}
               </span>
             </div>
-            <h1 className="text-xl md:text-2xl font-black text-foreground">{sop.title}</h1>
+            <h1 className="text-xl md:text-2xl font-black text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>{sop.title}</h1>
             <p className="text-xs text-muted-foreground max-w-3xl leading-relaxed">{sop.description}</p>
           </div>
         </div>
 
         {/* Metadata grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-border/40 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4.5 border-t border-border/10 text-xs">
           <div>
             <span className="text-muted-foreground font-semibold">Department</span>
             <p className="font-bold text-foreground mt-0.5">{sop.department || 'Operations'}</p>
@@ -211,7 +233,7 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
         </div>
 
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-4 pt-1 text-[11px] text-muted-foreground">
+        <div className="grid grid-cols-2 gap-4 pt-1 text-[10px] text-muted-foreground">
           {sop.effective_date && (
             <div>
               <span>Effective Date: <strong>{new Date(sop.effective_date).toLocaleDateString()}</strong></span>
@@ -226,49 +248,61 @@ export default function SopDetailPage({ onNavigate }: { onNavigate: (p: string) 
       </div>
 
       {/* Safety Warning Label */}
-      <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex gap-3 text-xs text-amber-500 leading-normal">
-        <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" />
+      <div className="bg-amber-500/10 border border-amber-500/25 p-4 rounded-2xl flex gap-3 text-xs text-amber-500 leading-relaxed">
+        <AlertTriangle size={18} className="flex-shrink-0 mt-0.5 text-amber-500" />
         <div>
-          <strong>Demo / Training SOP Notice:</strong> This document is seeded solely as training content demonstrating the Mentora platform workflow. It is NOT an official Tata Steel operational manual or safety standard.
+          <strong>Demo Notice:</strong> This document is seeded solely as training content demonstrating the Mentora platform workflow. It is NOT an official Tata Steel operational manual or safety standard.
         </div>
       </div>
 
       {/* Structured Document Content */}
       <div className="space-y-6">
-        {structuredContent && !parseFailed ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {sections.map(section => {
-              const sectionText = structuredContent[section.key];
-              if (!sectionText) return null;
+        <AnimatePresence>
+          {structuredContent && !parseFailed ? (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              {sections.map(section => {
+                const sectionText = structuredContent[section.key];
+                if (!sectionText) return null;
 
-              return (
-                <div 
-                  key={section.key} 
-                  className="bg-card border border-border/80 rounded-2xl p-5 hover:border-border transition-all flex flex-col gap-2.5"
-                >
-                  <h3 className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-2 border-b border-border/40 pb-2">
-                    {section.icon}
-                    {section.label}
-                  </h3>
-                  <div className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap flex-1">
-                    {sectionText}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          /* Fallback for raw text content (e.g. preserved Q&A) */
-          <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              💡 Document Content / Transcript
-            </h3>
-            <div className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap bg-background/50 p-4 rounded-xl">
-              {sop.content}
-            </div>
-          </div>
-        )}
+                return (
+                  <motion.div 
+                    key={section.key} 
+                    variants={itemVariants}
+                    className="premium-glass-card p-5 hover:scale-[1.01] transition-all flex flex-col gap-2.5 border border-border/10"
+                  >
+                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2 border-b border-border/10 pb-2">
+                      {section.icon}
+                      {section.label}
+                    </h3>
+                    <div className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap flex-1">
+                      {sectionText}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          ) : (
+            /* Fallback for raw text content (e.g. preserved Q&A) */
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="premium-glass-card p-6 space-y-4 border border-border/10"
+            >
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                <FileText size={18} className="text-primary" /> Document Content / Transcript
+              </h3>
+              <div className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap bg-secondary/10 p-4 rounded-xl border border-border/5">
+                {sop.content}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }

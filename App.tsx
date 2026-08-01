@@ -38,6 +38,13 @@ import SavedPage from "./src/pages/SavedPage";
 import AdminPage from "./src/pages/AdminPage";
 import SopDetailPage from "./src/pages/SopDetailPage";
 import { AuroraBackground } from "./src/components/AuroraBackground";
+import { motion, AnimatePresence } from "motion/react";
+import { LandingNavbar } from "./src/components/landing/LandingNavbar";
+import { LandingAbout } from "./src/components/landing/LandingAbout";
+import { LandingProcess } from "./src/components/landing/LandingProcess";
+import { LandingBlog } from "./src/components/landing/LandingBlog";
+import { LandingContact } from "./src/components/landing/LandingContact";
+import { LandingFuture } from "./src/components/landing/LandingFuture";
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeCtx = createContext<{ isDark: boolean; toggle: () => void }>({ isDark: true, toggle: () => {} });
@@ -470,7 +477,7 @@ function ProgressBar({ value, className = "" }: { value: number; className?: str
 function Card({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
     <div onClick={onClick}
-      className={`bg-card border border-border rounded-2xl ${onClick ? "cursor-pointer hover:border-border/70 hover:bg-muted/50 transition-all duration-200" : ""} ${className}`}>
+      className={`premium-glass-card ${onClick ? "cursor-pointer hover:scale-[1.01] transition-all" : ""} ${className}`}>
       {children}
     </div>
   );
@@ -484,7 +491,7 @@ function Input({ placeholder, type = "text", value, onChange, icon, className = 
       {icon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{icon}</div>}
       <input
         type={type} placeholder={placeholder} value={value} onChange={onChange}
-        className={`w-full bg-card border border-border rounded-xl text-foreground placeholder-muted-foreground text-sm outline-none focus:border-primary/50 transition-colors ${icon ? "pl-10 pr-4 py-2.5" : "px-4 py-2.5"}`}
+        className={`w-full bg-secondary/35 border border-border/10 rounded-xl text-foreground placeholder-muted-foreground text-sm outline-none focus:border-primary/45 transition-colors ${icon ? "pl-10 pr-4 py-2.5" : "px-4 py-2.5"}`}
         style={{ fontFamily: "'Poppins', sans-serif" }}
       />
     </div>
@@ -585,6 +592,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   const { isDark, toggle } = useTheme();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [tab, setTab] = useState<"home" | "about" | "process" | "blog" | "contact">("home");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -613,358 +621,466 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
   return (
     <div className="bg-transparent text-foreground min-h-screen relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 premium-navbar">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-          <div onClick={() => onNavigate("landing")} className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <img src="/logo.png" alt="Mentora Logo" className="w-4.5 h-4.5 object-contain brightness-0 invert" />
-            </div>
-            <span {...sg("text-lg font-bold tracking-tight")}>Mentora</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            {["Blog", "About", "Process", "Contact"].map((item) => (
-              <a key={item} href="#" onClick={e => e.preventDefault()} className="hover:text-foreground transition-colors">{item}</a>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={toggle}
-              className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border/80 transition-all"
-              title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-            {user ? null : (
-              <button onClick={() => onNavigate("login")}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 hidden sm:block">
-                Login
-              </button>
-            )}
-            <CyanButton onClick={() => onNavigate(user ? "dashboard" : "login")} size="sm">
-              {user ? "Go to Dashboard" : "Get started"}
-            </CyanButton>
-          </div>
-        </div>
-      </nav>
+      <LandingNavbar activeTab={tab} setActiveTab={setTab} onNavigate={onNavigate} user={user} />
 
-      {/* ── HERO ────────────────────────────────────────────────────── */}
-      <section className="min-h-screen flex flex-col pt-20 pb-0 relative overflow-hidden">
+      {tab === "about" && <LandingAbout />}
+      {tab === "process" && <LandingProcess />}
+      {tab === "blog" && <LandingBlog />}
+      {tab === "contact" && <LandingContact />}
 
-        <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 xl:px-16 pt-8">
-          {/* Eyebrow pill */}
-          <div className="mb-8 lg:mb-10">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs" {...mono()}>
-              <Sparkles size={11} /> AI-Powered · Enterprise Learning Platform
-            </span>
-          </div>
+      {tab === "home" && (
+        <>
+          {/* ── HERO ────────────────────────────────────────────────────── */}
+          <section className="min-h-screen flex flex-col pt-24 pb-0 relative overflow-hidden">
+            <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 xl:px-16 pt-8">
+              {/* Eyebrow pill */}
+              <div className="mb-8 lg:mb-10">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs" {...mono()}>
+                  <Sparkles size={11} /> AI-Powered · Enterprise Learning Platform
+                </span>
+              </div>
 
-          {/* Giant headline — Raleway 900 bold + Dancing Script cursive interleaved */}
-          <h1 style={{ lineHeight: 1.08 }}>
-            {/* Line 1: bold "Build" + vivid icon boxes + cursive "your" */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mb-3">
-              <span style={{ fontFamily: "'Raleway', sans-serif", fontSize: "clamp(3.2rem, 8.5vw, 7.5rem)", fontWeight: 900, letterSpacing: "-0.03em" }}>
-                Build
-              </span>
-              <HeroIconBox bg="var(--primary)" border="var(--primary)" iconColor="#ffffff"
-                icon={<Brain style={{ width: iconSize, height: iconSize }} />} />
-              <HeroIconBox bg={isDark ? "#1a1740" : "#E6EEFF"} border="var(--border)" iconColor={isDark ? "#7C3AED" : "#4361EE"}
-                icon={<Zap style={{ width: iconSize, height: iconSize }} />} rotate={-8} />
-              <HeroIconBox bg="#4CC9F0" border="#4CC9F0" iconColor="#06060F"
-                icon={<GraduationCap style={{ width: iconSize, height: iconSize }} />} />
-              <span style={{ fontFamily: "'Dancing Script', cursive", fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 700, color: "var(--muted-foreground)" }}>
-                your
-              </span>
-            </div>
-            {/* Line 2: bold "skills" + warm icon box + cursive glowing "online." */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-              <span style={{ fontFamily: "'Raleway', sans-serif", fontSize: "clamp(3.2rem, 8.5vw, 7.5rem)", fontWeight: 900, letterSpacing: "-0.03em" }}>
-                skills
-              </span>
-              <HeroIconBox bg="#F8961E" border="#F8961E" iconColor="#FFFFFF"
-                icon={<Award style={{ width: iconSize, height: iconSize }} />} />
-              <span style={{ fontFamily: "'Dancing Script', cursive", fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 700, color: "var(--primary)", textShadow: "0 0 50px rgba(224,24,110,0.4)" }}>
-                online.
-              </span>
-            </div>
-          </h1>
-
-          {/* Subtitle + CTA row */}
-          <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
-            <p className="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-md">
-              Learn and improve your skills with interactive courses and AI-powered skill tests — built specifically for future professionals.
-            </p>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <CyanButton onClick={() => onNavigate(user ? "dashboard" : "login")} size="lg">
-                {user ? "Go to Dashboard" : "Start Learning"}
-              </CyanButton>
-              <CyanButton onClick={() => onNavigate(user ? "learn" : "login")} size="lg" outline>
-                Explore Courses
-              </CyanButton>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Course preview cards floating at the bottom ── */}
-        <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            {/* Card 1 — workshop card */}
-            <div
-              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ minHeight: 180 }}
-              onClick={() => onNavigate("login")}
-            >
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge color="default">Workshop</Badge>
-                  <Badge color="red">Advanced</Badge>
+              {/* Giant headline — Raleway 900 bold + Dancing Script cursive interleaved */}
+              <h1 style={{ lineHeight: 1.08 }}>
+                {/* Line 1: bold "Build" + vivid icon boxes + cursive "your" */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mb-3">
+                  <span style={{ fontFamily: "'Raleway', sans-serif", fontSize: "clamp(3.2rem, 8.5vw, 7.5rem)", fontWeight: 900, letterSpacing: "-0.03em" }}>
+                    Build
+                  </span>
+                  <HeroIconBox bg="var(--primary)" border="var(--primary)" iconColor="#ffffff"
+                    icon={<Brain style={{ width: iconSize, height: iconSize }} />} />
+                  <HeroIconBox bg={isDark ? "#1a1740" : "#E6EEFF"} border="var(--border)" iconColor={isDark ? "#7C3AED" : "#4361EE"}
+                    icon={<Zap style={{ width: iconSize, height: iconSize }} />} rotate={-8} />
+                  <HeroIconBox bg="#4CC9F0" border="#4CC9F0" iconColor="#06060F"
+                    icon={<GraduationCap style={{ width: iconSize, height: iconSize }} />} />
+                  <span style={{ fontFamily: "'Dancing Script', cursive", fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 700, color: "var(--muted-foreground)" }}>
+                    your
+                  </span>
                 </div>
-                <p {...sg("text-base font-bold leading-snug")}>Advanced ML &amp; Neural Networks</p>
-              </div>
-              <div className="mt-4">
-                <p {...mono("text-2xl font-semibold text-primary")}>4,280</p>
-                <p className="text-xs text-muted-foreground">enrolled learners</p>
-              </div>
-            </div>
-
-            {/* Card 2 — featured instructor card */}
-            <div
-              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ minHeight: 180 }}
-              onClick={() => onNavigate("login")}
-            >
-              <div className="flex -space-x-3 mb-4">
-                {[TESTIMONIALS[0].avatar, TESTIMONIALS[1].avatar, TESTIMONIALS[2].avatar].map((src, i) => (
-                  <img key={i} src={src} alt="" className="w-10 h-10 rounded-full object-cover border-2 bg-muted" style={{ borderColor: isDark ? "#150E30" : "#F0ECFF" }} />
-                ))}
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground font-medium" style={{ border: `2px solid ${isDark ? "#150E30" : "#F0ECFF"}` }}>+40</div>
-              </div>
-              <div>
-                <Badge color="purple">Course</Badge>
-                <p {...sg("text-base font-bold leading-snug mt-2")}>Data Analytics from scratch</p>
-                <p className="text-xs text-muted-foreground mt-1">Beginner · 6–8 months</p>
-              </div>
-            </div>
-
-            {/* Card 3 — teal accent card */}
-            <div
-              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ minHeight: 180 }}
-              onClick={() => onNavigate("login")}
-            >
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge color="cyan">Live</Badge>
-                  <Badge color="green">Beginner</Badge>
+                {/* Line 2: bold "skills" + warm icon box + cursive glowing "online." */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                  <span style={{ fontFamily: "'Raleway', sans-serif", fontSize: "clamp(3.2rem, 8.5vw, 7.5rem)", fontWeight: 900, letterSpacing: "-0.03em" }}>
+                    skills
+                  </span>
+                  <HeroIconBox bg="#F8961E" border="#F8961E" iconColor="#FFFFFF"
+                    icon={<Award style={{ width: iconSize, height: iconSize }} />} />
+                  <span style={{ fontFamily: "'Dancing Script', cursive", fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 700, color: "var(--primary)", textShadow: "0 0 50px rgba(224,24,110,0.4)" }}>
+                    online.
+                  </span>
                 </div>
-                <p {...sg("text-base font-bold leading-snug")}>AI &amp; Leadership Summit</p>
-                <p className="text-xs text-muted-foreground mt-2">July 28 · Virtual</p>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-emerald-400">Registration open</span>
-              </div>
-            </div>
+              </h1>
 
-            {/* Card 4 — amber stat card */}
-            <div
-              className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-              style={{ minHeight: 180 }}
-              onClick={() => onNavigate("login")}
-            >
-              <div>
-                <Badge color="yellow">Skill Track</Badge>
-                <p {...sg("text-base font-bold leading-snug mt-3")}>Competitive Advantage</p>
-              </div>
-              <div className="mt-4">
-                <div className="flex flex-wrap gap-1.5">
-                  {["Python", "Finance", "Strategy", "Design", "Ops"].map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded-md bg-[#F59E0B]/10 text-[#F59E0B] text-[10px]" {...mono()}>{t}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <p className="text-2xl mb-2" style={{ color: "#F72585", fontFamily: "'Dancing Script', cursive" }}>Platform Capabilities</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-4 text-foreground")}>Everything your team <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0" }}>needs</span> to grow</h2>
-            <p className="text-sm text-[#94A3B8] max-w-xl mx-auto leading-relaxed">
-              One platform for structured learning, informal knowledge sharing, assessments, and skill development.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f, i) => (
-              <div key={i} className="p-6 capability-tile">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-                  {f.icon}
-                </div>
-                <h3 className="text-base font-bold mb-2 text-primary" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                  {f.title}
-                </h3>
-                <p className="text-xs capability-desc leading-relaxed">
-                  {f.desc}
+              {/* Subtitle + CTA row */}
+              <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
+                <p className="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-md">
+                  Learn and improve your skills with interactive courses and AI-powered skill tests — built specifically for future professionals.
                 </p>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <CyanButton onClick={() => onNavigate(user ? "dashboard" : "login")} size="lg">
+                    {user ? "Go to Dashboard" : "Start Learning"}
+                  </CyanButton>
+                  <CyanButton onClick={() => onNavigate(user ? "learn" : "login")} size="lg" outline>
+                    Explore Courses
+                  </CyanButton>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* AI Chat Preview */}
-      <section className="py-28 px-6 lg:px-10 bg-transparent relative overflow-hidden">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
-          <div>
-            <p {...cr("text-primary text-2xl mb-2")}>AI Assistant</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-6")}>Your <span style={{ fontFamily: "'Dancing Script', cursive", color: "#22D3EE", fontWeight: 700 }}>always-on</span><br />learning companion</h2>
-            <p className="text-muted-foreground leading-relaxed mb-8">
-              Ask questions about your courses, get instant explanations of complex concepts, receive personalized study plans, or discuss ideas — all within the context of your organization's knowledge.
-            </p>
-            <ul className="space-y-3">
-              {["Context-aware responses using your course content", "Code explanations with syntax highlighting", "Personalized quiz generation on demand", "Multi-turn conversations with memory"].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <CheckCircle size={16} className="text-primary flex-shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <CyanButton onClick={() => onNavigate("login")} className="mt-8">Try AI Assistant</CyanButton>
-          </div>
-          <div>
-            <Card className="p-1 overflow-hidden shadow-2xl">
-              <div className="bg-[#03030A] rounded-2xl p-6 flex flex-col justify-between h-[360px] border border-border/20 relative overflow-hidden bg-gradient-to-b from-[#0A0A20]/40 to-[#020206]">
-                {/* Background glow */}
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-                
-                {/* Top Header / Logo */}
-                <div className="text-center space-y-3 z-10">
-                  <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-cyan-400 via-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
-                    <Sparkles className="text-white w-5 h-5" />
+            {/* ── Course preview cards floating at the bottom ── */}
+            <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+                {/* Card 1 — workshop card */}
+                <div
+                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+                  style={{ minHeight: 180 }}
+                  onClick={() => onNavigate("login")}
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Badge color="default">Workshop</Badge>
+                      <Badge color="red">Advanced</Badge>
+                    </div>
+                    <p {...sg("text-base font-bold leading-snug")}>Advanced ML &amp; Neural Networks</p>
+                  </div>
+                  <div className="mt-4">
+                    <p {...mono("text-2xl font-semibold text-primary")}>4,280</p>
+                    <p className="text-xs text-muted-foreground">enrolled learners</p>
+                  </div>
+                </div>
+
+                {/* Card 2 — featured instructor card */}
+                <div
+                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+                  style={{ minHeight: 180 }}
+                  onClick={() => onNavigate("login")}
+                >
+                  <div className="flex -space-x-3 mb-4">
+                    {[TESTIMONIALS[0].avatar, TESTIMONIALS[1].avatar, TESTIMONIALS[2].avatar].map((src, i) => (
+                      <img key={i} src={src} alt="" className="w-10 h-10 rounded-full object-cover border-2 bg-muted" style={{ borderColor: isDark ? "#150E30" : "#F0ECFF" }} />
+                    ))}
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground font-medium" style={{ border: `2px solid ${isDark ? "#150E30" : "#F0ECFF"}` }}>+40</div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">
-                      Hi <span className="italic font-serif text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Guest</span>, How can I help you today?
-                    </h3>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Ask me anything — I'm here to guide and inspire.</p>
+                    <Badge color="purple">Course</Badge>
+                    <p {...sg("text-base font-bold leading-snug mt-2")}>Data Analytics from scratch</p>
+                    <p className="text-xs text-muted-foreground mt-1">Beginner · 6–8 months</p>
                   </div>
                 </div>
 
-                {/* Suggested Prompts Grid */}
-                <div className="grid grid-cols-2 gap-2.5 my-4 z-10">
-                  {[
-                    { label: "EXPLAIN A CONCEPT", desc: "Can you explain how machine learning works in simple terms?" },
-                    { label: "BRAINSTORM IDEAS", desc: "Help me brainstorm creative ways to improve my study habits." },
-                    { label: "ASK ANYTHING", desc: "What are the most important skills to develop in the next decade?" },
-                    { label: "QUICK SUMMARY", desc: "Summarize the key principles of effective communication." }
-                  ].map((p, idx) => (
-                    <div key={idx} className="bg-card/40 border border-border/40 p-2.5 rounded-xl text-[10px] text-left hover:border-primary/30 transition-all cursor-pointer">
-                      <span className="text-[8px] font-extrabold text-primary tracking-wider uppercase">{p.label}</span>
-                      <p className="text-muted-foreground mt-0.5 line-clamp-2 leading-tight">{p.desc}</p>
+                {/* Card 3 — teal accent card */}
+                <div
+                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+                  style={{ minHeight: 180 }}
+                  onClick={() => onNavigate("login")}
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Badge color="cyan">Live</Badge>
+                      <Badge color="green">Beginner</Badge>
                     </div>
+                    <p {...sg("text-base font-bold leading-snug")}>AI &amp; Leadership Summit</p>
+                    <p className="text-xs text-muted-foreground mt-2">July 28 · Virtual</p>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs text-emerald-400">Registration open</span>
+                  </div>
+                </div>
+
+                {/* Card 4 — amber stat card */}
+                <div
+                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+                  style={{ minHeight: 180 }}
+                  onClick={() => onNavigate("login")}
+                >
+                  <div>
+                    <Badge color="yellow">Skill Track</Badge>
+                    <p {...sg("text-base font-bold leading-snug mt-3")}>Competitive Advantage</p>
+                  </div>
+                  <div className="mt-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {["Python", "Finance", "Strategy", "Design", "Ops"].map((t) => (
+                        <span key={t} className="px-2 py-0.5 rounded-md bg-[#F59E0B]/10 text-[#F59E0B] text-[10px]" {...mono()}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trusted by Industry stats block */}
+            <div className="mt-24 border-t border-border/10 pt-12 pb-4 text-center">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-8">Trusted by industry leaders worldwide</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+                {[
+                  { count: "340+", label: "Enterprise Companies" },
+                  { count: "25K+", label: "Active Learners" },
+                  { count: "96%", label: "Completion Rate" },
+                  { count: "4.9★", label: "Average Rating" }
+                ].map((stat, i) => (
+                  <div key={i} className="space-y-1">
+                    <h4 className="text-3xl lg:text-4xl font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      {stat.count}
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* How Mentora Works */}
+          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="text-center mb-16">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
+                  Methodology
+                </span>
+                <h2 className="text-4xl lg:text-5xl font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  How Mentora <span className="text-primary">works</span>
+                </h2>
+                <p className="text-xs text-[#94A3B8] max-w-xl mx-auto mt-4 leading-relaxed">
+                  Our continuous workforce learning workflow balances context indexing with interactive simulation.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { title: "Discover", desc: "Identify operational skill gaps and legacy manual silos automatically using semantic index scans." },
+                  { title: "Learn", desc: "Access bite-sized, 1-minute visual procedures instead of long slide-decks." },
+                  { title: "Practice", desc: "Review scenarios hands-free and test decision triggers in active text sandboxes." },
+                  { title: "Achieve", desc: "Earn verified skill passports, build streak status, and claim organizational credits." }
+                ].map((step, idx) => (
+                  <div key={idx} className="lp-glass-card p-6 flex flex-col justify-between hover:border-primary/25 transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xs mb-6">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold mb-2 text-foreground">{step.title}</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Features */}
+          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="text-center mb-16">
+                <p className="text-2xl mb-2" style={{ color: "#F72585", fontFamily: "'Dancing Script', cursive" }}>Platform Capabilities</p>
+                <h2 {...sg("text-4xl lg:text-5xl font-bold mb-4 text-foreground")}>Everything your team <span style={{ fontFamily: "'Dancing Script', cursive", color: "#4CC9F0" }}>needs</span> to grow</h2>
+                <p className="text-sm text-[#94A3B8] max-w-xl mx-auto leading-relaxed">
+                  One platform for structured learning, informal knowledge sharing, assessments, and skill development.
+                </p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {features.map((f, i) => (
+                  <div key={i} className="p-6 capability-tile">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                      {f.icon}
+                    </div>
+                    <h3 className="text-base font-bold mb-2 text-primary" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      {f.title}
+                    </h3>
+                    <p className="text-xs capability-desc leading-relaxed">
+                      {f.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* AI Chat Preview */}
+          <section id="kai-section" className="py-28 px-6 lg:px-10 bg-transparent relative overflow-hidden border-t border-border/5">
+            <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+              <div>
+                <p {...cr("text-primary text-2xl mb-2")}>AI Assistant</p>
+                <h2 {...sg("text-4xl lg:text-5xl font-bold mb-6")}>Your <span style={{ fontFamily: "'Dancing Script', cursive", color: "#22D3EE", fontWeight: 700 }}>always-on</span><br />learning companion</h2>
+                <p className="text-muted-foreground leading-relaxed mb-8">
+                  Ask questions about your courses, get instant explanations of complex concepts, receive personalized study plans, or discuss ideas — all within the context of your organization's knowledge.
+                </p>
+                <ul className="space-y-3">
+                  {["Context-aware responses using your course content", "Code explanations with syntax highlighting", "Personalized quiz generation on demand", "Multi-turn conversations with memory"].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <CheckCircle size={16} className="text-primary flex-shrink-0" />
+                      {item}
+                    </li>
                   ))}
-                </div>
+                </ul>
+                <CyanButton onClick={() => onNavigate("login")} className="mt-8">Try AI Assistant</CyanButton>
+              </div>
+              <div>
+                <Card className="p-1 overflow-hidden shadow-2xl">
+                  <div className="bg-[#03030A] rounded-2xl p-6 flex flex-col justify-between h-[360px] border border-border/20 relative overflow-hidden bg-gradient-to-b from-[#0A0A20]/40 to-[#020206]">
+                    {/* Background glow */}
+                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                    
+                    {/* Top Header / Logo */}
+                    <div className="text-center space-y-3 z-10">
+                      <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-cyan-400 via-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
+                        <Sparkles className="text-white w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-foreground">
+                          Hi <span className="italic font-serif text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Guest</span>, How can I help you today?
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Ask me anything — I'm here to guide and inspire.</p>
+                      </div>
+                    </div>
 
-                {/* Bottom Input Area */}
-                <div className="bg-[#0A0A15]/80 border border-border/60 rounded-xl px-3 py-2 flex items-center justify-between text-[10px] text-muted-foreground z-10">
-                  <span className="flex items-center gap-1.5">
-                    📎 Message Kai...
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="opacity-60">🎙️</span>
-                    <Send size={10} className="text-primary cursor-pointer hover:scale-105 transition-all" />
+                    {/* Suggested Prompts Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 my-4 z-10">
+                      {[
+                        { label: "EXPLAIN A CONCEPT", desc: "Can you explain how machine learning works in simple terms?" },
+                        { label: "BRAINSTORM IDEAS", desc: "Help me brainstorm creative ways to improve my study habits." },
+                        { label: "ASK ANYTHING", desc: "What are the most important skills to develop in the next decade?" },
+                        { label: "QUICK SUMMARY", desc: "Summarize the key principles of effective communication." }
+                      ].map((p, idx) => (
+                        <div key={idx} className="bg-card/40 border border-border/40 p-2.5 rounded-xl text-[10px] text-left hover:border-primary/30 transition-all cursor-pointer">
+                          <span className="text-[8px] font-extrabold text-primary tracking-wider uppercase">{p.label}</span>
+                          <p className="text-muted-foreground mt-0.5 line-clamp-2 leading-tight">{p.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bottom Input Area */}
+                    <div className="bg-[#0A0A15]/80 border border-border/60 rounded-xl px-3 py-2 flex items-center justify-between text-[10px] text-muted-foreground z-10">
+                      <span className="flex items-center gap-1.5">
+                        📎 Message Kai...
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="opacity-60">🎙️</span>
+                        <Send size={10} className="text-primary cursor-pointer hover:scale-105 transition-all" />
+                      </div>
+                    </div>
                   </div>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          {/* Course Preview */}
+          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="flex items-end justify-between mb-12">
+                <div>
+                  <p {...cr("text-primary text-2xl mb-1")}>Learning Journeys</p>
+                  <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Featured <span style={{ fontFamily: "'Dancing Script', cursive", color: "#FF9F1C" }}>Curriculums</span></h2>
+                </div>
+                <CyanButton onClick={() => onNavigate("login")} outline>View all Journeys</CyanButton>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { title: "Become GenAI Ready", category: "AI & ML", duration: "12h", difficulty: "Intermediate", xp: "450 XP", progress: 65, instructor: "Dr. Sarah Chen", thumbnail: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&h=340&fit=crop&auto=format" },
+                  { title: "Prompt Engineering Mastery", category: "AI & ML", duration: "8h", difficulty: "Advanced", xp: "300 XP", progress: 40, instructor: "Dr. Sarah Chen", thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=340&fit=crop&auto=format" },
+                  { title: "Agentic AI Foundations", category: "AI & ML", duration: "15h", difficulty: "Advanced", xp: "600 XP", progress: 10, instructor: "Marcus Rivera", thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=340&fit=crop&auto=format" },
+                  { title: "Context Engineering", category: "Data Science", duration: "10h", difficulty: "Advanced", xp: "400 XP", progress: 0, instructor: "Priya Sharma", thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=340&fit=crop&auto=format" }
+                ].map((journey, idx) => (
+                  <div key={idx} className="lp-glass-card overflow-hidden group cursor-pointer flex flex-col justify-between hover:scale-[1.01] transition-all" onClick={() => onNavigate("login")}>
+                    <div>
+                      <div className="h-44 overflow-hidden bg-surface relative">
+                        <img src={journey.thumbnail} alt={journey.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <span className="absolute top-3 left-3 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-bold text-white uppercase tracking-wider">
+                          {journey.category}
+                        </span>
+                      </div>
+                      <div className="p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge color={journey.difficulty === "Advanced" ? "red" : "yellow"}>{journey.difficulty}</Badge>
+                          <Badge color="default">{journey.xp}</Badge>
+                        </div>
+                        <h3 className="text-xs font-bold mb-1 leading-snug group-hover:text-primary transition-colors">{journey.title}</h3>
+                        <p className="text-[10px] text-muted-foreground mb-4">Journey guided by {journey.instructor}</p>
+                        
+                        {/* Progress Bar */}
+                        <div className="space-y-1 mb-4">
+                          <div className="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+                            <span>Progress</span>
+                            <span>{journey.progress}%</span>
+                          </div>
+                          <div className="w-full h-1 bg-secondary/30 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${journey.progress}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-5 pt-0 border-t border-border/5 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                      <span className="flex items-center gap-1"><Clock size={11} />{journey.duration}</span>
+                      <span className="text-primary font-bold group-hover:underline">Start &rarr;</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Testimonials */}
+          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="text-center mb-16">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
+                  Success Stories
+                </span>
+                <h2 className="text-4xl lg:text-5xl font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  Loved by <span className="text-primary">operators</span> worldwide
+                </h2>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {TESTIMONIALS.map((t, idx) => (
+                  <div key={idx} className="lp-glass-card p-6 flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-6 italic">
+                      "\`${t.text}\`"
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover border border-border/10" />
+                      <div>
+                        <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
+                        <p className="text-[10px] text-muted-foreground">{t.role}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <div className="max-w-3xl mx-auto relative z-10">
+              <div className="text-center mb-16">
+                <p {...cr("text-primary text-2xl mb-1")}>FAQ</p>
+                <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Common <span style={{ fontFamily: "'Dancing Script', cursive", color: "#7C3AED" }}>questions</span></h2>
+              </div>
+              <div className="space-y-2.5">
+                {faqs.map((faq, i) => (
+                  <div key={i} className="faq-item border border-border/10 rounded-xl overflow-hidden bg-secondary/5 hover:border-primary/20 transition-all">
+                    <button className="w-full flex items-center justify-between px-6 py-4 text-left cursor-pointer"
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                      <span className="text-xs font-semibold text-foreground">{faq.q}</span>
+                      <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-300 flex-shrink-0 ${openFaq === i ? "rotate-180 text-primary" : ""}`} />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {openFaq === i && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 pb-4.5 text-xs text-muted-foreground leading-relaxed border-t border-border/5 pt-3.5">
+                            {faq.a}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Banner */}
+          <section className="py-24 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <div className="max-w-4xl mx-auto text-center border border-white/10 rounded-3xl p-16 bg-black/45 backdrop-blur-xl relative overflow-hidden z-10 shadow-2xl">
+              <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative z-10">
+                <Sparkles className="text-primary mx-auto mb-6" size={32} />
+                <h2 className="text-4xl lg:text-5xl font-extrabold mb-4 text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  Ready to build a <span className="text-primary">smarter</span> team?
+                </h2>
+                <p className="text-xs text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
+                  Join 340+ enterprises already using Mentora to develop operational talent and close compliance gaps.
+                </p>
+                <div className="flex items-center justify-center gap-4 flex-wrap">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onNavigate("login")}
+                    className="px-6 py-3 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg shadow-primary/25 cursor-pointer"
+                  >
+                    Get started for free
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onNavigate("login")}
+                    className="px-6 py-3 rounded-full border border-border bg-secondary/10 text-xs font-bold text-foreground cursor-pointer hover:bg-secondary/20"
+                  >
+                    Book a demo
+                  </motion.button>
                 </div>
               </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Course Preview */}
-      <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <p {...cr("text-primary text-2xl mb-1")}>Learning Journeys</p>
-              <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Personalized <span style={{ fontFamily: "'Dancing Script', cursive", color: "#FF9F1C" }}>Learning</span> Journeys</h2>
             </div>
-            <CyanButton onClick={() => onNavigate("login")} outline>View all Journeys</CyanButton>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {COURSES.slice(0, 3).map((course) => (
-              <Card key={course.id} className="lp-glass-card overflow-hidden group cursor-pointer" onClick={() => onNavigate("login")}>
-                <div className="h-44 overflow-hidden bg-surface">
-                  <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge color="default">{course.category}</Badge>
-                    <Badge color={course.difficulty === "Advanced" ? "red" : course.difficulty === "Intermediate" ? "yellow" : "green"}>{course.difficulty}</Badge>
-                  </div>
-                  <h3 {...sg("text-sm font-semibold mb-2 leading-snug group-hover:text-primary transition-colors")}>{course.title}</h3>
-                  <p className="text-xs text-muted-foreground mb-4">Journey guided by {course.instructor}</p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock size={12} />{course.duration} · Bites</span>
-                    <span className="flex items-center gap-1"><Star size={12} className="text-amber-400" />{course.rating}</span>
-                    <span className="flex items-center gap-1"><Users size={12} />{course.students.toLocaleString()}</span>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+          </section>
+        </>
+      )}
 
-
-      {/* FAQ */}
-      <section className="py-28 px-6 lg:px-10 relative overflow-hidden">
-        <div className="max-w-3xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <p {...cr("text-primary text-2xl mb-1")}>FAQ</p>
-            <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Common <span style={{ fontFamily: "'Dancing Script', cursive", color: "#7C3AED" }}>questions</span></h2>
-          </div>
-          <div className="space-y-2">
-            {faqs.map((faq, i) => (
-              <div key={i} className="faq-item border border-border rounded-xl overflow-hidden">
-                <button className="w-full flex items-center justify-between px-6 py-4 text-left"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span {...sg("text-sm font-medium")}>{faq.q}</span>
-                  <ChevronDown size={16} className={`text-muted-foreground transition-transform flex-shrink-0 ${openFaq === i ? "rotate-180" : ""}`} />
-                </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-4 text-sm text-muted-foreground leading-relaxed border-t border-border pt-4">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Banner */}
-      <section className="py-20 px-6 lg:px-10 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center border border-border rounded-3xl p-16 bg-gradient-to-b from-secondary/40 to-background/20 backdrop-blur-md relative overflow-hidden z-10">
-          <div className="absolute inset-0 bg-primary/3 pointer-events-none" />
-          <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-            <NeuralNetSVG className="w-full" />
-          </div>
-          <div className="relative z-10">
-            <Sparkles className="text-primary mx-auto mb-6" size={32} />
-            <h2 {...sg("text-4xl lg:text-5xl font-bold mb-4")}>Ready to build a <span style={{ fontFamily: "'Dancing Script', cursive", color: "var(--primary)" }}>smarter</span> team?</h2>
-            <p className="text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
-              Join 340+ enterprises already using Mentora to develop talent at scale.
-            </p>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <CyanButton onClick={() => onNavigate("login")} size="lg">Get started for free</CyanButton>
-              <CyanButton onClick={() => onNavigate("login")} size="lg" outline>Book a demo</CyanButton>
-            </div>
-          </div>
-        </div>
-      </section>
+      <LandingFuture />
 
       {/* Footer */}
       <footer className="border-t border-border py-12 px-6 lg:px-10">
@@ -1591,13 +1707,13 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   const getMissionCardClass = (type: string) => {
     switch (type) {
-      case 'SOP_READING': return 'card-cyan';
-      case 'QUIZ': return 'card-primary';
-      case 'LEARNING': return 'card-purple';
+      case 'SOP_READING': return 'border-cyan-500/25 bg-cyan-500/5 text-cyan-400';
+      case 'QUIZ': return 'border-primary/25 bg-primary/5 text-primary';
+      case 'LEARNING': return 'border-purple-500/25 bg-purple-500/5 text-purple-400';
       case 'KNOWLEDGE_SHARING':
       case 'EXPERIENCE_SHARING':
-        return 'card-green';
-      default: return 'card-blue';
+        return 'border-emerald-500/25 bg-emerald-500/5 text-emerald-400';
+      default: return 'border-blue-500/25 bg-blue-500/5 text-blue-400';
     }
   };
 
@@ -1743,36 +1859,50 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 space-y-6 max-w-7xl mx-auto"
+    >
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden card-primary rounded-2xl p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="premium-glass-card p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-64 opacity-20 pointer-events-none">
           <NeuralNetSVG className="w-full h-full" />
         </div>
         <div className="relative z-10 space-y-4">
           <div>
             <span className="text-xs text-primary font-bold tracking-wider uppercase">Welcome Back</span>
-            <h2 {...sg("text-2xl md:text-3xl font-extrabold text-foreground mt-1")}>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-foreground mt-1" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {getGreeting()} {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
             </h2>
             <p className="text-muted-foreground text-sm mt-1">Your Mentora journey continues.</p>
           </div>
 
-          <div className="flex flex-wrap gap-4 text-xs font-semibold text-foreground bg-background/50 border border-border/50 rounded-xl p-3.5 w-fit">
-            <span className="flex items-center gap-1 text-orange-400">
+          <div className="flex flex-wrap gap-3 text-xs font-semibold text-foreground">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
               🔥 <strong className="text-foreground">{activeProfile.currentStreak || 12} Day Streak</strong>
             </span>
-            <span className="text-muted-foreground/30">|</span>
-            <span className="flex items-center gap-1 text-primary">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
               ⭐ <strong className="text-foreground">{activeProfile.xp || 1240} XP</strong>
             </span>
-            <span className="text-muted-foreground/30">|</span>
-            <span className="flex items-center gap-1 text-yellow-400">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
               🪙 <strong className="text-foreground">{activeProfile.mentoraCredits || 450} Credits</strong>
             </span>
-            <span className="text-muted-foreground/30">|</span>
-            <span className="flex items-center gap-1 text-cyan-400">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
               🏆 <strong className="text-foreground">Rank #{activeProfile.leaderboardRank || 7}</strong>
             </span>
           </div>
@@ -1781,23 +1911,23 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         {/* Primary CTA today mission */}
         <div className="relative z-10 flex-shrink-0">
           {todayMission ? (
-            <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/30 p-5 rounded-2xl max-w-sm space-y-3 relative overflow-hidden">
+            <div className="premium-glass-card p-5 max-w-sm space-y-3 relative overflow-hidden border border-primary/25 bg-gradient-to-br from-primary/5 to-transparent">
               <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-xl pointer-events-none" />
               <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
                 Active Daily Mission
               </div>
-              <h4 className="text-sm font-bold text-foreground leading-snug">{todayMission.title}</h4>
+              <h4 className="text-sm font-bold text-foreground leading-snug" style={{ fontFamily: "'Raleway', sans-serif" }}>{todayMission.title}</h4>
               <p className="text-xs text-muted-foreground line-clamp-1">{todayMission.description}</p>
               <button
                 onClick={() => setSelectedMission(todayMission)}
-                className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md shadow-primary/20"
+                className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md shadow-primary/20 cursor-pointer"
               >
                 Today's Mission &rarr; Complete Now
               </button>
             </div>
           ) : (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-2xl max-w-sm space-y-2 text-center">
+            <div className="premium-glass-card p-5 max-w-sm space-y-2 text-center border-emerald-500/25 bg-emerald-500/5">
               <span className="text-lg">🎉</span>
               <h4 className="text-sm font-bold text-foreground">All Missions Completed!</h4>
               <p className="text-xs text-muted-foreground">You are fully caught up with today's objectives.</p>
@@ -1812,7 +1942,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="lg:col-span-2 space-y-6">
           {/* Daily Role Missions */}
           <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               📅 Today's Daily Missions ({activeMissions.length})
             </h3>
             {activeMissions.length === 0 ? (
@@ -1820,68 +1950,76 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 No active missions assigned to your role today.
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 gap-4">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid md:grid-cols-2 gap-4"
+              >
                 {activeMissions.map((m) => (
-                  <div
+                  <motion.div
                     key={m.id}
+                    variants={itemVariants}
                     onClick={() => setSelectedMission(m)}
-                    className={`hover:border-primary/20 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between h-40 ${getMissionCardClass(m.type)} ${m.status === 'completed' ? 'opacity-70 border-emerald-500/30' : ''}`}
+                    className={"premium-glass-card p-5 cursor-pointer flex flex-col justify-between h-40 border hover:scale-[1.01] transition-all " + 
+                      getMissionCardClass(m.type) + " " + (m.status === 'completed' ? 'opacity-70 border-emerald-500/20' : '')
+                    }
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-background border border-border rounded-md text-muted-foreground">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-secondary/35 border border-border/10 rounded-md text-foreground">
                           {m.type}
                         </span>
                         {m.status === 'completed' ? (
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
                             <Check size={10} strokeWidth={3} /> Done
                           </span>
                         ) : m.status === 'in_progress' ? (
-                          <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
+                          <span className="text-[9px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
                             In Progress
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                             Assigned
                           </span>
                         )}
                       </div>
-                      <h4 className="text-sm font-bold text-foreground line-clamp-1">{m.title}</h4>
+                      <h4 className="text-sm font-bold text-foreground line-clamp-1" style={{ fontFamily: "'Raleway', sans-serif" }}>{m.title}</h4>
                       <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{m.description}</p>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/50 pt-2 mt-2">
+                    <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground border-t border-border/10 pt-2 mt-2">
                       <span>⏱️ {m.estimatedTime}</span>
-                      <span className="text-primary font-semibold">
+                      <span className="text-primary uppercase tracking-wider">
                         +{m.rewardAmount} {m.rewardType === 'both' ? 'XP + Credits' : m.rewardType.toUpperCase()}
                       </span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
 
           {/* Continue Learning */}
           <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground">📖 Continue Your Journeys</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">📖 Continue Your Journeys</h3>
             {inProgress.length === 0 ? (
-              <Card className="p-6 text-center text-muted-foreground text-sm">
+              <Card className="p-6 text-center text-muted-foreground text-sm border-dashed">
                 <BookOpen size={30} className="mx-auto mb-2 text-border" />
-                No journeys in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-semibold font-bold">Enroll in a journey</button> to start learning!
+                No journeys in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-bold cursor-pointer">Enroll in a journey</button> to start learning!
               </Card>
             ) : (
               <div className="space-y-3">
                 {inProgress.map((course) => {
                   const stats = getJourneyStats(course.id);
                   return (
-                    <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer card-blue" onClick={() => handleContinue(course.id)}>
+                    <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer border border-border/10 bg-secondary/5" onClick={() => handleContinue(course.id)}>
                       <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
                       <div className="flex-1 min-w-0">
-                        <p {...sg("text-sm font-medium truncate")}>{course.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{course.journey_type ? `Stage: ${stats.currentStage}` : course.instructor}</p>
+                        <p className="text-sm font-bold truncate text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>{course.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{course.journey_type ? "Stage: " + stats.currentStage : course.instructor}</p>
                         <div className="mt-2">
                           <ProgressBar value={course.progress} />
-                          <p {...mono("text-[10px] text-muted-foreground mt-1")}>{course.progress}% complete</p>
+                          <p className="text-[10px] font-mono text-muted-foreground mt-1">{course.progress}% complete</p>
                         </div>
                       </div>
                       <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
@@ -1894,7 +2032,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
           {/* Recommended Learning */}
           <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground">💡 Recommended Learning Journeys</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">💡 Recommended Learning Journeys</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {recommendedCourses.map(course => {
                 const stats = getJourneyStats(course.id);
@@ -1919,9 +2057,9 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           </div>
 
           {/* Mentora Knowledge Loop */}
-          <Card className="p-6 space-y-6 card-cyan">
+          <Card className="p-6 space-y-6 border border-cyan-500/25 bg-gradient-to-br from-cyan-500/5 to-transparent">
             <div>
-              <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-foreground flex items-center gap-2" style={{ fontFamily: "'Raleway', sans-serif" }}>
                 🔄 Mentora Knowledge Loop
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
@@ -1931,21 +2069,21 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
             <div className="grid grid-cols-2 md:grid-cols-7 gap-3 relative pt-2">
               {[
-                { step: '1', title: 'Learn', desc: 'Acquire new skills & SOP courses', color: 'border-blue-500/30 text-blue-400 bg-blue-500/5' },
-                { step: '2', title: 'Ask', desc: 'Query Kai AI chatbot & SOP vault', color: 'border-cyan-500/30 text-cyan-400 bg-cyan-500/5' },
-                { step: '3', title: 'Share', desc: 'Escalate complex gaps to forum', color: 'border-amber-500/30 text-amber-400 bg-amber-500/5' },
-                { step: '4', title: 'Verify', desc: 'Senior/retired experts check answers', color: 'border-purple-500/30 text-purple-400 bg-purple-500/5' },
-                { step: '5', title: 'Preserve', desc: 'Solutions saved into legacy SOPs', color: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5' },
-                { step: '6', title: 'Improve', desc: 'Plant safety & metrics increase', color: 'border-rose-500/30 text-rose-400 bg-rose-500/5' },
-                { step: '7', title: 'Learn', desc: 'Cycle loops back to employee base', color: 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' }
+                { step: '1', title: 'Learn', desc: 'Acquire new skills & SOP courses', color: 'border-blue-500/20 text-blue-400 bg-blue-500/5' },
+                { step: '2', title: 'Ask', desc: 'Query Kai AI chatbot & SOP vault', color: 'border-cyan-500/20 text-cyan-400 bg-cyan-500/5' },
+                { step: '3', title: 'Share', desc: 'Escalate complex gaps to forum', color: 'border-amber-500/20 text-amber-400 bg-amber-500/5' },
+                { step: '4', title: 'Verify', desc: 'Senior/retired experts check answers', color: 'border-purple-500/20 text-purple-400 bg-purple-500/5' },
+                { step: '5', title: 'Preserve', desc: 'Solutions saved into legacy SOPs', color: 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5' },
+                { step: '6', title: 'Improve', desc: 'Plant safety & metrics increase', color: 'border-rose-500/20 text-rose-400 bg-rose-500/5' },
+                { step: '7', title: 'Learn', desc: 'Cycle loops back to employee base', color: 'border-indigo-500/20 text-indigo-400 bg-indigo-500/5' }
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className={`border ${item.color} p-3 rounded-2xl flex flex-col justify-between h-32 transition-all hover:scale-[1.02] hover:-translate-y-1 relative`}
+                  className={"border p-3 rounded-2xl flex flex-col justify-between h-32 transition-all hover:scale-[1.02] hover:-translate-y-1 relative " + item.color}
                 >
                   <div>
-                    <span className="text-[10px] font-black uppercase opacity-60 block">Step {item.step}</span>
-                    <h4 className="text-xs font-black mt-1 uppercase tracking-wider">{item.title}</h4>
+                    <span className="text-[9px] font-bold uppercase opacity-60 block">Step {item.step}</span>
+                    <h4 className="text-[10px] font-bold mt-1 uppercase tracking-wider">{item.title}</h4>
                   </div>
                   <p className="text-[9px] leading-normal opacity-85 mt-2">{item.desc}</p>
                 </div>
@@ -1953,36 +2091,36 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             </div>
 
             {/* Visual indicator of loop */}
-            <div className="flex flex-wrap items-center justify-between bg-background/55 border border-border p-3.5 rounded-xl text-[10px] text-muted-foreground font-semibold gap-3 leading-relaxed">
+            <div className="flex flex-wrap items-center justify-between bg-secondary/15 border border-border/10 p-3.5 rounded-xl text-[9px] text-muted-foreground font-bold uppercase tracking-wider gap-3 leading-relaxed">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                <span>Employees Learn &amp; Query</span>
+                <span>Employees Learn</span>
               </div>
               <span>&rarr;</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span>AI Ingests &amp; Escalates</span>
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span>AI Vault Queries</span>
               </div>
               <span>&rarr;</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                <span>Experts Review &amp; Verify</span>
+                <span>Experts Review</span>
               </div>
               <span>&rarr;</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Company Archives &amp; Preserves</span>
+                <span>Legacy Preserved</span>
               </div>
             </div>
           </Card>
         </div>
 
         {/* Right column */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Streak 7-Day Tracker */}
-          <Card className="p-5 space-y-4 card-amber">
-            <div className="flex items-center justify-between border-b border-border/50 pb-2">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Streak Tracker</h3>
+          <Card className="p-5 space-y-4 border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-transparent">
+            <div className="flex items-center justify-between border-b border-border/10 pb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Streak Tracker</h3>
               <span className="text-xs text-orange-400 font-bold flex items-center gap-0.5">
                 🔥 {activeProfile.currentStreak || 12} Day Streak
               </span>
@@ -1990,15 +2128,15 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <div className="grid grid-cols-7 gap-2 text-center pt-2">
               {streakDays.map((d, i) => (
                 <div key={i} className="space-y-2 relative flex flex-col items-center">
-                  <span className="text-[10px] font-semibold text-muted-foreground">{d.day}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground">{d.day}</span>
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                    className={"w-7 h-7 rounded-full flex items-center justify-center transition-all " + (
                       d.active
-                        ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                        ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20 font-bold"
                         : d.current
-                        ? "border-2 border-primary bg-primary/5 animate-pulse"
-                        : "bg-background border border-border text-muted-foreground"
-                    }`}
+                        ? "border-2 border-primary bg-primary/5 animate-pulse font-bold"
+                        : "bg-secondary/20 border border-border/10 text-muted-foreground"
+                    )}
                   >
                     {d.active ? (
                       <Check size={12} strokeWidth={3} />
@@ -2009,36 +2147,36 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/50 mt-2">
+            <div className="flex justify-between text-[10px] text-muted-foreground pt-2.5 border-t border-border/10 mt-2">
               <span>Longest streak: {activeProfile.longestStreak || 12} days</span>
               <span>XP Multiplier: 1.2x</span>
             </div>
           </Card>
 
           {/* Skill Passport Preview */}
-          <Card className="p-5 space-y-4 card-purple">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Skill Passport</h3>
+          <Card className="p-5 space-y-4 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Skill Passport</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <img src={activeProfile.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-border" />
+                <img src={activeProfile.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-border/15" />
                 <div>
                   <h4 className="text-xs font-bold text-foreground">{activeProfile.name}</h4>
                   <p className="text-[10px] text-muted-foreground mt-0.5">{activeProfile.designation}</p>
                 </div>
               </div>
-              <div className="space-y-2 text-xs pt-1 border-t border-border/50">
+              <div className="space-y-2 text-xs pt-2.5 border-t border-border/10">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Expertise Level</span>
-                  <span className="font-semibold text-foreground">{activeProfile.skillLevel}</span>
+                  <span className="text-muted-foreground font-semibold">Expertise Level</span>
+                  <span className="font-bold text-foreground">{activeProfile.skillLevel}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Verified Skills</span>
-                  <span className="font-semibold text-foreground">8 Completed</span>
+                  <span className="text-muted-foreground font-semibold">Verified Skills</span>
+                  <span className="font-bold text-foreground">8 Completed</span>
                 </div>
               </div>
               <button
                 onClick={() => onNavigate("skill-passport")}
-                className="w-full text-center bg-card border border-border hover:bg-muted font-semibold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1"
+                className="w-full text-center bg-secondary/35 border border-border/10 hover:bg-secondary/50 font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 Open Skill Passport <ChevronRight size={14} />
               </button>
@@ -2047,37 +2185,37 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
           {/* Upcoming Training */}
           <Card className="p-5 space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Upcoming Live Training</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Upcoming Live Training</h3>
             <div className="space-y-3">
               {upcomingTrainings.map(t => (
-                <div key={t.id} className="p-3 border border-border bg-background rounded-xl space-y-1 relative overflow-hidden">
-                  <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{t.title}</h4>
+                <div key={t.id} className="p-3 border border-border/10 bg-secondary/15 rounded-xl space-y-1 relative overflow-hidden">
+                  <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1" style={{ fontFamily: "'Raleway', sans-serif" }}>{t.title}</h4>
                   <p className="text-[10px] text-muted-foreground">{t.time}</p>
-                  <p className="text-[9px] text-primary">{t.instructor}</p>
+                  <p className="text-[9px] font-bold text-primary uppercase tracking-wider">{t.instructor}</p>
                 </div>
               ))}
             </div>
             <button
               onClick={() => onNavigate("training")}
-              className="w-full text-center bg-card border border-border hover:bg-muted font-semibold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1"
+              className="w-full text-center bg-secondary/35 border border-border/10 hover:bg-secondary/50 font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              View Training Calendar <ChevronRight size={14} />
+              View Calendar <ChevronRight size={14} />
             </button>
           </Card>
 
           {/* AI Assistant Banner */}
-          <Card className="p-5 border-primary/20 bg-gradient-to-br from-card to-muted">
+          <Card className="p-5 border-primary/20 bg-gradient-to-br from-secondary/5 to-primary/5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Bot size={16} className="text-primary" />
               </div>
               <div>
-                <p {...sg("text-sm font-semibold")}>Mentora AI</p>
-                <p className="text-[10px] text-emerald-400">Online</p>
+                <p className="text-sm font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Mentora AI</p>
+                <p className="text-[9px] text-emerald-400 uppercase tracking-wider font-bold">Online</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Ask me anything about your courses or learning path.</p>
-            <CyanButton size="sm" className="w-full text-center" onClick={() => onNavigate("ai-chat")}>
+            <p className="text-xs text-muted-foreground mb-3">Ask me anything about plant operations, safety overrides, or certification guidelines.</p>
+            <CyanButton size="sm" className="w-full text-center cursor-pointer font-bold" onClick={() => onNavigate("ai-chat")}>
               Start Conversation
             </CyanButton>
           </Card>
@@ -2087,33 +2225,33 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       {/* Mission Detail Modal */}
       {selectedMission && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-6 relative overflow-hidden shadow-2xl">
+          <div className="premium-glass-card w-full max-w-md p-6 space-y-6 relative overflow-hidden shadow-2xl border border-border/10">
             <button
               onClick={() => setSelectedMission(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X size={18} />
             </button>
 
             <div className="space-y-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-background border border-border rounded-md text-muted-foreground">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-secondary/35 border border-border/10 rounded-md text-muted-foreground">
                 {selectedMission.type}
               </span>
-              <h3 className="text-lg font-bold text-foreground">{selectedMission.title}</h3>
+              <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>{selectedMission.title}</h3>
               <p className="text-xs text-muted-foreground">
-                Status: {selectedMission.status === 'completed' ? 'Completed' : selectedMission.status === 'in_progress' ? 'In Progress' : 'Assigned'}
+                Status: <span className="font-bold text-primary">{selectedMission.status === 'completed' ? 'Completed' : selectedMission.status === 'in_progress' ? 'In Progress' : 'Assigned'}</span>
               </p>
             </div>
 
-            <div className="space-y-4 bg-background/50 border border-border/50 rounded-xl p-4 text-xs leading-relaxed text-muted-foreground">
+            <div className="space-y-4 bg-secondary/15 border border-border/5 rounded-xl p-4 text-xs leading-relaxed text-muted-foreground">
               <p>{selectedMission.description}</p>
-              <div className="grid grid-cols-2 gap-4 border-t border-border/50 pt-3 mt-3">
+              <div className="grid grid-cols-2 gap-4 border-t border-border/10 pt-3 mt-3">
                 <div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-semibold">Estimated Time</span>
+                  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Estimated Time</span>
                   <p className="text-foreground font-bold mt-0.5">⏱️ {selectedMission.estimatedTime}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-semibold">Reward</span>
+                  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Reward</span>
                   <p className="text-primary font-bold mt-0.5">
                     +{selectedMission.rewardAmount} {selectedMission.rewardType === 'both' ? 'XP + Credits' : selectedMission.rewardType.toUpperCase()}
                   </p>
@@ -2124,7 +2262,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setSelectedMission(null)}
-                className="flex-1 bg-background border border-border hover:bg-muted text-foreground font-semibold py-2.5 rounded-xl text-xs transition-all"
+                className="flex-1 bg-secondary/20 border border-border/10 hover:bg-secondary/40 text-foreground font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
               >
                 Close
               </button>
@@ -2154,10 +2292,10 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                       setSelectedMission(null);
                     } catch (err: any) {
                       console.error("[StartMission] Click handler caught error:", err);
-                      alert(`Failed to start mission: ${err.message || err}`);
+                      alert("Failed to start mission: " + (err.message || err));
                     }
                   }}
-                  className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-cyan-500/20"
+                  className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-500/25"
                 >
                   Start Mission
                 </button>
@@ -2170,7 +2308,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                       setSelectedMission(null);
                     }, 1200);
                   }}
-                  className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-primary/20"
+                  className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-primary/25"
                 >
                   Complete Task
                 </button>
@@ -2183,9 +2321,9 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       {/* Floating Minimized Chatbot */}
       <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-end">
         {chatOpen ? (
-          <div className="bg-card border border-border shadow-2xl rounded-2xl w-80 md:w-96 h-112 flex flex-col overflow-hidden mb-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="premium-glass-card shadow-2xl w-80 md:w-96 h-112 flex flex-col overflow-hidden mb-3 animate-in fade-in slide-in-from-bottom-4 duration-200 border border-border/10">
             {/* Header */}
-            <div className="bg-primary/10 border-b border-border/80 px-4 py-3 flex items-center justify-between">
+            <div className="bg-primary/10 border-b border-border/10 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
                   <Bot size={14} className="text-primary" />
@@ -2195,7 +2333,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setChatOpen(false)}
-                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                  className="p-1 rounded hover:bg-secondary/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
                   title="Minimize"
                 >
                   <Minus size={14} />
@@ -2205,15 +2343,17 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
               {miniMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-muted/80 text-foreground'}`}>
+                <div key={i} className={"flex " + (msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  <div className={"max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed " + (
+                    msg.role === 'user' ? 'bg-primary text-white font-semibold' : 'bg-secondary/15 text-foreground'
+                  )}>
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 </div>
               ))}
               {miniTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-muted/80 rounded-2xl px-3 py-2 text-xs flex items-center gap-1">
+                  <div className="bg-secondary/15 rounded-2xl px-3 py-2 text-xs flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -2223,7 +2363,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <div ref={miniMessagesEndRef} />
             </div>
             {/* Input */}
-            <div className="p-3 border-t border-border/80 flex gap-2">
+            <div className="p-3 border-t border-border/10 flex gap-2">
               <input
                 placeholder="Ask Kai a real-time question..."
                 value={miniInput}
@@ -2251,7 +2391,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {chatOpen ? <Minus size={20} /> : <MessageSquare size={22} />}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

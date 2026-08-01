@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Shield, FileText, CheckCircle, Zap, BookOpen, Clock, Play } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Skill, User, UserRole } from '../types';
-import { SkillProgress, RoleBadge, StreakIndicator } from '../components/reusable';
+import { SkillProgress, RoleBadge, StreakIndicator, PageHeader, EmptyState, SkeletonLoader } from '../components/reusable';
 import { supabase } from '../lib/supabaseClient';
 
 export default function SkillPassportPage({ userProfile }: { userProfile: User }) {
@@ -139,24 +140,40 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Award className="text-primary" size={24} /> Skill Passport
-        </h2>
-        <p className="text-muted-foreground text-sm">Your digital profile demonstrating verified industrial skills, training, and achievements.</p>
-      </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 max-w-7xl mx-auto space-y-6"
+    >
+      {/* Page Header */}
+      <PageHeader
+        title="Skill Passport"
+        description="Verify your operational badges, track industrial competencies, and browse learning track recommendations."
+        breadcrumbs={[{ label: "Mentora" }, { label: "Skill Passport" }]}
+      />
 
       {/* Profile Overview Card */}
-      <div className="bg-card border border-border rounded-2xl p-6 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-        {/* Avatar & Basic Info */}
+      <div className="premium-glass-card p-6 grid grid-cols-1 md:grid-cols-4 gap-6 items-center border border-border/10">
+        {/* Avatar details */}
         <div className="md:col-span-2 flex items-center gap-4">
-          <img src={userProfile.avatar} alt={userProfile.name} className="w-16 h-16 rounded-full object-cover border border-border" />
+          <img src={userProfile.avatar} alt={userProfile.name} className="w-16 h-16 rounded-2xl object-cover border border-border/15" />
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-lg font-bold text-foreground leading-tight">{userProfile.name}</h3>
+              <h3 className="text-lg font-bold text-foreground leading-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>{userProfile.name}</h3>
               <RoleBadge role={userProfile.role} />
             </div>
             <p className="text-xs text-muted-foreground">
@@ -168,93 +185,99 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
           </div>
         </div>
 
-        {/* Stats Column */}
+        {/* Stats metrics */}
         <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="p-3 bg-background border border-border rounded-xl text-center space-y-1">
-            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Level</span>
+          <div className="p-3 bg-secondary/15 border border-border/5 rounded-xl text-center space-y-1">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Level</span>
             <p className="text-sm font-bold text-foreground">{userProfile.skillLevel.split(' ')[1] || 'L1'}</p>
           </div>
-          <div className="p-3 bg-background border border-border rounded-xl text-center space-y-1">
-            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Rank</span>
+          <div className="p-3 bg-secondary/15 border border-border/5 rounded-xl text-center space-y-1">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Rank</span>
             <p className="text-sm font-bold text-foreground">#{userProfile.leaderboardRank}</p>
           </div>
-          <div className="p-3 bg-background border border-border rounded-xl text-center space-y-1 col-span-2 md:col-span-1">
-            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Streak</span>
-            <div className="flex justify-center mt-0.5">
-              <StreakIndicator streak={userProfile.currentStreak} />
-            </div>
+          <div className="p-3 bg-secondary/15 border border-border/5 rounded-xl text-center space-y-1 col-span-2 md:col-span-1 flex flex-col items-center justify-center">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Streak</span>
+            <StreakIndicator streak={userProfile.currentStreak} />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Skills List */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Col: Verified competencies */}
         <div className="lg:col-span-2 space-y-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Verified Competencies</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verified Competencies</h3>
+          
           {loading ? (
-            <div className="flex justify-center py-10">
-              <div className="w-8 h-8 rounded-full border border-t-primary border-r-transparent animate-spin" />
+            <div className="space-y-4">
+              <SkeletonLoader />
+              <SkeletonLoader />
             </div>
           ) : skills.length === 0 ? (
             <p className="text-xs text-muted-foreground italic">No verified skills listed yet.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
               {skills.map(skill => (
-                <SkillProgress
-                  key={skill.id}
-                  name={skill.name}
-                  category={skill.category}
-                  progress={skill.progress}
-                  proficiency={skill.proficiency}
-                />
+                <motion.div key={skill.id} variants={itemVariants}>
+                  <SkillProgress
+                    name={skill.name}
+                    category={skill.category}
+                    progress={skill.progress}
+                    proficiency={skill.proficiency}
+                  />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {/* Core counts overview */}
-          <div className="border-t border-border/50 pt-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Passport Achievements Summary</h3>
+          <div className="border-t border-border/10 pt-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Passport Achievements Summary</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-4 rounded-xl border border-border bg-card">
+              <div className="p-4 rounded-2xl border border-border/10 bg-secondary/10 hover:bg-secondary/15 transition-all">
                 <span className="text-xl font-bold text-foreground">6</span>
-                <p className="text-[10px] text-muted-foreground mt-1">Courses Completed</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-semibold uppercase tracking-wider">Courses Completed</p>
               </div>
-              <div className="p-4 rounded-xl border border-border bg-card">
+              <div className="p-4 rounded-2xl border border-border/10 bg-secondary/10 hover:bg-secondary/15 transition-all">
                 <span className="text-xl font-bold text-foreground">4</span>
-                <p className="text-[10px] text-muted-foreground mt-1">Live Training Sessions</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-semibold uppercase tracking-wider">Live Classes</p>
               </div>
-              <div className="p-4 rounded-xl border border-border bg-card">
+              <div className="p-4 rounded-2xl border border-border/10 bg-secondary/10 hover:bg-secondary/15 transition-all">
                 <span className="text-xl font-bold text-foreground">2</span>
-                <p className="text-[10px] text-muted-foreground mt-1">Certifications Held</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-semibold uppercase tracking-wider">Certificates Held</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right side: Recommendation & Credentials */}
+        {/* Right Col: Recommendation & Credentials */}
         <div className="space-y-6">
           {/* Your Next Skill Card */}
-          <div className="bg-card border border-border rounded-2xl p-5 space-y-4 hover:border-primary/20 transition-all relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-primary/10 text-primary px-3 py-1 rounded-bl text-[9px] font-bold uppercase">
+          <div className="premium-glass-card p-5 space-y-4 hover:scale-[1.01] transition-all relative overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <div className="absolute top-0 right-0 bg-primary/10 text-primary px-3 py-1 rounded-bl-xl text-[9px] font-bold uppercase tracking-wider border-l border-b border-primary/10">
               Recommendation
             </div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Your Next Skill</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Your Next Skill</h3>
             <div>
-              <h4 className="text-base font-bold text-foreground leading-snug">{nextSkill.name}</h4>
+              <h4 className="text-base font-bold text-foreground leading-snug" style={{ fontFamily: "'Raleway', sans-serif" }}>{nextSkill.name}</h4>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{nextSkill.reason}</p>
             </div>
-            <div className="text-xs text-muted-foreground space-y-2 border-t border-border/50 pt-4">
+            <div className="text-xs text-muted-foreground space-y-2 border-t border-border/10 pt-4">
               <p>
                 <strong className="text-foreground">Relevance to Role:</strong> {nextSkill.relevance}
               </p>
-              <div className="flex items-center gap-4 text-[11px] font-medium pt-2">
-                <span className="flex items-center gap-1"><Clock size={12} /> {nextSkill.time}</span>
+              <div className="flex items-center gap-4 text-[10px] font-bold pt-2 uppercase tracking-wider">
+                <span className="flex items-center gap-1"><Clock size={12} className="text-primary" /> {nextSkill.time}</span>
                 <span className="flex items-center gap-1"><Zap size={12} className="text-primary fill-primary" /> {nextSkill.difficulty}</span>
               </div>
             </div>
             <button
               onClick={handleStartLearning}
-              className="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-primary/10"
+              className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-primary/20 cursor-pointer"
             >
               <Play size={12} className="fill-white" /> Start Learning Skill
             </button>
@@ -262,9 +285,9 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
 
           {/* Credentials / Certificates */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Recent Credentials</h3>
-            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-              <div className="p-3 rounded-xl border border-border bg-background flex items-center gap-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent Credentials</h3>
+            <div className="premium-glass-card p-5 space-y-4 border border-border/10">
+              <div className="p-3 rounded-xl border border-border/10 bg-secondary/10 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
                   <CheckCircle size={18} />
                 </div>
@@ -273,7 +296,7 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
                   <p className="text-[10px] text-muted-foreground mt-0.5">Issued: June 2026 &bull; Verified</p>
                 </div>
               </div>
-              <div className="p-3 rounded-xl border border-border bg-background flex items-center gap-3">
+              <div className="p-3 rounded-xl border border-border/10 bg-secondary/10 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
                   <Award size={18} />
                 </div>
@@ -286,6 +309,6 @@ export default function SkillPassportPage({ userProfile }: { userProfile: User }
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
