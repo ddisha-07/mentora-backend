@@ -826,35 +826,190 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
           {/* How Mentora Works */}
           <section id="how-it-works" className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+            <style>{`
+              @keyframes dash {
+                to {
+                  stroke-dashoffset: -20;
+                }
+              }
+              .animate-dash {
+                animation: dash 1.5s linear infinite;
+              }
+            `}</style>
+            
             <div className="max-w-7xl mx-auto relative z-10">
               <div className="text-center mb-16">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
                   Methodology
                 </span>
-                <h2 className="text-4xl lg:text-5xl font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                  How Mentora <span className="text-primary">works</span>
+                <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  How Mentora <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED]">Works</span>
                 </h2>
-                <p className="text-xs text-[#94A3B8] max-w-xl mx-auto mt-4 leading-relaxed">
-                  Our continuous workforce learning workflow balances context indexing with interactive simulation.
+                <p className="text-xs text-[#94A3B8] max-w-xl mx-auto leading-relaxed">
+                  A step-by-step roadmap showing how Mentora helps you study, practice, and build your profile.
                 </p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 relative">
                 {[
-                  { title: "Discover", desc: "Identify operational skill gaps and legacy manual silos automatically using semantic index scans." },
-                  { title: "Learn", desc: "Access bite-sized, 1-minute visual procedures instead of long slide-decks." },
-                  { title: "Practice", desc: "Review scenarios hands-free and test decision triggers in active text sandboxes." },
-                  { title: "Achieve", desc: "Earn verified skill passports, build streak status, and claim organizational credits." }
-                ].map((step, idx) => (
-                  <div key={idx} className="lp-glass-card p-6 flex flex-col justify-between hover:border-primary/25 transition-all">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xs mb-6">
-                      {idx + 1}
+                  {
+                    step: "Step 1",
+                    title: "Choose a Learning Journey",
+                    illustration: (
+                      <svg className="w-full h-24 overflow-visible" viewBox="0 0 200 100" fill="none">
+                        <path d="M 20 50 C 60 20, 80 80, 120 50 C 150 30, 160 70, 180 50" stroke="rgba(255,255,255,0.12)" strokeWidth="3" />
+                        <path d="M 20 50 C 60 20, 80 80, 120 50 C 150 30, 160 70, 180 50" stroke="url(#path-grad)" strokeWidth="3" strokeDasharray="6,6" className="animate-dash" />
+                        <circle cx="20" cy="50" r="9" fill="#FF2B8A" className="animate-pulse" />
+                        <circle cx="120" cy="50" r="10" fill="#7C3AED" />
+                        <circle cx="180" cy="50" r="8" fill="#22D3EE" />
+                        <circle cx="20" cy="50" r="4" fill="#fff" />
+                        <circle cx="120" cy="50" r="4.5" fill="#fff" />
+                        <circle cx="180" cy="50" r="3.5" fill="#fff" />
+                        <defs>
+                          <linearGradient id="path-grad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#FF2B8A" />
+                            <stop offset="50%" stopColor="#7C3AED" />
+                            <stop offset="100%" stopColor="#22D3EE" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                    )
+                  },
+                  {
+                    step: "Step 2",
+                    title: "Complete Learning Bites",
+                    illustration: (
+                      <svg className="w-full h-24 overflow-visible" viewBox="0 0 100 100" fill="none">
+                        <circle cx="50" cy="50" r="32" stroke="rgba(255,255,255,0.05)" strokeWidth="5" />
+                        <circle cx="50" cy="50" r="32" stroke="url(#bite-grad)" strokeWidth="5" 
+                          strokeDasharray="201" 
+                          strokeDashoffset="50"
+                          strokeLinecap="round"
+                          className="origin-center animate-spin"
+                          style={{ transformOrigin: "50px 50px", animationDuration: "12s" }}
+                        />
+                        <path d="M52 32 L42 50 H51 L48 68 L58 50 H49 Z" fill="#FF9F1C" className="animate-pulse" />
+                        <defs>
+                          <linearGradient id="bite-grad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#FF9F1C" />
+                            <stop offset="100%" stopColor="#FF2B8A" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                    )
+                  },
+                  {
+                    step: "Step 3",
+                    title: "Ask Kai Questions",
+                    illustration: (
+                      <svg className="w-full h-24 overflow-visible" viewBox="0 0 150 100" fill="none">
+                        <rect x="15" y="15" width="80" height="24" rx="12" fill="rgba(255,255,255,0.04)" className="border border-white/5" />
+                        <circle cx="27" cy="27" r="6" fill="rgba(255,255,255,0.15)" />
+                        <rect x="39" y="25" width="45" height="4" rx="2" fill="rgba(255,255,255,0.1)" />
+                        <rect x="55" y="50" width="80" height="28" rx="14" fill="rgba(34, 211, 238, 0.08)" />
+                        <circle cx="118" cy="64" r="7" fill="#22D3EE" className="animate-pulse" />
+                        <rect x="67" y="60" width="38" height="4" rx="2" fill="#22D3EE" />
+                        <rect x="67" y="68" width="22" height="4" rx="2" fill="#22D3EE" className="opacity-60" />
+                      </svg>
+                    )
+                  },
+                  {
+                    step: "Step 4",
+                    title: "Earn XP & Track Progress",
+                    illustration: (
+                      <svg className="w-full h-24 overflow-visible" viewBox="0 0 100 100" fill="none">
+                        <circle cx="50" cy="45" r="18" fill="rgba(124, 90, 237, 0.1)" className="blur-xl" />
+                        <path d="M36 30 H64 V42 C64 50, 58 56, 50 56 C42 56, 36 50, 36 42 Z" fill="url(#trophy-grad)" />
+                        <path d="M50 56 V68" stroke="url(#trophy-grad)" strokeWidth="3" />
+                        <path d="M42 68 H58" stroke="url(#trophy-grad)" strokeWidth="3" strokeLinecap="round" />
+                        <path d="M36 35 H32 V43 H36" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M64 35 H68 V43 H64" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M50 20 L52 23 L55 24 L52 26 L53 29 L50 27 L47 29 L48 26 L45 24 L48 23 Z" fill="#fff" className="animate-ping" style={{ transformOrigin: "50px 24px" }} />
+                        <defs>
+                          <linearGradient id="trophy-grad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#7C3AED" />
+                            <stop offset="100%" stopColor="#FF2B8A" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                    )
+                  }
+                ].map((item, idx) => {
+                  const isLast = idx === 3;
+                  return (
+                    <div key={idx} className="relative flex flex-col lg:flex-row items-center w-full">
+                      {/* Step Card */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.7, delay: idx * 0.15, ease: "easeOut" }}
+                        className="w-full lp-glass-card p-6 flex flex-col justify-between items-center text-center hover:border-primary/20 transition-all duration-300 relative overflow-hidden group"
+                        style={{ minHeight: 250 }}
+                      >
+                        {/* Step number label */}
+                        <div className="absolute top-3 left-4 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full" {...mono()}>
+                          {item.step}
+                        </div>
+
+                        {/* Animated illustration container */}
+                        <div className="w-full flex items-center justify-center h-28 mt-4 mb-4">
+                          {item.illustration}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                          {item.title}
+                        </h3>
+                      </motion.div>
+
+                      {/* Connector Arrow (Desktop & Mobile) */}
+                      {!isLast && (
+                        <>
+                          {/* Desktop Arrow Connector */}
+                          <div className="hidden lg:flex absolute top-1/2 -right-6 -translate-y-1/2 z-20 items-center justify-center w-6">
+                            <svg className="w-6 h-4 overflow-visible" fill="none">
+                              <path
+                                d="M0,8 L18,8"
+                                stroke="url(#arrow-grad)"
+                                strokeWidth="2"
+                                strokeDasharray="4,4"
+                                className="animate-dash"
+                              />
+                              <polygon points="16,5 22,8 16,11" fill="var(--primary)" className="animate-pulse" />
+                              <defs>
+                                <linearGradient id="arrow-grad" x1="0" y1="0" x2="1" y2="0">
+                                  <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
+                                  <stop offset="100%" stopColor="var(--primary)" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                          </div>
+
+                          {/* Mobile Arrow Connector */}
+                          <div className="flex lg:hidden justify-center my-4 w-full">
+                            <svg className="w-4 h-6 overflow-visible" fill="none">
+                              <path
+                                d="M8,0 L8,18"
+                                stroke="url(#arrow-grad-v)"
+                                strokeWidth="2"
+                                strokeDasharray="4,4"
+                                className="animate-dash"
+                              />
+                              <polygon points="5,16 8,22 11,16" fill="var(--primary)" className="animate-pulse" />
+                              <defs>
+                                <linearGradient id="arrow-grad-v" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
+                                  <stop offset="100%" stopColor="var(--primary)" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div>
-                      <h3 className="text-base font-bold mb-2 text-foreground">{step.title}</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
