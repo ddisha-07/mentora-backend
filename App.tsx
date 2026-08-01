@@ -956,58 +956,97 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
             </div>
           </section>
 
-          {/* Course Preview */}
+          {/* Feature Cards (Replace Marketplace/Course Cards) */}
           <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
             <div className="max-w-7xl mx-auto relative z-10">
-              <div className="flex items-end justify-between mb-12">
-                <div>
-                  <p {...cr("text-primary text-2xl mb-1")}>Learning Journeys</p>
-                  <h2 {...sg("text-4xl lg:text-5xl font-bold")}>Featured <span style={{ fontFamily: "'Dancing Script', cursive", color: "#FF9F1C" }}>Curriculums</span></h2>
-                </div>
-                <CyanButton onClick={() => onNavigate("login")} outline>View all Journeys</CyanButton>
+              
+              {/* Header */}
+              <div className="text-center mb-16">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
+                  Platform Features
+                </span>
+                <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  Everything You Need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED]">Learn Smarter</span>
+                </h2>
+                <p className="text-xs text-[#94A3B8] max-w-xl mx-auto leading-relaxed">
+                  Mentora provides a structured, modern experience to help you study, practice, and track progress without traditional marketplace friction.
+                </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              {/* Grid Layout for 5 Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
                 {[
-                  { title: "Become GenAI Ready", category: "AI & ML", duration: "12h", difficulty: "Intermediate", xp: "450 XP", progress: 65, instructor: "Dr. Sarah Chen", thumbnail: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&h=340&fit=crop&auto=format" },
-                  { title: "Prompt Engineering Mastery", category: "AI & ML", duration: "8h", difficulty: "Advanced", xp: "300 XP", progress: 40, instructor: "Dr. Sarah Chen", thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=340&fit=crop&auto=format" },
-                  { title: "Agentic AI Foundations", category: "AI & ML", duration: "15h", difficulty: "Advanced", xp: "600 XP", progress: 10, instructor: "Marcus Rivera", thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=340&fit=crop&auto=format" },
-                  { title: "Context Engineering", category: "Data Science", duration: "10h", difficulty: "Advanced", xp: "400 XP", progress: 0, instructor: "Priya Sharma", thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=340&fit=crop&auto=format" }
-                ].map((journey, idx) => (
-                  <div key={idx} className="lp-glass-card overflow-hidden group cursor-pointer flex flex-col justify-between hover:scale-[1.01] transition-all" onClick={() => onNavigate("login")}>
-                    <div>
-                      <div className="h-44 overflow-hidden bg-surface relative">
-                        <img src={journey.thumbnail} alt={journey.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <span className="absolute top-3 left-3 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-bold text-white uppercase tracking-wider">
-                          {journey.category}
-                        </span>
-                      </div>
-                      <div className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge color={journey.difficulty === "Advanced" ? "red" : "yellow"}>{journey.difficulty}</Badge>
-                          <Badge color="default">{journey.xp}</Badge>
+                  {
+                    title: "Learning Journeys",
+                    desc: "Personalized paths designed around your career goals.",
+                    icon: "🧠",
+                    glow: "from-[#FF2B8A]/10 to-transparent",
+                    cols: "lg:col-span-2 md:col-span-1 col-span-1"
+                  },
+                  {
+                    title: "Learning Bites",
+                    desc: "Interactive lessons that take less than five minutes.",
+                    icon: "⚡",
+                    glow: "from-[#FF9F1C]/10 to-transparent",
+                    cols: "lg:col-span-2 md:col-span-1 col-span-1"
+                  },
+                  {
+                    title: "Kai AI Mentor",
+                    desc: "Ask questions anytime and receive instant AI guidance.",
+                    icon: "🤖",
+                    glow: "from-[#22D3EE]/10 to-transparent",
+                    cols: "lg:col-span-2 md:col-span-2 col-span-1"
+                  },
+                  {
+                    title: "Daily Challenges",
+                    desc: "Complete daily goals and maintain your learning streak.",
+                    icon: "🏆",
+                    glow: "from-[#10B981]/10 to-transparent",
+                    cols: "lg:col-span-3 md:col-span-1 col-span-1"
+                  },
+                  {
+                    title: "Progress Tracking",
+                    desc: "Earn XP, unlock achievements and visualize your growth.",
+                    icon: "📈",
+                    glow: "from-[#7C3AED]/10 to-transparent",
+                    cols: "lg:col-span-3 md:col-span-1 col-span-1"
+                  }
+                ].map((card, idx) => {
+                  return (
+                    <motion.div
+                      key={idx}
+                      whileHover={{ y: -6, scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 150, damping: 15 }}
+                      className={`lp-glass-card p-8 flex flex-col justify-between cursor-default border border-white/5 relative overflow-hidden group ${card.cols}`}
+                      style={{ minHeight: 220 }}
+                    >
+                      {/* Interactive glow effect */}
+                      <div className={`absolute -right-12 -bottom-12 w-32 h-32 bg-gradient-to-br ${card.glow} rounded-full blur-2xl opacity-40 group-hover:opacity-100 transition-opacity duration-500`} />
+                      
+                      <div>
+                        {/* Icon Container */}
+                        <div className="w-12 h-12 rounded-2xl bg-secondary/15 flex items-center justify-center text-2xl mb-6 shadow-inner border border-white/5">
+                          {card.icon}
                         </div>
-                        <h3 className="text-xs font-bold mb-1 leading-snug group-hover:text-primary transition-colors">{journey.title}</h3>
-                        <p className="text-[10px] text-muted-foreground mb-4">Journey guided by {journey.instructor}</p>
-                        
-                        {/* Progress Bar */}
-                        <div className="space-y-1 mb-4">
-                          <div className="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
-                            <span>Progress</span>
-                            <span>{journey.progress}%</span>
-                          </div>
-                          <div className="w-full h-1 bg-secondary/30 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${journey.progress}%` }} />
-                          </div>
-                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-lg font-bold text-foreground mb-3 group-hover:text-primary transition-colors duration-300" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                          {card.title}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {card.desc}
+                        </p>
                       </div>
-                    </div>
-                    <div className="p-5 pt-0 border-t border-border/5 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-                      <span className="flex items-center gap-1"><Clock size={11} />{journey.duration}</span>
-                      <span className="text-primary font-bold group-hover:underline">Start &rarr;</span>
-                    </div>
-                  </div>
-                ))}
+
+                      {/* Accent Corner Line */}
+                      <div className="absolute top-0 left-0 w-[2px] h-0 bg-gradient-to-b from-[#FF2B8A] to-[#7C3AED] group-hover:h-full transition-all duration-500" />
+                    </motion.div>
+                  );
+                })}
               </div>
+
             </div>
           </section>
 
