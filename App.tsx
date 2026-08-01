@@ -631,145 +631,180 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
       {tab === "home" && (
         <>
           {/* ── HERO ────────────────────────────────────────────────────── */}
-          <section className="min-h-screen flex flex-col pt-24 pb-0 relative overflow-hidden">
-            <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 xl:px-16 pt-8">
-              {/* Eyebrow pill */}
-              <div className="mb-8 lg:mb-10">
-                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs" {...mono()}>
-                  <Sparkles size={11} /> AI-Powered · Enterprise Learning Platform
-                </span>
-              </div>
-
-              {/* Giant headline — Raleway 900 bold + Dancing Script cursive interleaved */}
-              <h1 style={{ lineHeight: 1.08 }}>
-                {/* Line 1: bold "Build" + vivid icon boxes + cursive "your" */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mb-3">
-                  <span style={{ fontFamily: "'Raleway', sans-serif", fontSize: "clamp(3.2rem, 8.5vw, 7.5rem)", fontWeight: 900, letterSpacing: "-0.03em" }}>
-                    Build
-                  </span>
-                  <HeroIconBox bg="var(--primary)" border="var(--primary)" iconColor="#ffffff"
-                    icon={<Brain style={{ width: iconSize, height: iconSize }} />} />
-                  <HeroIconBox bg={isDark ? "#1a1740" : "#E6EEFF"} border="var(--border)" iconColor={isDark ? "#7C3AED" : "#4361EE"}
-                    icon={<Zap style={{ width: iconSize, height: iconSize }} />} rotate={-8} />
-                  <HeroIconBox bg="#4CC9F0" border="#4CC9F0" iconColor="#06060F"
-                    icon={<GraduationCap style={{ width: iconSize, height: iconSize }} />} />
-                  <span style={{ fontFamily: "'Dancing Script', cursive", fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 700, color: "var(--muted-foreground)" }}>
-                    your
+          <section className="min-h-screen flex flex-col justify-center pt-24 pb-12 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-16 px-6 lg:px-10 xl:px-16">
+              
+              {/* Left Column: Headline, Description, Chips, CTAs */}
+              <div className="flex-1 flex flex-col items-start text-left max-w-2xl">
+                {/* Eyebrow pill */}
+                <div className="mb-6">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs" {...mono()}>
+                    <Sparkles size={11} /> AI-Powered · Enterprise Learning Platform
                   </span>
                 </div>
-                {/* Line 2: bold "skills" + warm icon box + cursive glowing "online." */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-                  <span style={{ fontFamily: "'Raleway', sans-serif", fontSize: "clamp(3.2rem, 8.5vw, 7.5rem)", fontWeight: 900, letterSpacing: "-0.03em" }}>
-                    skills
-                  </span>
-                  <HeroIconBox bg="#F8961E" border="#F8961E" iconColor="#FFFFFF"
-                    icon={<Award style={{ width: iconSize, height: iconSize }} />} />
-                  <span style={{ fontFamily: "'Dancing Script', cursive", fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 700, color: "var(--primary)", textShadow: "0 0 50px rgba(224,24,110,0.4)" }}>
-                    online.
-                  </span>
-                </div>
-              </h1>
 
-              {/* Subtitle + CTA row */}
-              <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
-                <p className="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-md">
-                  Learn and improve your skills with interactive courses and AI-powered skill tests — built specifically for future professionals.
+                {/* Giant Headline */}
+                <h1 
+                  className="font-bold tracking-tight text-foreground leading-[1.1] mb-6"
+                  style={{ 
+                    fontFamily: "'Raleway', sans-serif", 
+                    fontSize: "clamp(2.5rem, 5.5vw, 4.5rem)"
+                  }}
+                >
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED]">AI</span>-Powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED]">Enterprise</span> Learning, <br />
+                  Built for the <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED]">Future</span> Workforce
+                </h1>
+
+                {/* Description */}
+                <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-8 max-w-xl">
+                  Mentora helps organizations transform workplace learning through personalized learning journeys, bite-sized lessons, AI guidance, and gamified progress tracking.
                 </p>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <CyanButton onClick={() => onNavigate(user ? "dashboard" : "login")} size="lg">
-                    {user ? "Go to Dashboard" : "Start Learning"}
-                  </CyanButton>
-                  <CyanButton onClick={() => onNavigate(user ? "learn" : "login")} size="lg" outline>
-                    Explore Courses
-                  </CyanButton>
+
+                {/* Feature Chips */}
+                <div className="flex flex-wrap gap-2.5 mb-8 max-w-xl">
+                  {[
+                    { icon: "🧠", label: "Personalized Learning" },
+                    { icon: "⚡", label: "Learning Bites" },
+                    { icon: "🤖", label: "Kai AI Mentor" },
+                    { icon: "🏆", label: "XP & Streaks" }
+                  ].map((chip, i) => (
+                    <span 
+                      key={i} 
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary/30 border border-border/15 text-foreground/90 backdrop-blur-sm shadow-sm"
+                      style={{ fontFamily: "'Poppins', sans-serif" }}
+                    >
+                      <span>{chip.icon}</span>
+                      <span>{chip.label}</span>
+                    </span>
+                  ))}
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Primary CTA */}
+                  <motion.button
+                    whileHover={{ scale: 1.04, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => onNavigate(user ? "dashboard" : "login")}
+                    className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white flex items-center gap-2 shadow-xl shadow-pink-500/20 transition-all duration-300 hover:shadow-pink-500/30 cursor-pointer"
+                    style={{ fontFamily: "'Raleway', sans-serif" }}
+                  >
+                    Start Learning <ArrowRight size={16} />
+                  </motion.button>
+
+                  {/* Secondary CTA */}
+                  <motion.button
+                    whileHover={{ scale: 1.04, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      const el = document.getElementById("how-it-works");
+                      if (el) {
+                        el.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-[#0F0F1B]/40 hover:bg-[#0F0F1B]/70 border border-white/10 text-foreground transition-all duration-300 cursor-pointer"
+                    style={{ fontFamily: "'Raleway', sans-serif" }}
+                  >
+                    See How It Works
+                  </motion.button>
                 </div>
               </div>
-            </div>
 
-            {/* ── Course preview cards floating at the bottom ── */}
-            <div className="mt-14 px-6 lg:px-10 xl:px-16 pb-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-                {/* Card 1 — workshop card */}
-                <div
-                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-                  style={{ minHeight: 180 }}
-                  onClick={() => onNavigate("login")}
+              {/* Right Column: Glassmorphism Dashboard Preview with floating animation */}
+              <div className="flex-1 w-full flex justify-center lg:justify-end relative">
+                {/* Visual decorative background glow behind preview card */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-gradient-to-tr from-[#FF2B8A]/15 to-[#7C3AED]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+
+                <motion.div
+                  animate={{ 
+                    y: [0, -10, 0] 
+                  }}
+                  transition={{ 
+                    duration: 6, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className="w-full max-w-md p-6 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl bg-[#0F0F1B]/65 relative overflow-hidden"
+                  style={{
+                    boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1), 0 20px 40px rgba(0,0,0,0.3)"
+                  }}
                 >
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Badge color="default">Workshop</Badge>
-                      <Badge color="red">Advanced</Badge>
+                  {/* Decorative corner glows */}
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF2B8A]/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#7C3AED]/10 rounded-full blur-2xl pointer-events-none" />
+
+                  {/* Header: Welcome Back */}
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full border-2 border-[#FF2B8A] p-0.5">
+                        <img 
+                          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&auto=format" 
+                          alt="User Avatar" 
+                          className="w-full h-full object-cover rounded-full bg-muted" 
+                        />
+                      </div>
+                      <div>
+                        <h4 className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Welcome Back</h4>
+                        <p className="text-sm font-bold text-foreground">Alex Johnson</p>
+                      </div>
                     </div>
-                    <p {...sg("text-base font-bold leading-snug")}>Advanced ML &amp; Neural Networks</p>
-                  </div>
-                  <div className="mt-4">
-                    <p {...mono("text-2xl font-semibold text-primary")}>4,280</p>
-                    <p className="text-xs text-muted-foreground">enrolled learners</p>
-                  </div>
-                </div>
-
-                {/* Card 2 — featured instructor card */}
-                <div
-                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-                  style={{ minHeight: 180 }}
-                  onClick={() => onNavigate("login")}
-                >
-                  <div className="flex -space-x-3 mb-4">
-                    {[TESTIMONIALS[0].avatar, TESTIMONIALS[1].avatar, TESTIMONIALS[2].avatar].map((src, i) => (
-                      <img key={i} src={src} alt="" className="w-10 h-10 rounded-full object-cover border-2 bg-muted" style={{ borderColor: isDark ? "#150E30" : "#F0ECFF" }} />
-                    ))}
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground font-medium" style={{ border: `2px solid ${isDark ? "#150E30" : "#F0ECFF"}` }}>+40</div>
-                  </div>
-                  <div>
-                    <Badge color="purple">Course</Badge>
-                    <p {...sg("text-base font-bold leading-snug mt-2")}>Data Analytics from scratch</p>
-                    <p className="text-xs text-muted-foreground mt-1">Beginner · 6–8 months</p>
-                  </div>
-                </div>
-
-                {/* Card 3 — teal accent card */}
-                <div
-                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-                  style={{ minHeight: 180 }}
-                  onClick={() => onNavigate("login")}
-                >
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Badge color="cyan">Live</Badge>
-                      <Badge color="green">Beginner</Badge>
-                    </div>
-                    <p {...sg("text-base font-bold leading-snug")}>AI &amp; Leadership Summit</p>
-                    <p className="text-xs text-muted-foreground mt-2">July 28 · Virtual</p>
-                  </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs text-emerald-400">Registration open</span>
-                  </div>
-                </div>
-
-                {/* Card 4 — amber stat card */}
-                <div
-                  className="lp-glass-card p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform duration-200"
-                  style={{ minHeight: 180 }}
-                  onClick={() => onNavigate("login")}
-                >
-                  <div>
-                    <Badge color="yellow">Skill Track</Badge>
-                    <p {...sg("text-base font-bold leading-snug mt-3")}>Competitive Advantage</p>
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex flex-wrap gap-1.5">
-                      {["Python", "Finance", "Strategy", "Design", "Ops"].map((t) => (
-                        <span key={t} className="px-2 py-0.5 rounded-md bg-[#F59E0B]/10 text-[#F59E0B] text-[10px]" {...mono()}>{t}</span>
-                      ))}
+                    <div className="flex items-center gap-1.5 bg-[#FF2B8A]/10 text-[#FF2B8A] px-2.5 py-1 rounded-full text-xs font-bold border border-[#FF2B8A]/25">
+                      <span>🔥</span>
+                      <span>5 Day Streak</span>
                     </div>
                   </div>
-                </div>
+
+                  {/* Today's Goal */}
+                  <div className="bg-[#17172C]/40 border border-white/5 rounded-2xl p-4 mb-4">
+                    <h5 className="text-[10px] text-muted-foreground uppercase font-extrabold tracking-wider mb-2">Today's Goal</h5>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-bold text-foreground">Complete "Intro to Neural Nets"</span>
+                      <span className="text-xs text-[#FF2B8A] font-semibold">80% Done</span>
+                    </div>
+                    <div className="w-full bg-[#17172C] rounded-full h-2 overflow-hidden border border-white/5">
+                      <div className="bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] h-full rounded-full" style={{ width: "80%" }} />
+                    </div>
+                  </div>
+
+                  {/* Current Learning Journey */}
+                  <div className="mb-4">
+                    <h5 className="text-[10px] text-muted-foreground uppercase font-extrabold tracking-wider mb-2.5">Current Learning Journey</h5>
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#FF2B8A] flex items-center justify-center text-white text-lg shadow-md flex-shrink-0">
+                        🧠
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">Deep Learning & AI Foundations</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Module 3 of 8 · 4,280 XP earned</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats Footer: XP & Kai Greeting */}
+                  <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/5">
+                    <div className="p-3 bg-secondary/10 rounded-2xl border border-border/10 flex flex-col justify-between">
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide">Earned XP</span>
+                      <span className="text-xl font-black text-[#FF2B8A] mt-1">1,450 XP</span>
+                    </div>
+
+                    <div className="p-3 bg-[#22D3EE]/5 rounded-2xl border border-[#22D3EE]/10 flex flex-col justify-between">
+                      <div className="flex items-center gap-1.5 text-[#22D3EE]">
+                        <Sparkles size={11} />
+                        <span className="text-[9px] font-extrabold uppercase tracking-wide">Kai Assistant</span>
+                      </div>
+                      <p className="text-[10px] text-[#22D3EE] font-medium leading-normal mt-1 italic">
+                        "Ready to start today's 1-minute bite-sized lessons, Alex?"
+                      </p>
+                    </div>
+                  </div>
+
+                </motion.div>
               </div>
+
             </div>
 
             {/* Trusted by Industry stats block */}
-            <div className="mt-24 border-t border-border/10 pt-12 pb-4 text-center">
+            <div className="mt-20 border-t border-border/10 pt-12 pb-4 text-center w-full max-w-7xl mx-auto px-6">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-8">Trusted by industry leaders worldwide</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
                 {[
@@ -790,7 +825,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
           </section>
 
           {/* How Mentora Works */}
-          <section className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
+          <section id="how-it-works" className="py-28 px-6 lg:px-10 relative overflow-hidden border-t border-border/5">
             <div className="max-w-7xl mx-auto relative z-10">
               <div className="text-center mb-16">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
