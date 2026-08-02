@@ -5464,7 +5464,13 @@ export default function App() {
       return;
     }
     const cleanPath = pathname.replace("/", "");
-    const matchedPage = cleanPath === "" ? "landing" : cleanPath;
+    let matchedPage = cleanPath === "" ? "landing" : cleanPath;
+    
+    // Normalize path separators/formats to match appPages
+    if (matchedPage === "course_detail" || matchedPage === "course%20detail" || matchedPage === "course detail") {
+      matchedPage = "course-detail";
+    }
+
     if (matchedPage === "landing" || matchedPage === "auth") {
       setPage(matchedPage);
     } else {
