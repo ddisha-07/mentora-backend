@@ -1920,24 +1920,6 @@ function TopNav({ title, onNavigate, onToggleMobileMenu }: { title: string; onNa
 
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  const { isDark } = useTheme();
-  
-  const getGreeting = () => {
-    const hrs = new Date().getHours();
-    if (hrs < 12) return "Good Morning";
-    if (hrs < 17) return "Good Afternoon";
-    return "Good Evening";
-  };
-
-  const getFirstName = (name: string) => {
-    if (!name) return "Learner";
-    const raw = name.split("@")[0].split(" ")[0];
-    if (/^[a-zA-Z]/.test(raw)) {
-      return raw.charAt(0).toUpperCase() + raw.slice(1);
-    }
-    return raw;
-  };
-
   const {
     profile,
     courses,
@@ -1953,68 +1935,10 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     activityProgress
   } = useApp();
 
-  const getMissionCardClass = (type: string) => {
-    switch (type) {
-      case 'SOP_READING': return 'border-cyan-500/25 bg-cyan-500/5 text-cyan-400';
-      case 'QUIZ': return 'border-primary/25 bg-primary/5 text-primary';
-      case 'LEARNING': return 'border-purple-500/25 bg-purple-500/5 text-purple-400';
-      case 'KNOWLEDGE_SHARING':
-      case 'EXPERIENCE_SHARING':
-        return 'border-emerald-500/25 bg-emerald-500/5 text-emerald-400';
-      default: return 'border-blue-500/25 bg-blue-500/5 text-blue-400';
-    }
-  };
-
-  const [selectedMission, setSelectedMission] = useState<any | null>(null);
-
-  const [chatOpen, setChatOpen] = useState(false);
-  const [miniMessages, setMiniMessages] = useState<any[]>([
-    {
-      role: 'ai',
-      content: "Hi, I'm Kai, Mentora's AI assistant. How may I help you?"
-    }
-  ]);
-  const [miniInput, setMiniInput] = useState('');
-  const [miniTyping, setMiniTyping] = useState(false);
-  const miniMessagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (chatOpen) {
-      miniMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [miniMessages, chatOpen]);
-
-  const sendMiniMessage = () => {
-    if (!miniInput.trim()) return;
-    const text = miniInput;
-    setMiniMessages(prev => [...prev, { role: 'user', content: text }]);
-    setMiniInput('');
-    setMiniTyping(true);
-
-    setTimeout(() => {
-      setMiniTyping(false);
-      
-      const query = text.toLowerCase();
-      let reply = "I'm looking up that information in the Mentora SOP vault. Could you clarify which plant node or equipment number this relates to?";
-      
-      if (query.includes("valve") || query.includes("boiler")) {
-        reply = "For boiler operations, isolation of breaker panel 4B is required before using the override lever beneath the pressure gauge. Please refer to **SOP-14.2: Lockout/Tagout overrides**.";
-      } else if (query.includes("modbus") || query.includes("telemetry")) {
-        reply = "To configure Modbus register mappings, use RS-485 interfaces with Baud rate 9600 and check parity bit overrides. Refer to **SOP-202: Boiler room evacuations**.";
-      } else if (query.includes("safety") || query.includes("loto")) {
-        reply = "Centralized LOTO safety regulations require placement of red padlocks on isolation switch handles. Refer to **SOP-104: Sensor calibration safety specs**.";
-      } else if (query.includes("hello") || query.includes("hi")) {
-        reply = "Hi there! I am Kai. How can I help you optimize operations or study today?";
-      }
-
-      setMiniMessages(prev => [...prev, { role: 'ai', content: reply }]);
-    }, 1000);
-  };
-
   const activeProfile = profile || {
     name: "Learner",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
-    role: "JUNIOR_EMPLOYEE" as UserRole,
+    role: "JUNIOR_EMPLOYEE",
     designation: "Associate Software Engineer",
     department: "Software Engineering",
     plant: "Bangalore HQ",
@@ -2026,26 +1950,14 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     leaderboardRank: 0
   };
 
-  const todayMission = activeMissions.find(m => m.status !== 'completed');
-
-  // Filter recommended courses based on department / role
-  const recommendedCourses = courses
-    .filter(c => {
-      const e = enrollments.find(env => Number(env.course_id) === Number(c.id));
-      if (e && e.progress === 100) return false;
-
-      const dept = (activeProfile.department || "").toLowerCase();
-      const role = activeProfile.role as UserRole;
-
-      if (dept.includes("software") || dept.includes("it")) {
-        return c.category === "AI & ML" || c.category === "Cloud & DevOps";
-      }
-      if (role === "SHOP_FLOOR_WORKER") {
-        return c.category === "Security" || c.title.toLowerCase().includes("safety");
-      }
-      return c.category === "Leadership" || c.category === "Product";
-    })
-    .slice(0, 2);
+  const getFirstName = (name: string) => {
+    if (!name) return "Learner";
+    const raw = name.split("@")[0].split(" ")[0];
+    if (/^[a-zA-Z]/.test(raw)) {
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    }
+    return raw;
+  };
 
   // In-progress courses
   const inProgress = enrollments
@@ -2055,481 +1967,207 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       if (!c) return null;
       return { ...c, progress: e.progress };
     })
-    .filter(Boolean) as any[];
+    .filter(Boolean);
 
   const handleContinue = (courseId: number) => {
     setSelectedCourseId(courseId);
     onNavigate("course-detail");
   };
 
-  const getJourneyStats = (courseId: number) => {
-    const courseStages = (journeyStages || []).filter(s => Number(s.courseId) === Number(courseId));
-    const courseActivities = (learningActivities || []).filter(a => Number(a.courseId) === Number(courseId));
-    const courseProgress = (activityProgress || []).filter(p => Number(p.course_id) === Number(courseId));
-    
-    const earnedXp = courseProgress.reduce((sum, p) => sum + (p.xp_earned || 0), 0);
-    
-    let currentStage = 'Beginner';
-    if (courseActivities.length > 0) {
-      const incompleteRequired = courseActivities
-        .filter(a => a.isRequired)
-        .sort((a, b) => a.orderIndex - b.orderIndex)
-        .find(a => {
-          const prog = courseProgress.find(p => Number(p.activity_id) === Number(a.id));
-          return !prog || prog.status !== 'completed';
-        });
-      
-      if (incompleteRequired) {
-        const stage = courseStages.find(s => Number(s.id) === Number(incompleteRequired.stageId));
-        if (stage) currentStage = stage.title;
-      } else {
-        const lastStage = courseStages.sort((a, b) => b.orderIndex - a.orderIndex)[0];
-        if (lastStage) currentStage = lastStage.title;
-      }
-    }
-    
-    return {
-      currentStage,
-      earnedXp
-    };
-  };
+  // Active course resolution
+  const activeCourse = inProgress[0] || (enrollments.length > 0 ? (() => {
+    const firstEnrollment = enrollments[0];
+    const c = courses.find((course) => Number(course.id) === Number(firstEnrollment.course_id));
+    return c ? { ...c, progress: firstEnrollment.progress || 0 } : null;
+  })() : null);
+
+  // Next Lesson Title resolution
+  let nextLessonTitle = "No active lessons";
+  if (activeCourse) {
+    const courseActivities = (learningActivities || []).filter(a => Number(a.courseId) === Number(activeCourse.id));
+    const courseProgress = (activityProgress || []).filter(p => Number(p.activity_id) === Number(activeCourse.id));
+    const incompleteRequired = courseActivities
+      .filter(a => a.isRequired)
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .find(a => {
+        const prog = courseProgress.find(p => Number(p.activity_id) === Number(a.id));
+        return !prog || prog.status !== 'completed';
+      });
+    nextLessonTitle = incompleteRequired ? incompleteRequired.title : "All lessons completed!";
+  }
+
+  // Today's Goal resolution
+  const todayMission = activeMissions.find(m => m.status !== 'completed') || activeMissions[0];
+  const todayGoalTitle = todayMission ? todayMission.title : "Complete one Learning Bite";
+  const todayGoalProgress = todayMission?.status === 'completed' ? 100 : 0;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-6 space-y-6 max-w-7xl mx-auto"
+      className="p-6 space-y-6 max-w-4xl mx-auto"
     >
-      {/* Top Banner Section */}
-      <div className="premium-glass-card p-6 md:p-8 border border-white/10 bg-[#FF2B8A]/5 relative overflow-hidden rounded-3xl shadow-xl">
-        <div className="absolute top-0 right-0 w-80 h-full opacity-10 pointer-events-none">
+      {/* 1. Welcome Section & Continue Learning */}
+      <Card className="p-6 md:p-8 space-y-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-full opacity-5 pointer-events-none">
           <NeuralNetSVG className="w-full h-full" />
         </div>
-        <div className="relative z-10 space-y-4">
+        
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            Welcome back, {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground font-semibold">
+            Continue your AI learning journey.
+          </p>
+        </div>
+
+        {activeCourse ? (
+          <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.01] space-y-6">
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+              <div className="flex gap-4 items-center min-w-0">
+                <img src={activeCourse.thumbnail} alt={activeCourse.title} className="w-24 h-16 rounded-xl object-cover flex-shrink-0 bg-muted border border-white/5 shadow-md" />
+                <div className="min-w-0">
+                  <span className="text-[9px] text-primary font-bold uppercase tracking-wider block mb-1">
+                    Current Journey
+                  </span>
+                  <h3 className="text-base font-extrabold truncate text-foreground animate-pulse" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                    {activeCourse.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Next Lesson: <span className="font-semibold text-foreground">{nextLessonTitle}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full md:w-48 space-y-2">
+                <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
+                  <span>Current Progress</span>
+                  <span className="font-mono text-foreground font-bold">{activeCourse.progress}%</span>
+                </div>
+                <ProgressBar value={activeCourse.progress} />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                onClick={() => handleContinue(activeCourse.id)}
+                className="w-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white font-extrabold py-3 px-6 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 cursor-pointer active:scale-95 transition-all"
+                style={{ fontFamily: "'Raleway', sans-serif" }}
+              >
+                Continue Learning <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-8 text-center text-muted-foreground text-sm border border-dashed border-white/10 rounded-2xl bg-white/[0.01] space-y-4">
+            <BookOpen size={32} className="mx-auto text-muted-foreground opacity-50" />
+            <div>
+              <p className="font-bold text-foreground">No active journeys in progress</p>
+              <p className="text-xs text-muted-foreground mt-1">Start a journey to track your learning journey progress here.</p>
+            </div>
+            <button
+              onClick={() => onNavigate("learn")}
+              className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-xl text-xs cursor-pointer transition-all active:scale-95 shadow-md shadow-primary/20"
+              style={{ fontFamily: "'Raleway', sans-serif" }}
+            >
+              Browse Learning Journeys
+            </button>
+          </div>
+        )}
+      </Card>
+
+      {/* 2. Today's Goal Section */}
+      <Card className="p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="text-[10px] text-primary font-bold tracking-widest uppercase block mb-1">
-              AI-Powered Enterprise Learning
+            <h3 className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Today's Goal</h3>
+            <p className="text-sm font-bold text-foreground mt-1">{todayGoalTitle}</p>
+          </div>
+          {todayMission?.status === 'completed' ? (
+            <span className="self-start sm:self-auto text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+              ✓ Completed
             </span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Welcome back, {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
-            </h1>
-            <p className="text-xs text-muted-foreground max-w-3xl mt-2 leading-relaxed">
-              Mentora is your AI-Powered Enterprise Learning platform, transforming workplace upskilling through personalized learning journeys, bite-sized lessons, and instant expert/AI guidance.
+          ) : (
+            <span className="self-start sm:self-auto text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+              In Progress
+            </span>
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
+            <span>Progress</span>
+            <span className="font-mono text-foreground font-bold">{todayGoalProgress}%</span>
+          </div>
+          <ProgressBar value={todayGoalProgress} />
+        </div>
+      </Card>
+
+      {/* 3. Kai AI Assistant Card */}
+      <Card className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-inner flex-shrink-0">
+            <Bot size={22} className="text-cyan-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Need Help?</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md">
+              Kai can answer questions about your learning journey and AI concepts.
             </p>
           </div>
-
-          {/* Stats Bar */}
-          <div className="flex flex-wrap gap-3 pt-2">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-              <span className="text-base">🔥</span>
-              <div className="text-[10px] leading-none">
-                <span className="text-muted-foreground block text-[8px] uppercase font-bold">Current Streak</span>
-                <span className="text-foreground font-extrabold mt-0.5 block">{activeProfile.currentStreak || 0} Days</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-              <span className="text-base">⭐</span>
-              <div className="text-[10px] leading-none">
-                <span className="text-muted-foreground block text-[8px] uppercase font-bold">XP Earned</span>
-                <span className="text-foreground font-extrabold mt-0.5 block">{activeProfile.xp || 0} XP</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-              <span className="text-base">🏆</span>
-              <div className="text-[10px] leading-none">
-                <span className="text-muted-foreground block text-[8px] uppercase font-bold">Learning Level</span>
-                <span className="text-foreground font-extrabold mt-0.5 block">{activeProfile.skillLevel || "Beginner"}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-              <span className="text-base">🎯</span>
-              <div className="text-[10px] leading-none">
-                <span className="text-muted-foreground block text-[8px] uppercase font-bold">Daily Goal</span>
-                <span className="text-emerald-400 font-extrabold mt-0.5 block">1 lesson + 1 bite</span>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-
-      {/* Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column: Learning Journeys & Recommended Bites */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Continue Learning Journey */}
-          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4">
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              📖 Continue Your Learning Journey
-            </h2>
-            {inProgress.length === 0 ? (
-              <div className="p-6 text-center text-muted-foreground text-sm border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
-                <BookOpen size={24} className="mx-auto mb-2 text-muted-foreground" />
-                <p className="font-semibold">No active journeys in progress.</p>
-                <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-bold mt-2 cursor-pointer bg-transparent border-0">
-                  Browse & Enroll in Journeys &rarr;
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {inProgress.map((course) => {
-                  const stats = getJourneyStats(course.id);
-                  return (
-                    <div
-                      key={course.id}
-                      onClick={() => handleContinue(course.id)}
-                      className="p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:scale-[1.005] group"
-                    >
-                      <div className="flex gap-4 items-center flex-1 min-w-0">
-                        <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted border border-white/5 shadow-md" />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[9px] text-primary font-bold uppercase tracking-wider block mb-1">
-                            Current Learning Journey
-                          </span>
-                          <h3 className="text-sm font-extrabold truncate text-foreground group-hover:text-primary transition-colors" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                            {course.title}
-                          </h3>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            Stage: {stats.currentStage}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Current Progress Column */}
-                      <div className="w-full md:w-48 space-y-1.5 flex-shrink-0">
-                        <div className="flex justify-between text-[9px] font-semibold text-muted-foreground uppercase">
-                          <span>Current Progress</span>
-                          <span className="font-mono text-foreground font-bold">{course.progress}%</span>
-                        </div>
-                        <ProgressBar value={course.progress} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Today's Recommended Bite */}
-          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4 relative overflow-hidden">
-            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-pink-500/10 rounded-full blur-2xl pointer-events-none" />
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              ⚡ Today's Recommended Bite
-            </h2>
-            <div className="p-4 rounded-2xl border border-pink-500/20 bg-pink-500/[0.02] flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:border-pink-500/30 transition-all">
-              <div className="flex gap-4 items-center">
-                <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center flex-shrink-0 border border-pink-500/20 shadow-md">
-                  <Zap size={20} className="text-[#FF2B8A] animate-pulse" />
-                </div>
-                <div>
-                  <span className="text-[9px] text-pink-400 font-bold uppercase tracking-wider block mb-1">
-                    Daily Micro-Learning (Less than 5 min)
-                  </span>
-                  <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                    LOTO Standard Protocol Checklist
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed max-w-md">
-                    Test your knowledge on Boiler Lockout/Tagout overrides, isolated breaker setups, and lock placements.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 flex-shrink-0 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-3 md:pt-0">
-                <div className="text-right">
-                  <span className="text-[9px] text-muted-foreground uppercase block font-bold">Reward</span>
-                  <span className="text-xs font-mono font-extrabold text-pink-400 block">+50 XP</span>
-                </div>
-                <button
-                  onClick={() => onNavigate("learn")}
-                  className="bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white font-extrabold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 cursor-pointer active:scale-95 transition-all"
-                  style={{ fontFamily: "'Raleway', sans-serif" }}
-                >
-                  Start Lesson <ArrowRight size={12} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Quick Actions, Daily Tasks & Community */}
-        <div className="space-y-6">
-          {/* Quick Actions Panel */}
-          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4">
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-              ⚡ Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => onNavigate("learn")}
-                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-primary/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
-              >
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                  <Play size={16} className="text-primary fill-primary" />
-                </div>
-                <span className="text-[10px] font-bold text-foreground">Resume Journey</span>
-              </button>
-              <button
-                onClick={() => onNavigate("ai-chat")}
-                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-cyan-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
-              >
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
-                  <Bot size={16} className="text-cyan-400" />
-                </div>
-                <span className="text-[10px] font-bold text-foreground">Ask Kai</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (todayMission) {
-                    setSelectedMission(todayMission);
-                  } else {
-                    onNavigate("learn");
-                  }
-                }}
-                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-amber-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
-              >
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                  <Clock size={16} className="text-amber-400" />
-                </div>
-                <span className="text-[10px] font-bold text-foreground">Daily Tasks</span>
-              </button>
-              <button
-                onClick={() => onNavigate("leaderboard")}
-                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-purple-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
-              >
-                <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                  <Trophy size={16} className="text-purple-400" />
-                </div>
-                <span className="text-[10px] font-bold text-foreground">Leaderboard</span>
-              </button>
-              <button
-                onClick={() => onNavigate("knowledge-exchange")}
-                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-emerald-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02] col-span-2"
-              >
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                  <Users size={16} className="text-emerald-400" />
-                </div>
-                <span className="text-[10px] font-bold text-foreground">Community Forums</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Active Missions (Daily Tasks) */}
-          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                📅 Today's Tasks
-              </h2>
-              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                {activeMissions.length} Active
-              </span>
-            </div>
-            {activeMissions.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-4">No active daily tasks for your role today.</p>
-            ) : (
-              <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
-                {activeMissions.map((m) => (
-                  <div
-                    key={m.id}
-                    onClick={() => setSelectedMission(m)}
-                    className="p-3 rounded-xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] cursor-pointer flex items-center justify-between gap-3 group transition-all"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-bold text-foreground group-hover:text-primary truncate transition-colors leading-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                        {m.title}
-                      </h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">⏱️ {m.estimatedTime}</p>
-                    </div>
-                    {m.status === 'completed' ? (
-                      <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                        <Check size={8} strokeWidth={3} /> Done
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all">
-                        +{m.rewardAmount} XP
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mission Detail Modal */}
-      {selectedMission && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
-          <div className="premium-glass-card w-full max-w-md p-6 space-y-6 relative overflow-hidden shadow-2xl border border-border/10">
-            <button
-              onClick={() => setSelectedMission(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="space-y-2">
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-secondary/35 border border-border/10 rounded-md text-muted-foreground">
-                {selectedMission.type}
-              </span>
-              <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>{selectedMission.title}</h3>
-              <p className="text-xs text-muted-foreground">
-                Status: <span className="font-bold text-primary">{selectedMission.status === 'completed' ? 'Completed' : selectedMission.status === 'in_progress' ? 'In Progress' : 'Assigned'}</span>
-              </p>
-            </div>
-
-            <div className="space-y-4 bg-secondary/15 border border-border/5 rounded-xl p-4 text-xs leading-relaxed text-muted-foreground">
-              <p>{selectedMission.description}</p>
-              <div className="grid grid-cols-2 gap-4 border-t border-border/10 pt-3 mt-3">
-                <div>
-                  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Estimated Time</span>
-                  <p className="text-foreground font-bold mt-0.5">⏱️ {selectedMission.estimatedTime}</p>
-                </div>
-                <div>
-                  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Reward</span>
-                  <p className="text-primary font-bold mt-0.5">
-                    +{selectedMission.rewardAmount} {selectedMission.rewardType === 'both' ? 'XP + Credits' : selectedMission.rewardType.toUpperCase()}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setSelectedMission(null)}
-                className="flex-1 bg-secondary/20 border border-border/10 hover:bg-secondary/40 text-foreground font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
-              >
-                Close
-              </button>
-              {selectedMission.status === 'assigned' || !selectedMission.status ? (
-                <button
-                  onClick={async () => {
-                    console.log("START BUTTON CLICKED", selectedMission);
-                    console.log("AUTH USER", user?.id);
-                    if (!user) {
-                      console.error("[StartMission] No authenticated user session found!");
-                      alert("Authentication error: Please log in again to start missions.");
-                      return;
-                    }
-                    try {
-                      await startMission(selectedMission.id);
-                      
-                      setSelectedMission(prev => prev ? { ...prev, status: 'in_progress' } : null);
-                      const config = MISSION_CONFIGS[selectedMission.type];
-                      if (config) {
-                        if (config.redirectAction) {
-                          config.redirectAction({ setSelectedCourseId });
-                        }
-                        const destination = config.page;
-                        console.log("NAVIGATING TO", destination);
-                        onNavigate(destination);
-                      }
-                      setSelectedMission(null);
-                    } catch (err: any) {
-                      console.error("[StartMission] Click handler caught error:", err);
-                      alert("Failed to start mission: " + (err.message || err));
-                    }
-                  }}
-                  className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-500/25"
-                >
-                  Start Mission
-                </button>
-              ) : selectedMission.status === 'in_progress' ? (
-                <button
-                  onClick={async (e) => {
-                    await completeMission(selectedMission.id, e);
-                    setSelectedMission(prev => prev ? { ...prev, status: 'completed' } : null);
-                    setTimeout(() => {
-                      setSelectedMission(null);
-                    }, 1200);
-                  }}
-                  className="flex-1 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-primary/25"
-                >
-                  Complete Task
-                </button>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Floating Minimized Chatbot */}
-      <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-end">
-        {chatOpen ? (
-          <div className="premium-glass-card shadow-2xl w-80 md:w-96 h-112 flex flex-col overflow-hidden mb-3 animate-in fade-in slide-in-from-bottom-4 duration-200 border border-border/10">
-            {/* Header */}
-            <div className="bg-primary/10 border-b border-border/10 px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Bot size={14} className="text-primary" />
-                </div>
-                <span className="text-xs font-bold text-foreground">Kai AI Chat Assistant</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setChatOpen(false)}
-                  className="p-1 rounded hover:bg-secondary/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-                  title="Minimize"
-                >
-                  <Minus size={14} />
-                </button>
-              </div>
-            </div>
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
-              {miniMessages.map((msg, i) => (
-                <div key={i} className={"flex " + (msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  <div className={"max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed " + (
-                    msg.role === 'user' ? 'bg-primary text-white font-semibold' : 'bg-secondary/15 text-foreground'
-                  )}>
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                </div>
-              ))}
-              {miniTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-secondary/15 rounded-2xl px-3 py-2 text-xs flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              )}
-              <div ref={miniMessagesEndRef} />
-            </div>
-            {/* Input */}
-            <div className="p-3 border-t border-border/10 flex gap-2">
-              <input
-                placeholder="Ask Kai a real-time question..."
-                value={miniInput}
-                onChange={e => setMiniInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') sendMiniMessage();
-                }}
-                className="bg-muted border border-border rounded-xl px-3 py-2 text-xs flex-1 outline-none focus:border-primary/50 text-foreground"
-              />
-              <button
-                onClick={sendMiniMessage}
-                className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary/95 transition-all"
-              >
-                <Send size={12} fill="white" />
-              </button>
-            </div>
-          </div>
-        ) : null}
-
         <button
           onClick={() => onNavigate("ai-chat")}
-          className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-xl hover:bg-primary/95 transition-all duration-300 hover:scale-105"
-          title="Kai AI Assistant"
+          className="w-full md:w-auto bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] text-white hover:from-[#FF4CA0] hover:to-[#8C4AFF] font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md shadow-pink-500/20 active:scale-95 flex-shrink-0 cursor-pointer"
+          style={{ fontFamily: "'Raleway', sans-serif" }}
         >
-          <MessageSquare size={22} />
+          Chat with Kai
         </button>
+      </Card>
+
+      {/* 4. Learning Progress Stats Card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* XP */}
+        <Card className="p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-sm shadow-md">
+            ⭐
+          </div>
+          <div>
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">XP</span>
+            <span className="text-sm font-extrabold text-foreground mt-0.5 block">{activeProfile.xp || 0} XP</span>
+          </div>
+        </Card>
+        
+        {/* Streak */}
+        <Card className="p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-sm shadow-md">
+            🔥
+          </div>
+          <div>
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Current Streak</span>
+            <span className="text-sm font-extrabold text-foreground mt-0.5 block">{activeProfile.currentStreak || 0} Days</span>
+          </div>
+        </Card>
+
+        {/* Learning Level */}
+        <Card className="p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-sm shadow-md">
+            🏆
+          </div>
+          <div>
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Learning Level</span>
+            <span className="text-sm font-extrabold text-foreground mt-0.5 block">{activeProfile.skillLevel || "Beginner"}</span>
+          </div>
+        </Card>
       </div>
     </motion.div>
   );
 }
 
-// ─── Course Catalog ───────────────────────────────────────────────────────────
+
 function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
