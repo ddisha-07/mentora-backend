@@ -876,6 +876,7 @@ export function CustomSinglePagePlayer({
   handleClaimXp,
   isSaving
 }: CustomSinglePagePlayerProps) {
+  const { setPage, setChatInitialQuery } = useApp();
   // Quiz states
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
     1: null,
@@ -1120,6 +1121,63 @@ export function CustomSinglePagePlayer({
             </button>
           )}
         </div>
+
+        {/* Resources Section */}
+        <div className="space-y-3 border-t border-white/5 pt-5 mt-5">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-widest font-mono text-cyan-400">Lesson Resources</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">AI Glossary</h4>
+                  <p className="text-[9px] text-muted-foreground">Key terminology and definitions.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">View</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">Quick Revision Notes</h4>
+                  <p className="text-[9px] text-muted-foreground">Summarized key takeaways.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Read</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">One-page Cheat Sheet</h4>
+                  <p className="text-[9px] text-muted-foreground">Synthesized diagram maps.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Download</button>
+            </div>
+
+            <button
+              onClick={() => {
+                setChatInitialQuery(`Explain the lesson: "${activeBite.title}"`);
+                setPage("ai-chat");
+                onClose();
+              }}
+              className="bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/10 rounded-2xl p-3.5 flex items-center justify-between transition-all group hover:border-cyan-400/30"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-base">🤖</span>
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-cyan-400">Ask Kai</h4>
+                  <p className="text-[9px] text-muted-foreground">Chat with Kai regarding this lesson.</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-cyan-400 group-hover:underline">Ask &rarr;</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Footer / Completion Button */}
@@ -1164,6 +1222,7 @@ export function CustomBite2Player({
   handleClaimXp,
   isSaving
 }: CustomBite2PlayerProps) {
+  const { setPage, setChatInitialQuery } = useApp();
   // Quiz states
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
     1: null,
@@ -1415,6 +1474,63 @@ export function CustomBite2Player({
             </button>
           )}
         </div>
+
+        {/* Resources Section */}
+        <div className="space-y-3 border-t border-white/5 pt-5 mt-5">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-widest font-mono text-cyan-400">Lesson Resources</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">AI Glossary</h4>
+                  <p className="text-[9px] text-muted-foreground">Key terminology and definitions.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">View</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">Quick Revision Notes</h4>
+                  <p className="text-[9px] text-muted-foreground">Summarized key takeaways.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Read</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">One-page Cheat Sheet</h4>
+                  <p className="text-[9px] text-muted-foreground">Synthesized diagram maps.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Download</button>
+            </div>
+
+            <button
+              onClick={() => {
+                setChatInitialQuery(`Explain the lesson: "${activeBite.title}"`);
+                setPage("ai-chat");
+                onClose();
+              }}
+              className="bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/10 rounded-2xl p-3.5 flex items-center justify-between transition-all group hover:border-cyan-400/30"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-base">🤖</span>
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-cyan-400">Ask Kai</h4>
+                  <p className="text-[9px] text-muted-foreground">Chat with Kai regarding this lesson.</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-cyan-400 group-hover:underline">Ask &rarr;</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Footer / Completion Button */}
@@ -1459,6 +1575,7 @@ export function CustomBite3Player({
   handleClaimXp,
   isSaving
 }: CustomBite3PlayerProps) {
+  const { setPage, setChatInitialQuery } = useApp();
   // Quiz states
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
     1: null,
@@ -1707,6 +1824,63 @@ export function CustomBite3Player({
             </button>
           )}
         </div>
+
+        {/* Resources Section */}
+        <div className="space-y-3 border-t border-white/5 pt-5 mt-5">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-widest font-mono text-cyan-400">Lesson Resources</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">AI Glossary</h4>
+                  <p className="text-[9px] text-muted-foreground">Key terminology and definitions.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">View</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">Quick Revision Notes</h4>
+                  <p className="text-[9px] text-muted-foreground">Summarized key takeaways.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Read</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">One-page Cheat Sheet</h4>
+                  <p className="text-[9px] text-muted-foreground">Synthesized diagram maps.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Download</button>
+            </div>
+
+            <button
+              onClick={() => {
+                setChatInitialQuery(`Explain the lesson: "${activeBite.title}"`);
+                setPage("ai-chat");
+                onClose();
+              }}
+              className="bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/10 rounded-2xl p-3.5 flex items-center justify-between transition-all group hover:border-cyan-400/30"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-base">🤖</span>
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-cyan-400">Ask Kai</h4>
+                  <p className="text-[9px] text-muted-foreground">Chat with Kai regarding this lesson.</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-cyan-400 group-hover:underline">Ask &rarr;</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Footer / Completion Button */}
@@ -1751,6 +1925,7 @@ export function CustomBite4Player({
   handleClaimXp,
   isSaving
 }: CustomBite4PlayerProps) {
+  const { setPage, setChatInitialQuery } = useApp();
   // Quiz states
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
     1: null,
@@ -1955,6 +2130,63 @@ export function CustomBite4Player({
               Verify Answers
             </button>
           )}
+        </div>
+
+        {/* Resources Section */}
+        <div className="space-y-3 border-t border-white/5 pt-5 mt-5">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-widest font-mono text-cyan-400">Lesson Resources</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">AI Glossary</h4>
+                  <p className="text-[9px] text-muted-foreground">Key terminology and definitions.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">View</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">Quick Revision Notes</h4>
+                  <p className="text-[9px] text-muted-foreground">Summarized key takeaways.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Read</button>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between group hover:border-cyan-500/25 transition-all">
+              <div className="flex items-center gap-3">
+                <span className="text-base">📄</span>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">One-page Cheat Sheet</h4>
+                  <p className="text-[9px] text-muted-foreground">Synthesized diagram maps.</p>
+                </div>
+              </div>
+              <button className="text-[10px] font-mono font-bold text-cyan-400 hover:underline">Download</button>
+            </div>
+
+            <button
+              onClick={() => {
+                setChatInitialQuery(`Explain the lesson: "${activeBite.title}"`);
+                setPage("ai-chat");
+                onClose();
+              }}
+              className="bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/10 rounded-2xl p-3.5 flex items-center justify-between transition-all group hover:border-cyan-400/30"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-base">🤖</span>
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-cyan-400">Ask Kai</h4>
+                  <p className="text-[9px] text-muted-foreground">Chat with Kai regarding this lesson.</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-cyan-400 group-hover:underline">Ask &rarr;</span>
+            </button>
+          </div>
         </div>
       </div>
 

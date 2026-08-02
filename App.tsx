@@ -90,6 +90,8 @@ export type AppContextType = {
   setNotifsState: React.Dispatch<React.SetStateAction<any[]>>;
   page: Page;
   setPage: React.Dispatch<React.SetStateAction<Page>>;
+  chatInitialQuery: string | null;
+  setChatInitialQuery: React.Dispatch<React.SetStateAction<string | null>>;
   toggleBookmark: (item: { id: string | number; type: string; title: string; desc: string; category: string; page: Page }) => Promise<void>;
 
   // Journey context fields
@@ -3721,7 +3723,7 @@ function LessonViewerPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
 // ─── AI Chat ──────────────────────────────────────────────────────────────────
 function AIChatPage() {
-  const { profile, user } = useApp();
+  const { profile, user, chatInitialQuery, setChatInitialQuery } = useApp();
   const [messages, setMessages] = useState<any[]>([
     {
       role: 'ai',
@@ -3735,6 +3737,34 @@ function AIChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (chatInitialQuery) {
+      const query = chatInitialQuery;
+      setMessages(prev => [...prev, { role: 'user', content: query }]);
+      setTyping(true);
+      
+      setTimeout(() => {
+        setTyping(false);
+        const queryLower = query.toLowerCase();
+        let reply = `I see you are asking about: "${query}". I'm looking up that lesson's details in the Mentora curriculum index...`;
+        
+        if (queryLower.includes("what is an ai agent")) {
+          reply = "AI Agents are goal-driven autonomous systems. Unlike traditional static scripts, they loop through **Perception**, **Reasoning**, **Planning**, and **Action** to interact with the environment, self-correct, and achieve objectives. Let me know if you want to drill down on any specific component!";
+        } else if (queryLower.includes("components of an ai agent")) {
+          reply = "An AI Agent has four key components:\n1. **Senses (Perception):** Input streams (like API webhooks, file logs).\n2. **Brain (Reasoning/LLM):** Cognitive planning and decision logic.\n3. **Hands (Action/Tools):** APIs, SQL query scripts, or messaging dispatchers.\n4. **Memory:** Vector databases storing historical context logs.\nWhich component would you like to build first?";
+        } else if (queryLower.includes("the agent lifecycle")) {
+          reply = "The Agent Lifecycle operates in a continuous loop: **Perception ➔ Reasoning ➔ Planning ➔ Action ➔ Feedback**. It reads environment inputs, plans sub-tasks, calls API tools, processes output results as feedback, and loops until the goal is achieved or a maximum iteration threshold is triggered.";
+        } else if (queryLower.includes("traditional ai vs agentic ai")) {
+          reply = "Traditional AI focuses on classification, statistical patterns, and nested rule lists (if-else logic). It fails when tools return formatting anomalies. Agentic AI uses a generative loop to dynamically plan routes, observe feedback, self-reflect, and self-correct when errors occur.";
+        }
+        
+        setMessages(prev => [...prev, { role: 'ai', content: reply }]);
+      }, 1000);
+      
+      setChatInitialQuery(null);
+    }
+  }, [chatInitialQuery, setChatInitialQuery]);
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -4987,6 +5017,7 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [page, setPage] = useState<Page>("landing");
+  const [chatInitialQuery, setChatInitialQuery] = useState<string | null>(null);
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(true);
 
@@ -5884,6 +5915,8 @@ export default function App() {
       setNotifsState,
       page,
       setPage,
+      chatInitialQuery,
+      setChatInitialQuery,
       toggleBookmark,
       selectedSopId,
       setSelectedSopId,
