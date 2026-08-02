@@ -37,6 +37,7 @@ import SkillPassportPage from "./src/pages/SkillPassportPage";
 import SavedPage from "./src/pages/SavedPage";
 import AdminPage from "./src/pages/AdminPage";
 import SopDetailPage from "./src/pages/SopDetailPage";
+import DailyTasksPage from "./src/pages/DailyTasksPage";
 import { AuroraBackground } from "./src/components/AuroraBackground";
 import { motion, AnimatePresence } from "motion/react";
 import { LandingNavbar } from "./src/components/landing/LandingNavbar";
@@ -121,7 +122,7 @@ type Page =
   | "lesson" | "ai-chat" | "quiz" | "quiz-results" | "certificates"
   | "profile" | "settings" | "announcements"
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
-  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin" | "sop-detail";
+  | "ai-in-my-work" | "leaderboard" | "rewards" | "skill-passport" | "saved" | "admin" | "sop-detail" | "daily-tasks";
 
 const MISSION_CONFIGS: Record<string, { page: Page; completionType: 'manual' | 'action'; actionKey?: string; redirectAction?: (ctx: any) => void }> = {
   'QUIZ': { page: 'learn', completionType: 'manual' },
@@ -1583,7 +1584,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
 
   const navItems = [
     { page: "learn" as Page, icon: <BookOpen size={18} />, label: "Learning Journeys" },
-    { page: "dashboard" as Page, icon: <FileText size={18} />, label: "Daily Tasks" },
+    { page: "daily-tasks" as Page, icon: <FileText size={18} />, label: "Daily Tasks" },
     { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard" },
     { page: "knowledge-exchange" as Page, icon: <Users size={18} />, label: "Community" },
     { page: "profile" as Page, icon: <User size={18} />, label: "Profile" }
@@ -4622,7 +4623,8 @@ const PAGE_TITLES: Record<string, string> = {
   rewards: "Rewards Store",
   "skill-passport": "Skill Passport",
   saved: "Saved Items",
-  admin: "Admin Console"
+  admin: "Admin Console",
+  "daily-tasks": "Daily Tasks"
 };
 
 function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
@@ -4683,6 +4685,8 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
         return <AdminPage />;
       case "sop-detail":
         return <SopDetailPage onNavigate={onNavigate} />;
+      case "daily-tasks":
+        return <DailyTasksPage onNavigate={onNavigate} />;
       
       default: return <DashboardPage onNavigate={onNavigate} />;
     }
@@ -5163,7 +5167,7 @@ export default function App() {
     "dashboard", "courses", "course-detail", "lesson", "ai-chat",
     "quiz", "quiz-results", "certificates", "profile", "settings", "announcements",
     "learn", "knowledge", "knowledge-exchange", "training", "ai-in-my-work",
-    "leaderboard", "rewards", "skill-passport", "saved", "admin", "sop-detail"
+    "leaderboard", "rewards", "skill-passport", "saved", "admin", "sop-detail", "daily-tasks"
   ];
 
   const parsePathname = (pathname: string) => {
