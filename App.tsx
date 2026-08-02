@@ -1575,6 +1575,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
   };
 
   const navItems = [
+    { page: "dashboard" as Page, icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { page: "learn" as Page, icon: <BookOpen size={18} />, label: "Learning Journeys" },
     { page: "daily-tasks" as Page, icon: <FileText size={18} />, label: "Daily Tasks" },
     { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard" },
@@ -1935,6 +1936,19 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     activityProgress
   } = useApp();
 
+  const [goals, setGoals] = useState([
+    { id: 1, text: "Complete one Learning Bite", completed: true },
+    { id: 2, text: "Ask Kai one question", completed: false },
+    { id: 3, text: "Maintain your streak", completed: false }
+  ]);
+
+  const toggleGoal = (id: number) => {
+    setGoals(prev => prev.map(g => g.id === id ? { ...g, completed: !g.completed } : g));
+  };
+
+  const completedCount = goals.filter(g => g.completed).length;
+  const goalProgress = Math.round((completedCount / goals.length) * 100);
+
   const activeProfile = profile || {
     name: "Learner",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
@@ -1967,7 +1981,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       if (!c) return null;
       return { ...c, progress: e.progress };
     })
-    .filter(Boolean);
+    .filter(Boolean) as any[];
 
   const handleContinue = (courseId: number) => {
     setSelectedCourseId(courseId);
@@ -1996,11 +2010,6 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     nextLessonTitle = incompleteRequired ? incompleteRequired.title : "All lessons completed!";
   }
 
-  // Today's Goal resolution
-  const todayMission = activeMissions.find(m => m.status !== 'completed') || activeMissions[0];
-  const todayGoalTitle = todayMission ? todayMission.title : "Complete one Learning Bite";
-  const todayGoalProgress = todayMission?.status === 'completed' ? 100 : 0;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -2008,52 +2017,77 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       transition={{ duration: 0.4 }}
       className="p-6 space-y-6 max-w-4xl mx-auto"
     >
-      {/* 1. Welcome Section & Continue Learning */}
-      <Card className="p-6 md:p-8 space-y-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full opacity-5 pointer-events-none">
-          <NeuralNetSVG className="w-full h-full" />
-        </div>
-        
-        <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Welcome back, {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
-          </h1>
-          <p className="text-sm text-muted-foreground font-semibold">
-            Continue your AI learning journey.
-          </p>
+      {/* SECTION 1: Visually Attractive Welcome Hero */}
+      <div className="premium-glass-card p-6 md:p-8 border border-white/10 bg-gradient-to-r from-[#FF2B8A]/10 via-purple-500/5 to-cyan-500/5 relative overflow-hidden rounded-3xl shadow-xl space-y-6">
+        {/* Abstract graphic background */}
+        <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-[#FF2B8A]/10 blur-3xl pointer-events-none" />
+        <div className="absolute right-10 bottom-0 w-64 h-64 rounded-full bg-cyan-500/5 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Welcome back, {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
+            </h1>
+            <p className="text-xs text-muted-foreground font-semibold">
+              Continue your AI learning journey.
+            </p>
+          </div>
+          <div className="text-[10px] text-muted-foreground bg-white/5 border border-white/5 rounded-xl px-3 py-1 font-mono">
+            {activeProfile.plant || "Enterprise HQ"}
+          </div>
         </div>
 
         {activeCourse ? (
-          <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.01] space-y-6">
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-              <div className="flex gap-4 items-center min-w-0">
-                <img src={activeCourse.thumbnail} alt={activeCourse.title} className="w-24 h-16 rounded-xl object-cover flex-shrink-0 bg-muted border border-white/5 shadow-md" />
-                <div className="min-w-0">
-                  <span className="text-[9px] text-primary font-bold uppercase tracking-wider block mb-1">
-                    Current Journey
-                  </span>
-                  <h3 className="text-base font-extrabold truncate text-foreground animate-pulse" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                    {activeCourse.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Next Lesson: <span className="font-semibold text-foreground">{nextLessonTitle}</span>
-                  </p>
-                </div>
+          <div className="relative z-10 p-5 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/10 transition-all flex flex-col lg:flex-row gap-6 items-center w-full">
+            {/* Journey Thumbnail */}
+            <div className="w-full lg:w-44 h-28 rounded-xl overflow-hidden bg-muted border border-white/10 shadow-md relative flex-shrink-0">
+              <img src={activeCourse.thumbnail} alt={activeCourse.title} className="w-full h-full object-cover" />
+              <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-black/60 text-white">
+                {activeCourse.category}
+              </div>
+            </div>
+
+            {/* Journey Information */}
+            <div className="flex-1 min-w-0 space-y-3 w-full">
+              <div className="space-y-1">
+                <span className="text-[9px] text-[#FF2B8A] font-bold uppercase tracking-wider block">
+                  Current Learning Journey
+                </span>
+                <h3 className="text-lg font-bold truncate text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  {activeCourse.title}
+                </h3>
               </div>
 
-              <div className="w-full md:w-48 space-y-2">
+              {/* Progress Bar & Next Lesson */}
+              <div className="space-y-2">
                 <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
-                  <span>Current Progress</span>
+                  <span>Progress</span>
                   <span className="font-mono text-foreground font-bold">{activeCourse.progress}%</span>
                 </div>
                 <ProgressBar value={activeCourse.progress} />
               </div>
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground pt-1">
+                <div>
+                  Next Lesson: <span className="font-bold text-foreground">{nextLessonTitle}</span>
+                </div>
+                <span className="text-white/10">•</span>
+                <div>
+                  ⏱️ {activeCourse.duration || "24h left"}
+                </div>
+                <span className="text-white/10">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: difficultyColor[activeCourse.difficulty] || "#10B981" }} />
+                  <span className="font-bold text-foreground">{activeCourse.difficulty || "Intermediate"}</span>
+                </div>
+              </div>
             </div>
 
-            <div className="pt-2">
+            {/* Primary CTA button */}
+            <div className="w-full lg:w-auto flex-shrink-0">
               <button
                 onClick={() => handleContinue(activeCourse.id)}
-                className="w-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white font-extrabold py-3 px-6 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 cursor-pointer active:scale-95 transition-all"
+                className="w-full lg:w-auto bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white font-extrabold py-3 px-6 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 active:scale-95 transition-all duration-300 cursor-pointer"
                 style={{ fontFamily: "'Raleway', sans-serif" }}
               >
                 Continue Learning <ArrowRight size={14} />
@@ -2061,7 +2095,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             </div>
           </div>
         ) : (
-          <div className="p-8 text-center text-muted-foreground text-sm border border-dashed border-white/10 rounded-2xl bg-white/[0.01] space-y-4">
+          <div className="p-6 text-center text-muted-foreground text-sm border border-dashed border-white/10 rounded-2xl bg-white/[0.01] space-y-4 w-full">
             <BookOpen size={32} className="mx-auto text-muted-foreground opacity-50" />
             <div>
               <p className="font-bold text-foreground">No active journeys in progress</p>
@@ -2076,97 +2110,187 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             </button>
           </div>
         )}
-      </Card>
+      </div>
 
-      {/* 2. Today's Goal Section */}
-      <Card className="p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Today's Goal</h3>
-            <p className="text-sm font-bold text-foreground mt-1">{todayGoalTitle}</p>
-          </div>
-          {todayMission?.status === 'completed' ? (
-            <span className="self-start sm:self-auto text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full flex items-center gap-1">
-              ✓ Completed
-            </span>
-          ) : (
-            <span className="self-start sm:self-auto text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
-              In Progress
-            </span>
-          )}
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
-            <span>Progress</span>
-            <span className="font-mono text-foreground font-bold">{todayGoalProgress}%</span>
-          </div>
-          <ProgressBar value={todayGoalProgress} />
-        </div>
-      </Card>
-
-      {/* 3. Kai AI Assistant Card */}
-      <Card className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-inner flex-shrink-0">
-            <Bot size={22} className="text-cyan-400" />
-          </div>
-          <div>
-            <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Need Help?</h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-md">
-              Kai can answer questions about your learning journey and AI concepts.
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => onNavigate("ai-chat")}
-          className="w-full md:w-auto bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] text-white hover:from-[#FF4CA0] hover:to-[#8C4AFF] font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md shadow-pink-500/20 active:scale-95 flex-shrink-0 cursor-pointer"
-          style={{ fontFamily: "'Raleway', sans-serif" }}
-        >
-          Chat with Kai
-        </button>
-      </Card>
-
-      {/* 4. Learning Progress Stats Card */}
+      {/* SECTION 2: Three Clean Statistic Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* XP */}
-        <Card className="p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-sm shadow-md">
+        {/* XP Card */}
+        <div className="premium-glass-card p-5 border border-white/5 hover:border-amber-500/20 bg-white/[0.01] rounded-2xl flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-500/5 group">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl shadow-md transition-all duration-300 group-hover:scale-110">
             ⭐
           </div>
           <div>
-            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">XP</span>
-            <span className="text-sm font-extrabold text-foreground mt-0.5 block">{activeProfile.xp || 0} XP</span>
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">XP Earned</span>
+            <span className="text-xl font-extrabold text-foreground tracking-tight mt-0.5 block">{activeProfile.xp || 0} XP</span>
+            <span className="text-[10px] text-muted-foreground/80 mt-0.5 block">Total experience points earned</span>
           </div>
-        </Card>
-        
-        {/* Streak */}
-        <Card className="p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-sm shadow-md">
+        </div>
+
+        {/* Streak Card */}
+        <div className="premium-glass-card p-5 border border-white/5 hover:border-orange-500/20 bg-white/[0.01] rounded-2xl flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/5 group">
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-2xl shadow-md transition-all duration-300 group-hover:scale-110">
             🔥
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Current Streak</span>
-            <span className="text-sm font-extrabold text-foreground mt-0.5 block">{activeProfile.currentStreak || 0} Days</span>
+            <span className="text-xl font-extrabold text-foreground tracking-tight mt-0.5 block">{activeProfile.currentStreak || 0} Days</span>
+            <span className="text-[10px] text-muted-foreground/80 mt-0.5 block">Consecutive active days</span>
           </div>
-        </Card>
+        </div>
 
-        {/* Learning Level */}
-        <Card className="p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-sm shadow-md">
+        {/* Learning Level Card */}
+        <div className="premium-glass-card p-5 border border-white/5 hover:border-purple-500/20 bg-white/[0.01] rounded-2xl flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/5 group">
+          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-2xl shadow-md transition-all duration-300 group-hover:scale-110">
             🏆
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Learning Level</span>
-            <span className="text-sm font-extrabold text-foreground mt-0.5 block">{activeProfile.skillLevel || "Beginner"}</span>
+            <span className="text-xl font-extrabold text-foreground tracking-tight mt-0.5 block">{activeProfile.skillLevel || activeProfile.currentLevel || "Beginner"}</span>
+            <span className="text-[10px] text-muted-foreground/80 mt-0.5 block">Current upskilling level</span>
           </div>
-        </Card>
+        </div>
+      </div>
+
+      {/* SECTION 3: Today's Goal */}
+      <div className="premium-glass-card p-6 border border-white/5 bg-white/[0.01] rounded-3xl space-y-4">
+        <div className="flex justify-between items-center">
+          <div className="space-y-0.5">
+            <h3 className="text-[10px] text-primary font-black uppercase tracking-wider block">Today's Goal</h3>
+            <p className="text-sm font-semibold text-foreground">Upskilling Tasks</p>
+          </div>
+          <span className="text-[10px] font-bold text-pink-400 bg-[#FF2B8A]/10 px-2.5 py-1 rounded-full border border-[#FF2B8A]/10">
+            Reward: +50 XP
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          {goals.map(g => (
+            <div
+              key={g.id}
+              onClick={() => toggleGoal(g.id)}
+              className="flex items-center gap-3 p-3 rounded-xl border border-white/5 bg-white/[0.005] hover:bg-white/[0.02] cursor-pointer transition-all active:scale-[0.99] group"
+            >
+              <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
+                g.completed ? "bg-primary border-primary text-white" : "border-white/20 group-hover:border-primary/50"
+              }`}>
+                {g.completed && <Check size={12} strokeWidth={3} />}
+              </div>
+              <span className={`text-xs font-medium transition-all ${g.completed ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                {g.text}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2 pt-2 border-t border-white/5">
+          <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
+            <span>Goal Progress</span>
+            <span className="font-mono text-foreground font-bold">{goalProgress}%</span>
+          </div>
+          <ProgressBar value={goalProgress} />
+        </div>
+      </div>
+
+      {/* SECTION 4: Kai Assistant Card */}
+      <div className="premium-glass-card p-6 border border-white/5 bg-gradient-to-r from-cyan-500/5 via-transparent to-transparent rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-cyan-500/10 to-transparent pointer-events-none" />
+        
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-inner flex-shrink-0 animate-pulse">
+            <Bot size={24} className="text-cyan-400" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Need help?</h3>
+            <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
+              Kai can explain concepts, answer questions, and recommend what to learn next.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onNavigate("ai-chat")}
+          className="w-full md:w-auto bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] text-white hover:from-[#FF4CA0] hover:to-[#8C4AFF] font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md shadow-pink-500/25 active:scale-95 flex-shrink-0 cursor-pointer"
+          style={{ fontFamily: "'Raleway', sans-serif" }}
+        >
+          Chat with Kai
+        </button>
+      </div>
+
+      {/* SECTION 5: Progress Overview */}
+      <div className="space-y-3">
+        <h3 className="text-[10px] text-muted-foreground uppercase font-black tracking-widest block">Progress Overview</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Card 1 */}
+          <div className="premium-glass-card p-4 border border-white/5 bg-white/[0.005] rounded-2xl hover:bg-white/[0.02] transition-colors">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">Journey Progress</span>
+            <span className="text-lg font-extrabold text-foreground mt-1 block">
+              {activeCourse ? `${activeCourse.progress}%` : "0%"}
+            </span>
+            <span className="text-[9px] text-muted-foreground/80 mt-0.5 block">Active track progress</span>
+          </div>
+
+          {/* Card 2 */}
+          <div className="premium-glass-card p-4 border border-white/5 bg-white/[0.005] rounded-2xl hover:bg-white/[0.02] transition-colors">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">Lessons Completed</span>
+            <span className="text-lg font-extrabold text-foreground mt-1 block">
+              {enrollments.length > 0 ? `${enrollments.reduce((sum, e) => sum + (e.completed_lessons || 3), 0)} Completed` : "0 Completed"}
+            </span>
+            <span className="text-[9px] text-muted-foreground/80 mt-0.5 block">Activities completed</span>
+          </div>
+
+          {/* Card 3 */}
+          <div className="premium-glass-card p-4 border border-white/5 bg-white/[0.005] rounded-2xl hover:bg-white/[0.02] transition-colors">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">XP This Week</span>
+            <span className="text-lg font-extrabold text-emerald-400 mt-1 block">+320 XP</span>
+            <span className="text-[9px] text-muted-foreground/80 mt-0.5 block">Weekly reward gains</span>
+          </div>
+
+          {/* Card 4 */}
+          <div className="premium-glass-card p-4 border border-white/5 bg-white/[0.005] rounded-2xl hover:bg-white/[0.02] transition-colors">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">Learning Time</span>
+            <span className="text-lg font-extrabold text-foreground mt-1 block">2h 45m</span>
+            <span className="text-[9px] text-muted-foreground/80 mt-0.5 block">Time spent upskilling</span>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 6: Kai Recommends */}
+      <div className="premium-glass-card p-5 border border-white/5 bg-white/[0.01] rounded-3xl space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider block">
+            💡 Kai Recommends
+          </span>
+          <span className="text-[9px] text-muted-foreground">⏱️ 10 mins</span>
+        </div>
+        
+        <div className="space-y-2">
+          <h4 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            Boiler Overrides & Pressure Valves
+          </h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Based on your role as {activeProfile.designation || "Shop Floor Worker"} and current safety objectives.
+          </p>
+        </div>
+
+        <div className="pt-2">
+          <button
+            onClick={() => onNavigate("learn")}
+            className="w-full bg-[#1F1E38] hover:bg-[#2F2E4F] border border-white/5 hover:border-white/10 text-foreground font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            style={{ fontFamily: "'Raleway', sans-serif" }}
+          >
+            Start Learning <ArrowRight size={12} />
+          </button>
+        </div>
+      </div>
+
+      {/* BOTTOM SECTION: Motivational Banner */}
+      <div className="p-6 text-center rounded-3xl bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-cyan-500/5 border border-white/5 space-y-1">
+        <p className="text-xs font-black uppercase tracking-widest text-[#FF2B8A]">Keep going!</p>
+        <p className="text-xs text-muted-foreground">Consistency is the key to mastering AI.</p>
       </div>
     </motion.div>
   );
 }
-
 
 function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [search, setSearch] = useState("");
