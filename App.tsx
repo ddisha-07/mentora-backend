@@ -5013,6 +5013,25 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
   );
 }
 
+const normalizePath = (path: string): string => {
+  let decoded = path;
+  try {
+    decoded = decodeURIComponent(decodeURIComponent(path));
+  } catch (e) {
+    try {
+      decoded = decodeURIComponent(path);
+    } catch (err) {
+      decoded = path;
+    }
+  }
+  const clean = decoded.trim().replace(/^\/+|\/+$/g, "");
+  const compacted = clean.toLowerCase().replace(/[-_%2520\s]+/g, "");
+  if (compacted === "coursedetail") {
+    return "course-detail";
+  }
+  return clean;
+};
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -5457,19 +5476,17 @@ export default function App() {
   ];
 
   const parsePathname = (pathname: string) => {
-    const sopMatch = pathname.match(/^\/knowledge\/sop\/(.+)$/);
+    const cleanPath = normalizePath(pathname);
+    
+    // Check SOP matching on cleanPath
+    const sopMatch = cleanPath.match(/^knowledge\/sop\/(.+)$/);
     if (sopMatch) {
       setSelectedSopId(sopMatch[1]);
       setPage("sop-detail");
       return;
     }
-    const cleanPath = pathname.replace("/", "");
+
     let matchedPage = cleanPath === "" ? "landing" : cleanPath;
-    
-    // Normalize path separators/formats to match appPages
-    if (matchedPage === "course_detail" || matchedPage === "course%20detail" || matchedPage === "course detail") {
-      matchedPage = "course-detail";
-    }
 
     if (matchedPage === "landing" || matchedPage === "auth") {
       setPage(matchedPage);
@@ -5668,10 +5685,10 @@ export default function App() {
             await fetchProfileAndData(currentUser.id);
             parsePathname(window.location.pathname);
           } else {
-            const path = window.location.pathname.replace("/", "");
-            if (path === "auth") {
+            const cleanPath = normalizePath(window.location.pathname);
+            if (cleanPath === "auth") {
               setPage("auth");
-            } else if (path === "") {
+            } else if (cleanPath === "") {
               setPage("landing");
             } else {
               setPage("auth");
