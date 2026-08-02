@@ -2850,6 +2850,81 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             )}
           </Card>
         </div>
+      {/* Celebration Modal Overlay */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
+          >
+            {/* Confetti Particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{
+                    y: -50,
+                    x: Math.random() * 500,
+                    rotate: 0,
+                    scale: Math.random() * 0.6 + 0.4
+                  }}
+                  animate={{
+                    y: 1000,
+                    rotate: 360,
+                    transition: {
+                      duration: Math.random() * 3 + 2,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }
+                  }}
+                  className={`absolute w-3 h-3 rounded-full bg-gradient-to-tr ${
+                    i % 3 === 0
+                      ? 'from-cyan-400 to-blue-500'
+                      : i % 3 === 1
+                      ? 'from-pink-500 to-purple-500'
+                      : 'from-amber-400 to-yellow-500'
+                  }`}
+                  style={{
+                    left: `${Math.random() * 100}%`
+                  }}
+                />
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 25 } }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-[#05050C] border border-cyan-500/20 rounded-3xl max-w-sm w-full p-8 text-center shadow-2xl shadow-cyan-500/10 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center text-cyan-400 mx-auto mb-6 animate-pulse">
+                <Trophy size={38} className="animate-bounce" />
+              </div>
+
+              <h3 className="text-xl font-black text-foreground tracking-tight mb-2">Stage Completed! 🎉</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-6">
+                {showCelebration.title}
+              </p>
+
+              <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4 mb-6">
+                <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-bold block mb-1">XP Reward Gained</span>
+                <span className="text-2xl font-mono font-extrabold text-cyan-400">+{showCelebration.xp} XP</span>
+              </div>
+
+              <button
+                onClick={() => setShowCelebration(null)}
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-600 hover:opacity-95 text-black font-extrabold py-3.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-cyan-400/20"
+              >
+                Continue Journey
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </div>
     </div>
   );

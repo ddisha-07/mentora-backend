@@ -252,7 +252,7 @@ export function LearningBitePlayer({
       const allCompleted = bites.every((b) => completedBiteIds.has(Number(b.id)));
 
       if (allCompleted) {
-        const activityXp = 50;
+        const activityXp = Number(activityId) === 111 ? 100 : 50;
 
         // Check if the activity has already been marked completed
         const { data: existingAct } = await supabase
@@ -351,6 +351,17 @@ export function LearningBitePlayer({
   if (activeBite && Number(activeBite.id) === 1113) {
     return (
       <CustomBite3Player
+        activeBite={activeBite}
+        onClose={onClose}
+        handleClaimXp={handleClaimXp}
+        isSaving={isSaving}
+      />
+    );
+  }
+
+  if (activeBite && Number(activeBite.id) === 1114) {
+    return (
+      <CustomBite4Player
         activeBite={activeBite}
         onClose={onClose}
         handleClaimXp={handleClaimXp}
@@ -1683,6 +1694,255 @@ export function CustomBite3Player({
             onClick={handleClaimXp}
             disabled={isSaving}
             className="bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] hover:opacity-95 text-white font-extrabold px-6 py-3 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-1.5"
+          >
+            {isSaving ? "Completing..." : "Complete Lesson"} <ArrowRight size={13} />
+          </button>
+        ) : (
+          <button
+            disabled
+            className="bg-muted text-muted-foreground/50 cursor-not-allowed font-extrabold px-6 py-3 rounded-xl text-xs flex items-center gap-1.5"
+          >
+            Complete Lesson <Lock size={12} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom Single Page Player for Bite 1114 ───────────────────────────────────
+interface CustomBite4PlayerProps {
+  activeBite: any;
+  onClose: () => void;
+  handleClaimXp: () => void;
+  isSaving: boolean;
+}
+
+export function CustomBite4Player({
+  activeBite,
+  onClose,
+  handleClaimXp,
+  isSaving
+}: CustomBite4PlayerProps) {
+  // Quiz states
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
+    1: null,
+    2: null,
+    3: null
+  });
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState<Record<number, boolean>>({
+    1: false,
+    2: false,
+    3: false
+  });
+
+  const mcqs = [
+    {
+      id: 1,
+      question: "1. What is a defining characteristic of Agentic AI compared to Traditional AI?",
+      options: [
+        "It uses faster local cache memories.",
+        "It dynamically plans execution paths and self-corrects based on feedback observations.",
+        "It relies on fixed, hardcoded decision trees.",
+        "It does not require neural network compute."
+      ],
+      correctAnswer: 1
+    },
+    {
+      id: 2,
+      question: "2. Which task is best suited for Traditional AI rather than Agentic AI?",
+      options: [
+        "Running a multi-agent coding sweep to fix code files.",
+        "Classifying incoming customer emails as 'Billing' or 'Technical' based on static rules.",
+        "Monitoring ship routes and rerouting carriers autonomously around bad weather detours.",
+        "Conducting a comprehensive financial ledger audit across systems."
+      ],
+      correctAnswer: 1
+    },
+    {
+      id: 3,
+      question: "3. What happens when an Agentic AI system encounters an unexpected error from an API tool?",
+      options: [
+        "It crashes and terminates the environment.",
+        "It parses the error feedback as an observation to plan a recovery detour.",
+        "It deletes database records.",
+        "It alerts the browser to redirect externally."
+      ],
+      correctAnswer: 1
+    }
+  ];
+
+  const handleSelectOption = (qId: number, optIdx: number) => {
+    if (quizChecked && quizCorrect[qId]) return;
+    setQuizAnswers(prev => ({ ...prev, [qId]: optIdx }));
+  };
+
+  const handleCheckAnswers = () => {
+    const c1 = quizAnswers[1] === mcqs[0].correctAnswer;
+    const c2 = quizAnswers[2] === mcqs[1].correctAnswer;
+    const c3 = quizAnswers[3] === mcqs[2].correctAnswer;
+    setQuizCorrect({ 1: c1, 2: c2, 3: c3 });
+    setQuizChecked(true);
+  };
+
+  const allCorrect = quizCorrect[1] && quizCorrect[2] && quizCorrect[3];
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between max-h-[85vh]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold">
+            <Zap size={14} className="fill-cyan-400 text-cyan-400" />
+          </div>
+          <div>
+            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-black block">
+              Learning Bite Player &bull; 4 of 4
+            </span>
+            <h4 className="text-xs font-bold text-foreground mt-0.5">{activeBite.title}</h4>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
+        
+        {/* Objectives Panel */}
+        <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
+          <p className="text-xs text-foreground font-semibold">Contrast rule-based automation with cognitive planning capabilities in Agentic AI.</p>
+        </div>
+
+        {/* Concept Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <Sparkles size={14} className="text-cyan-400" /> Paradigm Comparison
+          </h3>
+          <div className="text-xs text-muted-foreground space-y-2.5 leading-relaxed">
+            <p>
+              Traditional AI is built around rigid boundaries: statistical classification models, keyword search heuristics, or nested hardcoded if-else trees. While highly efficient for structured outputs, they break down completely when presented with formatting anomalies or unexpected tool errors.
+            </p>
+            <p>
+              Agentic AI shifts the paradigm by utilizing LLMs to formulate dynamic planning paths. This allows software agents to run tool loops, evaluate unexpected observations, self-reflect on discrepancies, and compile alternatives dynamically.
+            </p>
+          </div>
+        </div>
+
+        {/* Comparison Cards Layout */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground">Traditional vs Agentic AI</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Traditional Card */}
+            <div className="bg-white/[0.005] border border-white/5 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                <span className="text-sm">⚙️</span>
+                <h4 className="text-xs font-bold text-foreground">Traditional AI</h4>
+              </div>
+              <div className="space-y-2 text-[10px] text-muted-foreground leading-relaxed">
+                <p><strong>System Role:</strong> Runs fixed scripts, automated regex patterns, or static classification limits.</p>
+                <p><strong>Advantages:</strong> Predictable, low latency, low computation costs, high output throughput.</p>
+                <p><strong>Use Cases:</strong> SPAM filters, document classification index lists, numeric data parsing.</p>
+                <p><strong>Enterprise Application:</strong> Simple alert pipelines when sales CRM fields are modified.</p>
+              </div>
+            </div>
+
+            {/* Agentic Card */}
+            <div className="bg-cyan-500/[0.02] border border-cyan-500/10 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2 border-b border-cyan-500/10 pb-2">
+                <Sparkles size={14} className="text-cyan-400 animate-pulse" />
+                <h4 className="text-xs font-bold text-cyan-400">Agentic AI</h4>
+              </div>
+              <div className="space-y-2 text-[10px] text-muted-foreground leading-relaxed">
+                <p><strong>System Role:</strong> Runs goal planners, autonomous tool loops, and self-reflection checking paths.</p>
+                <p><strong>Advantages:</strong> Adapts to novel errors, writes SQL/code on the fly, tolerates format shifts.</p>
+                <p><strong>Use Cases:</strong> Developer coding swarms, shipping logistics route handlers, invoice auditing bots.</p>
+                <p><strong>Enterprise Application:</strong> Customer refunds manager connecting Stripes, logs, and databases.</p>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+        {/* Quick Quiz Section */}
+        <div className="space-y-4 border-t border-white/5 pt-5">
+          <div className="flex items-center gap-2">
+            <HelpCircle size={16} className="text-cyan-400" />
+            <h3 className="text-sm font-bold text-foreground">Quick Quiz (Answer 3 Questions)</h3>
+          </div>
+
+          <div className="space-y-5">
+            {mcqs.map((q) => {
+              const isCorrect = quizCorrect[q.id];
+              return (
+                <div key={q.id} className="space-y-2 bg-white/[0.005] border border-white/5 rounded-2xl p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs font-semibold text-foreground leading-relaxed">{q.question}</h4>
+                    {quizChecked && (
+                      isCorrect ? (
+                        <span className="text-[10px] text-emerald-400 font-extrabold flex items-center gap-1"><Check size={12} /> Correct</span>
+                      ) : (
+                        <span className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1"><AlertTriangle size={12} /> Try Again</span>
+                      )
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    {q.options.map((opt, oIdx) => {
+                      const isSelected = quizAnswers[q.id] === oIdx;
+                      return (
+                        <button
+                          key={oIdx}
+                          onClick={() => handleSelectOption(q.id, oIdx)}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
+                            isSelected
+                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {!allCorrect && (
+            <button
+              onClick={handleCheckAnswers}
+              disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+            >
+              Verify Answers
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Footer / Completion Button */}
+      <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-between z-10">
+        <div className="flex flex-col items-start">
+          <span className="text-[10px] text-muted-foreground font-semibold">Reward</span>
+          <span className="text-xs font-mono font-bold text-cyan-400">⚡ 50 XP</span>
+        </div>
+
+        {allCorrect ? (
+          <button
+            onClick={handleClaimXp}
+            disabled={isSaving}
+            className="bg-gradient-to-r from-emerald-400 to-cyan-500 hover:opacity-95 text-black font-extrabold px-6 py-3 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-cyan-400/20 flex items-center gap-1.5"
           >
             {isSaving ? "Completing..." : "Complete Lesson"} <ArrowRight size={13} />
           </button>
