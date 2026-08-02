@@ -348,6 +348,17 @@ export function LearningBitePlayer({
     );
   }
 
+  if (activeBite && Number(activeBite.id) === 1113) {
+    return (
+      <CustomBite3Player
+        activeBite={activeBite}
+        onClose={onClose}
+        handleClaimXp={handleClaimXp}
+        isSaving={isSaving}
+      />
+    );
+  }
+
   return (
     <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
       <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -1305,6 +1316,298 @@ export function CustomBite2Player({
               <span><strong>Long-Term Memory</strong> uses vector representations to query thousands of document files semantically on demand.</span>
             </li>
           </ul>
+        </div>
+
+        {/* Quick Quiz Section */}
+        <div className="space-y-4 border-t border-white/5 pt-5">
+          <div className="flex items-center gap-2">
+            <HelpCircle size={16} className="text-cyan-400" />
+            <h3 className="text-sm font-bold text-foreground">Quick Quiz (Answer 3 Questions)</h3>
+          </div>
+
+          <div className="space-y-5">
+            {mcqs.map((q) => {
+              const isCorrect = quizCorrect[q.id];
+              return (
+                <div key={q.id} className="space-y-2 bg-white/[0.005] border border-white/5 rounded-2xl p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs font-semibold text-foreground leading-relaxed">{q.question}</h4>
+                    {quizChecked && (
+                      isCorrect ? (
+                        <span className="text-[10px] text-emerald-400 font-extrabold flex items-center gap-1"><Check size={12} /> Correct</span>
+                      ) : (
+                        <span className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1"><AlertTriangle size={12} /> Try Again</span>
+                      )
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    {q.options.map((opt, oIdx) => {
+                      const isSelected = quizAnswers[q.id] === oIdx;
+                      return (
+                        <button
+                          key={oIdx}
+                          onClick={() => handleSelectOption(q.id, oIdx)}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
+                            isSelected
+                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {!allCorrect && (
+            <button
+              onClick={handleCheckAnswers}
+              disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+            >
+              Verify Answers
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Footer / Completion Button */}
+      <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-between z-10">
+        <div className="flex flex-col items-start">
+          <span className="text-[10px] text-muted-foreground font-semibold">Reward</span>
+          <span className="text-xs font-mono font-bold text-cyan-400">⚡ 50 XP</span>
+        </div>
+
+        {allCorrect ? (
+          <button
+            onClick={handleClaimXp}
+            disabled={isSaving}
+            className="bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] hover:opacity-95 text-white font-extrabold px-6 py-3 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-1.5"
+          >
+            {isSaving ? "Completing..." : "Complete Lesson"} <ArrowRight size={13} />
+          </button>
+        ) : (
+          <button
+            disabled
+            className="bg-muted text-muted-foreground/50 cursor-not-allowed font-extrabold px-6 py-3 rounded-xl text-xs flex items-center gap-1.5"
+          >
+            Complete Lesson <Lock size={12} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom Single Page Player for Bite 1113 ───────────────────────────────────
+interface CustomBite3PlayerProps {
+  activeBite: any;
+  onClose: () => void;
+  handleClaimXp: () => void;
+  isSaving: boolean;
+}
+
+export function CustomBite3Player({
+  activeBite,
+  onClose,
+  handleClaimXp,
+  isSaving
+}: CustomBite3PlayerProps) {
+  // Quiz states
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
+    1: null,
+    2: null,
+    3: null
+  });
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState<Record<number, boolean>>({
+    1: false,
+    2: false,
+    3: false
+  });
+
+  const mcqs = [
+    {
+      id: 1,
+      question: "1. What is the first stage of the Agent Lifecycle where information is collected?",
+      options: [
+        "Action",
+        "Perception",
+        "Feedback",
+        "Planning"
+      ],
+      correctAnswer: 1
+    },
+    {
+      id: 2,
+      question: "2. Which stage involves decomposing a large objective into smaller milestones before taking action?",
+      options: [
+        "Perception",
+        "Reasoning",
+        "Planning",
+        "Action"
+      ],
+      correctAnswer: 2
+    },
+    {
+      id: 3,
+      question: "3. Why is the 'Feedback' stage critical to the agent loop lifecycle?",
+      options: [
+        "It increases total database size.",
+        "It allows the agent to observe action outcomes and plan detours if a tool fails.",
+        "It deletes past history records.",
+        "It disables tool calls."
+      ],
+      correctAnswer: 1
+    }
+  ];
+
+  const handleSelectOption = (qId: number, optIdx: number) => {
+    if (quizChecked && quizCorrect[qId]) return;
+    setQuizAnswers(prev => ({ ...prev, [qId]: optIdx }));
+  };
+
+  const handleCheckAnswers = () => {
+    const c1 = quizAnswers[1] === mcqs[0].correctAnswer;
+    const c2 = quizAnswers[2] === mcqs[1].correctAnswer;
+    const c3 = quizAnswers[3] === mcqs[2].correctAnswer;
+    setQuizCorrect({ 1: c1, 2: c2, 3: c3 });
+    setQuizChecked(true);
+  };
+
+  const allCorrect = quizCorrect[1] && quizCorrect[2] && quizCorrect[3];
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between max-h-[85vh]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold">
+            <Zap size={14} className="fill-cyan-400 text-cyan-400" />
+          </div>
+          <div>
+            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-black block">
+              Learning Bite Player &bull; 3 of 4
+            </span>
+            <h4 className="text-xs font-bold text-foreground mt-0.5">{activeBite.title}</h4>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
+        
+        {/* Objectives Panel */}
+        <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
+          <p className="text-xs text-foreground font-semibold">Understand the five sequential phases of the AI Agent Lifecycle: Perception, Reasoning, Planning, Action, and Feedback.</p>
+        </div>
+
+        {/* Concept Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <Sparkles size={14} className="text-cyan-400" /> The Loop Mechanism
+          </h3>
+          <div className="text-xs text-muted-foreground space-y-2.5 leading-relaxed">
+            <p>
+              An AI Agent operates not as a static script but inside a continuous execution loop called the **Agent Lifecycle**. This loop runs sequentially, allowing the agent to continuously check the system state, re-evaluate its plan, call APIs, and check outputs.
+            </p>
+            <p>
+              By structuring execution into five standard phases, agents maintain robust progress alignment towards their final objectives, handling unexpected environment detours autonomously.
+            </p>
+          </div>
+        </div>
+
+        {/* Visual Step-by-Step Flow */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground">Step-by-Step Visual Flow</h3>
+          <div className="space-y-3 pt-1">
+            <div className="flex items-start gap-3 bg-white/[0.01] border border-white/5 rounded-2xl p-3.5">
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xs font-bold font-mono">1</div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground mb-0.5">Perception</h4>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  The agent scans environmental states, queries system databases, reads files, or intercepts webhook request callbacks.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 bg-white/[0.01] border border-white/5 rounded-2xl p-3.5">
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xs font-bold font-mono">2</div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground mb-0.5">Reasoning</h4>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  The LLM brain evaluates the gathered input state parameters against the high-level goals and checks constraints.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 bg-white/[0.01] border border-white/5 rounded-2xl p-3.5">
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xs font-bold font-mono">3</div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground mb-0.5">Planning</h4>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  The model decomposes the complex objective into a series of smaller, sequential sub-tasks or tool calls.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 bg-white/[0.01] border border-white/5 rounded-2xl p-3.5">
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xs font-bold font-mono">4</div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground mb-0.5">Action</h4>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  The agent fires decided tools (e.g. database writers, file creators, email dispatchers) to interact with the environment.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 bg-white/[0.01] border border-white/5 rounded-2xl p-3.5">
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xs font-bold font-mono">5</div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground mb-0.5">Feedback</h4>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  The agent observes the result of the tool run, processes errors or exceptions, and returns to Step 1 to continue.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Workplace Example Section */}
+        <div className="bg-purple-500/5 border border-purple-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-purple-400 block mb-1">Workplace Example</span>
+          <h4 className="text-xs font-bold text-foreground mb-1.5">Automated Fleet Dispatch Agent</h4>
+          <div className="text-[11px] text-muted-foreground space-y-1.5 leading-relaxed">
+            <p>
+              <strong>1. Perception:</strong> GPS sensors alert the dispatch coordinator agent that an active delivery cargo vehicle has broken down on Route 4.
+            </p>
+            <p>
+              <strong>2. Reasoning:</strong> The brain calculates that if left unchecked, the shipment SLA will fail. It decides cargo must be transferred.
+            </p>
+            <p>
+              <strong>3. Planning:</strong> The agent designs a plan: Find closest standby vehicle, request a cargo swap ticket, and notify customer of delay.
+            </p>
+            <p>
+              <strong>4. Action:</strong> The agent invokes dispatch APIs to register standby Carrier B to Route 4.
+            </p>
+            <p>
+              <strong>5. Feedback:</strong> The API returns confirmation. The agent monitors the standby carrier's GPS sensor to confirm the detour is resolved.
+            </p>
+          </div>
         </div>
 
         {/* Quick Quiz Section */}
