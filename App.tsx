@@ -804,25 +804,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
 
             </div>
 
-            {/* Trusted by Industry stats block */}
-            <div className="mt-20 border-t border-border/10 pt-12 pb-4 text-center w-full max-w-7xl mx-auto px-6">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-8">Trusted by industry leaders worldwide</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-                {[
-                  { count: "340+", label: "Enterprise Companies" },
-                  { count: "25K+", label: "Active Learners" },
-                  { count: "96%", label: "Completion Rate" },
-                  { count: "4.9★", label: "Average Rating" }
-                ].map((stat, i) => (
-                  <div key={i} className="space-y-1">
-                    <h4 className="text-3xl lg:text-4xl font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                      {stat.count}
-                    </h4>
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+
           </section>
 
           {/* How Mentora Works */}
@@ -1564,6 +1546,16 @@ function AuthPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               {authLoading ? "Authenticating..." : isSignUp ? "Sign Up" : "Login"}
             </CyanButton>
           </form>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.setItem("dev_bypass", "true");
+              window.location.reload();
+            }}
+            className="w-full mt-4 py-2.5 rounded-xl border border-dashed border-primary/30 hover:border-primary/60 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all cursor-pointer text-center"
+          >
+            🛠️ Dev Bypass Login (Guest Mode)
+          </button>
         </div>
       </div>
     </div>
@@ -2277,7 +2269,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 <span className="text-[10px] font-bold text-foreground">Resume Journey</span>
               </button>
               <button
-                onClick={() => setChatOpen(true)}
+                onClick={() => onNavigate("ai-chat")}
                 className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-cyan-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
               >
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
@@ -2526,11 +2518,11 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         ) : null}
 
         <button
-          onClick={() => setChatOpen(!chatOpen)}
+          onClick={() => onNavigate("ai-chat")}
           className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-xl hover:bg-primary/95 transition-all duration-300 hover:scale-105"
           title="Kai AI Assistant"
         >
-          {chatOpen ? <Minus size={20} /> : <MessageSquare size={22} />}
+          <MessageSquare size={22} />
         </button>
       </div>
     </motion.div>
@@ -3839,7 +3831,139 @@ function LessonViewerPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
 // ─── AI Chat ──────────────────────────────────────────────────────────────────
 function AIChatPage() {
-  return null;
+  const { profile, user } = useApp();
+  const [messages, setMessages] = useState<any[]>([
+    {
+      role: 'ai',
+      content: "Hi, I'm Kai, Mentora's AI assistant. How may I help you?"
+    }
+  ]);
+  const [input, setInput] = useState('');
+  const [typing, setTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = () => {
+    if (!input.trim()) return;
+    const text = input;
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
+    setInput('');
+    setTyping(true);
+
+    setTimeout(() => {
+      setTyping(false);
+      const query = text.toLowerCase();
+      let reply = "I'm looking up that information in the Mentora SOP vault. Could you clarify which plant node or equipment number this relates to?";
+      
+      if (query.includes("valve") || query.includes("boiler")) {
+        reply = "For boiler operations, isolation of breaker panel 4B is required before using the override lever beneath the pressure gauge. Please refer to **SOP-14.2: Lockout/Tagout overrides**.";
+      } else if (query.includes("modbus") || query.includes("telemetry")) {
+        reply = "To configure Modbus register mappings, use RS-485 interfaces with Baud rate 9600 and check parity bit overrides. Refer to **SOP-202: Boiler room evacuations**.";
+      } else if (query.includes("safety") || query.includes("loto")) {
+        reply = "Centralized LOTO safety regulations require placement of red padlocks on isolation switch handles. Refer to **SOP-104: Sensor calibration safety specs**.";
+      } else if (query.includes("hello") || query.includes("hi")) {
+        reply = "Hi there! I am Kai. How can I help you optimize operations or study today?";
+      }
+
+      setMessages(prev => [...prev, { role: 'ai', content: reply }]);
+    }, 1000);
+  };
+
+  const activeProfile = profile || {
+    name: user?.email?.split('@')[0] || "Learner"
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto h-[calc(100vh-80px)] flex flex-col space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border/10 pb-4 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 via-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Bot size={20} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-foreground animate-pulse" style={{ fontFamily: "'Raleway', sans-serif" }}>Kai AI Mentor</h2>
+            <p className="text-xs text-muted-foreground">Always-on learning and operations companion</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Chat Box */}
+      <div className="flex-1 overflow-y-auto premium-glass-card p-6 space-y-4 scrollbar-thin relative min-h-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/2 via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10 space-y-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-sm ${
+                msg.role === 'user' 
+                  ? 'bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] text-white font-semibold' 
+                  : 'bg-card/60 border border-border/10 text-foreground'
+              }`}>
+                {msg.role !== 'user' && (
+                  <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block mb-1">Kai Assistant</span>
+                )}
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+              </div>
+            </div>
+          ))}
+          {typing && (
+            <div className="flex justify-start">
+              <div className="bg-card/60 border border-border/10 rounded-2xl px-4 py-3 text-xs text-muted-foreground flex items-center gap-1.5 animate-pulse">
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="text-xs ml-1">Kai is looking up references...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Suggested Quick Questions */}
+      <div className="flex gap-2 flex-wrap items-center flex-shrink-0 py-1">
+        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Suggested:</span>
+        {[
+          "How do LOTO overrides work?",
+          "Evacuation procedures in Boiler room?",
+          "Sensor calibration guidelines"
+        ].map((q) => (
+          <button
+            key={q}
+            onClick={() => {
+              setInput(q);
+            }}
+            className="px-3 py-1 rounded-xl bg-primary/5 border border-primary/10 hover:border-primary/30 text-[10px] text-primary transition-all font-semibold cursor-pointer"
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+
+      {/* Input Area */}
+      <div className="flex gap-3 flex-shrink-0 pt-1">
+        <input
+          placeholder="Ask Kai a real-time question..."
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') sendMessage();
+          }}
+          className="bg-card border border-border/20 rounded-2xl px-4 py-3 text-xs flex-1 outline-none focus:border-primary/50 text-foreground"
+        />
+        <button
+          onClick={sendMessage}
+          className="px-6 rounded-2xl bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] text-white flex items-center justify-center hover:from-[#FF4CA0] hover:to-[#8C4AFF] transition-all cursor-pointer shadow-lg shadow-pink-500/20 active:scale-95 font-bold text-xs"
+          style={{ fontFamily: "'Raleway', sans-serif" }}
+        >
+          Send <Send size={14} className="ml-1.5" fill="white" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // ─── Quiz Page ────────────────────────────────────────────────────────────────
@@ -4105,186 +4229,409 @@ function CertificatesPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
 // ─── Profile Page ─────────────────────────────────────────────────────────────
 function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  const { isDark } = useTheme();
-  const { profile, user, enrollments, courses } = useApp();
-
+  const { profile, user, enrollments, courses, setProfile, signOut } = useApp();
+  
+  // Profile State
   const activeProfile = profile || {
     name: user?.email?.split('@')[0] || "Learner",
     email: user?.email || "learner@tata.com",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
-    role: "JUNIOR_EMPLOYEE",
+    role: "junior_employee",
     department: "Software Engineering",
     plant: "Jamshedpur HQ",
     designation: "Associate Engineer",
-    xp: 0,
-    currentStreak: 0,
-    knowledgeCredits: 0,
-    mentoraCredits: 0
+    xp: 1240,
+    currentStreak: 12,
+    longestStreak: 15,
+    knowledgeCredits: 150,
+    mentoraCredits: 450,
+    currentJourney: "Agentic AI",
+    currentLevel: "Beginner"
   };
 
-  const enrolledCourses = enrollments.map(e => {
-    const course = courses.find(c => Number(c.id) === Number(e.course_id));
-    if (!course) return null;
-    return {
-      ...course,
-      progress: e.progress
-    };
-  }).filter(Boolean);
+  // Completion calculation
+  const fields = [
+    activeProfile.name,
+    activeProfile.email,
+    activeProfile.avatar,
+    activeProfile.designation,
+    activeProfile.department,
+    activeProfile.plant
+  ];
+  const filledCount = fields.filter(Boolean).length;
+  const completionPercentage = Math.round((filledCount / fields.length) * 100);
 
-  const completedCount = enrolledCourses.filter((e: any) => e.progress === 100).length;
-  const activeCount = enrolledCourses.filter((e: any) => e.progress > 0 && e.progress < 100).length;
+  // Modal states
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+
+  // Edit fields
+  const [editName, setEditName] = useState(activeProfile.name || "");
+  const [editAvatar, setEditAvatar] = useState(activeProfile.avatar || "");
+  const [editDesignation, setEditDesignation] = useState(activeProfile.designation || "");
+  const [editDepartment, setEditDepartment] = useState(activeProfile.department || "");
+  const [editPlant, setEditPlant] = useState(activeProfile.plant || "");
+  const [editSaving, setEditSaving] = useState(false);
+
+  // Password fields
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditSaving(true);
+
+    const updated = {
+      ...activeProfile,
+      name: editName,
+      avatar: editAvatar,
+      designation: editDesignation,
+      department: editDepartment,
+      plant: editPlant
+    };
+
+    setProfile(updated);
+    setEditSaving(false);
+    setEditModalOpen(false);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordSuccess("");
+    setPasswordError("");
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setPasswordLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setPasswordLoading(false);
+
+    if (error) {
+      setPasswordError(error.message);
+    } else {
+      setPasswordSuccess("Password updated successfully!");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordModalOpen(false), 1200);
+    }
+  };
 
   const skills = [
-    { name: "Machine Learning", level: 78, color: "#F72585" },
-    { name: "Python", level: 92, color: "#10B981" },
-    { name: "Cybersecurity", level: 45, color: "#F59E0B" },
-    { name: "Cloud Computing", level: 61, color: "#7C3AED" },
-    { name: "Leadership", level: 84, color: "#FF4444" },
-    { name: "Data Analytics", level: 70, color: "#0099FF" },
+    { name: "Agentic AI", level: 82, color: "#FF2B8A" },
+    { name: "Prompt Engineering", level: 95, color: "#10B981" },
+    { name: "Context Optimization", level: 64, color: "#7C3AED" }
   ];
 
   return (
-    <div className="p-6 max-w-[1200px] mx-auto">
-      {/* Profile header */}
-      <Card className="p-6 mb-6 relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-80 opacity-10 pointer-events-none">
-          <NeuralNetSVG className="w-full h-full" />
+    <div className="p-6 max-w-7xl mx-auto space-y-8 relative">
+      {/* Profile Header Card */}
+      <Card className="p-6 relative overflow-hidden flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
+        
+        {/* User Info Column */}
+        <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+          <div className="relative group">
+            <img 
+              src={activeProfile.avatar} 
+              alt={activeProfile.name} 
+              className="w-24 h-24 rounded-2xl object-cover bg-muted border border-white/10 shadow-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+              <h2 className="text-2xl font-black text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                {activeProfile.name}
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-primary/10 border border-primary/20 text-primary uppercase tracking-wider">
+                {activeProfile.role?.replace('_', ' ')}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {activeProfile.designation} &bull; {activeProfile.department} &bull; {activeProfile.plant}
+            </p>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-muted-foreground font-semibold">
+              <span>{activeProfile.email}</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-start gap-6 relative z-10">
-          <div className="relative flex-shrink-0">
-            <img src={activeProfile.avatar}
-              alt={activeProfile.name} className="w-20 h-20 rounded-2xl object-cover bg-muted" />
-            <button className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-              <Camera size={12} className="text-white" />
-            </button>
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <h2 {...sg("text-2xl font-bold")}>{activeProfile.name}</h2>
-              <Badge color="cyan">{activeProfile.designation}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mb-3">{activeProfile.designation} · Tata Steel · {activeProfile.plant}</p>
-            <div className="flex items-center gap-6 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Mail size={12} />{activeProfile.email}</span>
-              <span className="flex items-center gap-1"><Building2 size={12} />{activeProfile.department}</span>
-              <span className="flex items-center gap-1"><UserCheck size={12} />Member since Jan 2026</span>
-            </div>
-          </div>
-          <button onClick={() => onNavigate("settings")}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-border transition-all flex-shrink-0"
-            style={{ fontFamily: "'Raleway', sans-serif" }}>
-            <Edit2 size={13} /> Edit Profile
+
+        {/* Action Controls */}
+        <div className="flex flex-col gap-2.5 w-full md:w-auto">
+          <button 
+            onClick={() => {
+              setEditName(activeProfile.name || "");
+              setEditAvatar(activeProfile.avatar || "");
+              setEditDesignation(activeProfile.designation || "");
+              setEditDepartment(activeProfile.department || "");
+              setEditPlant(activeProfile.plant || "");
+              setEditModalOpen(true);
+            }}
+            className="px-5 py-2.5 text-xs font-bold rounded-xl border border-white/10 hover:bg-white/5 transition-all text-foreground cursor-pointer text-center"
+            style={{ fontFamily: "'Raleway', sans-serif" }}
+          >
+            Edit Profile
+          </button>
+          <button 
+            onClick={() => setPasswordModalOpen(true)}
+            className="px-5 py-2.5 text-xs font-bold rounded-xl border border-white/10 hover:bg-white/5 transition-all text-foreground cursor-pointer text-center"
+            style={{ fontFamily: "'Raleway', sans-serif" }}
+          >
+            Change Password
+          </button>
+          <button 
+            onClick={signOut}
+            className="px-5 py-2.5 text-xs font-bold rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 transition-all cursor-pointer text-center"
+            style={{ fontFamily: "'Raleway', sans-serif" }}
+          >
+            Logout
           </button>
         </div>
       </Card>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left */}
-        <div className="space-y-5">
-          {/* Learning stats */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-4")}>Learning Statistics</h3>
-            <div className="space-y-3">
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Side: Milestones, Stats, & Account Information */}
+        <div className="space-y-6">
+          {/* Profile Completion Card */}
+          <Card className="p-5 space-y-3">
+            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <span>Profile Completion</span>
+              <span className="font-mono text-foreground">{completionPercentage}%</span>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <div 
+                className="h-full bg-gradient-to-r from-primary to-[#7C3AED] rounded-full transition-all duration-500 shadow-[0_0_8px_var(--primary)]"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Keep your profile credentials populated to maintain certified verification across plant systems.
+            </p>
+          </Card>
+
+          {/* Core Gamified Stats Card */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Learning Stats</h3>
+            <div className="space-y-3.5">
               {[
-                { label: "Total hours learned", value: `${(completedCount * 18 + activeCount * 5) || 12}h`, icon: <Clock size={14} /> },
-                { label: "Courses completed", value: completedCount.toString(), icon: <CheckCircle size={14} /> },
-                { label: "Certificates earned", value: completedCount.toString(), icon: <Award size={14} /> },
-                { label: "Current streak", value: `${activeProfile.currentStreak} days`, icon: <Flame size={14} /> },
-                { label: "Skill points", value: activeProfile.xp.toLocaleString(), icon: <Zap size={14} /> },
-              ].map((stat) => (
-                <div key={stat.label} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="text-primary">{stat.icon}</span>
-                    {stat.label}
-                  </div>
-                  <span {...mono("text-sm font-semibold text-foreground")}>{stat.value}</span>
+                { label: "Total XP Earned", value: `${activeProfile.xp} XP`, icon: <Zap size={14} className="text-primary" /> },
+                { label: "Current Streak", value: `${activeProfile.currentStreak} days`, icon: <Flame size={14} className="text-orange-400" /> },
+                { label: "Longest Streak", value: `${activeProfile.longestStreak} days`, icon: <Flame size={14} className="text-orange-600" /> },
+                { label: "Learning Level", value: activeProfile.currentLevel || "Beginner", icon: <Award size={14} className="text-cyan-400" /> },
+                { label: "Current Journey", value: activeProfile.currentJourney || "Agentic AI", icon: <BookOpen size={14} className="text-purple-400" /> }
+              ].map((stat, i) => (
+                <div key={i} className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    {stat.icon} {stat.label}
+                  </span>
+                  <span className="text-foreground font-bold">{stat.value}</span>
                 </div>
               ))}
             </div>
           </Card>
 
-          {/* Achievements */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-4")}>Achievements</h3>
-            <div className="grid grid-cols-3 gap-2">
+          {/* Account Information Card */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Account Information</h3>
+            <div className="space-y-3.5">
               {[
-                { icon: "🔥", label: "12-Day Streak", unlocked: true },
-                { icon: "🏆", label: "Quiz Master", unlocked: true },
-                { icon: "⚡", label: "Speed Learner", unlocked: true },
-                { icon: "🎯", label: "Perfect Score", unlocked: true },
-                { icon: "🧠", label: "Deep Thinker", unlocked: false },
-                { icon: "🚀", label: "Early Adopter", unlocked: false },
-              ].map((a) => (
-                <div key={a.label} className={`text-center p-2 rounded-xl border ${a.unlocked ? "border-border bg-card" : "border-border opacity-30"}`}>
-                  <p className="text-xl mb-1">{a.icon}</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight">{a.label}</p>
+                { label: "Employee ID", value: `EMP-${user?.id?.slice(0, 5).toUpperCase() || "TATA023"}` },
+                { label: "Account Role", value: activeProfile.role?.replace('_', ' ') || "Learner" },
+                { label: "Plant Location", value: activeProfile.plant || "Jamshedpur HQ" },
+                { label: "Department", value: activeProfile.department || "Software Engineering" },
+                { label: "Platform Tier", value: "Enterprise Verified" }
+              ].map((info, i) => (
+                <div key={i} className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-muted-foreground">{info.label}</span>
+                  <span className="text-foreground font-bold">{info.value}</span>
                 </div>
               ))}
             </div>
           </Card>
         </div>
 
-        {/* Right */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Skills */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-4")}>Skill Proficiency</h3>
+        {/* Right Side: Skill passport, achievements, & certificates */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Skill proficiency list */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Skill Proficiency</h3>
             <div className="space-y-4">
               {skills.map((skill) => (
                 <div key={skill.name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm text-foreground">{skill.name}</span>
-                    <span {...mono("text-xs")} style={{ color: skill.color }}>{skill.level}%</span>
+                  <div className="flex items-center justify-between mb-1.5 text-xs font-semibold">
+                    <span className="text-foreground">{skill.name}</span>
+                    <span className="font-mono text-primary">{skill.level}%</span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${skill.level}%`, background: skill.color, boxShadow: `0 0 8px ${skill.color}40` }} />
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${skill.level}%`, backgroundColor: skill.color, boxShadow: `0 0 8px ${skill.color}40` }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </Card>
 
-          {/* Progress chart */}
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 {...sg("text-sm font-semibold")}>Monthly Learning Activity</h3>
-              <span {...mono("text-xs text-muted-foreground")}>Last 6 months</span>
-            </div>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={MONTHLY_DATA} barSize={28}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
-                <YAxis hide />
-                <Tooltip contentStyle={getTooltipStyle(isDark)}
-                  formatter={(v: number) => [`${v}h`, "Hours"]} />
-                <Bar dataKey="hours" fill="var(--primary)" radius={[6, 6, 0, 0]}
-                  style={{ filter: "drop-shadow(0 0 6px rgba(247,37,133,0.35))" }} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-
-          {/* Current courses */}
-          <Card className="p-5">
-            <h3 {...sg("text-sm font-semibold mb-4")}>Active Enrollments</h3>
-            <div className="space-y-3">
-              {enrolledCourses.filter((c: any) => c.progress > 0).map((course: any) => (
-                <div key={course.id} className="flex items-center gap-3 cursor-pointer hover:bg-muted rounded-xl p-2 -mx-2 transition-colors"
-                  onClick={() => onNavigate("course-detail")}>
-                  <img src={course.thumbnail} alt="" className="w-12 h-10 rounded-lg object-cover bg-muted flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{course.title}</p>
-                    <ProgressBar value={course.progress} className="mt-1.5 max-w-xs" />
-                  </div>
-                  <span {...mono("text-xs text-muted-foreground")}>{course.progress}%</span>
+          {/* Achievements Grid */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">My Achievements</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {[
+                { icon: "🔥", label: "12-Day Streak", desc: "Active learner" },
+                { icon: "🏆", label: "Perfect Quiz", desc: "Score 100% on a quiz" },
+                { icon: "🧠", label: "Deep Thinker", desc: "Verify 3 SOPs" }
+              ].map((ach, i) => (
+                <div key={i} className="text-center p-3 rounded-2xl border border-white/5 bg-white/[0.01] space-y-1">
+                  <div className="text-2xl">{ach.icon}</div>
+                  <p className="text-xs font-extrabold text-foreground">{ach.label}</p>
+                  <p className="text-[9px] text-muted-foreground">{ach.desc}</p>
                 </div>
               ))}
-              {enrolledCourses.filter((c: any) => c.progress > 0).length === 0 && (
-                <p className="text-xs text-muted-foreground italic text-center py-4">No active enrollments found.</p>
-              )}
+            </div>
+          </Card>
+
+          {/* Certificates Card */}
+          <Card className="p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Award size={14} className="text-primary" /> Verified Credentials
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {CERTIFICATES.map((cert) => (
+                <div key={cert.id} className="p-4 rounded-xl border border-white/5 bg-white/[0.01] space-y-3 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
+                  <div className="space-y-1">
+                    <p className="text-[9px] text-primary uppercase font-mono tracking-wider">Credential ID: {cert.credentialId}</p>
+                    <h4 className="text-xs font-bold text-foreground">{cert.title}</h4>
+                    <p className="text-[10px] text-muted-foreground">{cert.course}</p>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-muted-foreground border-t border-white/5 pt-2 font-mono">
+                    <span>Score: <span className="text-emerald-400 font-bold">{cert.score}%</span></span>
+                    <span>{cert.date}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         </div>
       </div>
+
+      {/* Edit Profile Modal Dialog */}
+      <AnimatePresence>
+        {editModalOpen && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="premium-glass-card w-full max-w-md p-6 border border-white/10 relative overflow-hidden shadow-2xl space-y-4"
+            >
+              <button onClick={() => setEditModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer">
+                <X size={16} />
+              </button>
+              <h3 className="text-lg font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Edit Profile</h3>
+              <form onSubmit={handleEditSave} className="space-y-4">
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Full Name</label>
+                  <input 
+                    type="text" required value={editName} onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Avatar Image URL</label>
+                  <input 
+                    type="text" required value={editAvatar} onChange={(e) => setEditAvatar(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Designation</label>
+                  <input 
+                    type="text" required value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Department</label>
+                  <input 
+                    type="text" required value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Plant Location</label>
+                  <input 
+                    type="text" required value={editPlant} onChange={(e) => setEditPlant(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div className="flex gap-3 justify-end pt-2">
+                  <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded-xl bg-white/5 text-muted-foreground text-xs font-bold cursor-pointer">Cancel</button>
+                  <button type="submit" disabled={editSaving} className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-bold cursor-pointer shadow-md shadow-primary/10">
+                    {editSaving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Change Password Modal Dialog */}
+      <AnimatePresence>
+        {passwordModalOpen && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="premium-glass-card w-full max-w-sm p-6 border border-white/10 relative overflow-hidden shadow-2xl space-y-4"
+            >
+              <button onClick={() => setPasswordModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer">
+                <X size={16} />
+              </button>
+              <h3 className="text-lg font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Change Password</h3>
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                {passwordError && <p className="text-xs text-red-400 font-bold bg-red-500/10 p-2.5 rounded-lg border border-red-500/15">{passwordError}</p>}
+                {passwordSuccess && <p className="text-xs text-emerald-400 font-bold bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-500/15">{passwordSuccess}</p>}
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">New Password</label>
+                  <input 
+                    type="password" required placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Confirm New Password</label>
+                  <input 
+                    type="password" required placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-secondary/35 border border-border/10 focus:border-primary/25 rounded-xl px-4 py-2.5 text-xs text-foreground"
+                  />
+                </div>
+                <div className="flex gap-3 justify-end pt-2">
+                  <button type="button" onClick={() => setPasswordModalOpen(false)} className="px-4 py-2 rounded-xl bg-white/5 text-muted-foreground text-xs font-bold cursor-pointer">Cancel</button>
+                  <button type="submit" disabled={passwordLoading} className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-bold cursor-pointer shadow-md shadow-primary/10">
+                    {passwordLoading ? "Updating..." : "Update Password"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -4646,7 +4993,7 @@ function AppLayout({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => 
       case "courses": return <CourseCatalogPage onNavigate={onNavigate} />;
       case "course-detail": return <CourseDetailPage onNavigate={onNavigate} />;
       case "lesson": return <LessonViewerPage onNavigate={onNavigate} />;
-      case "ai-chat": return null;
+      case "ai-chat": return <AIChatPage />;
       case "quiz": return <QuizPage onNavigate={onNavigate} />;
       case "quiz-results": return <QuizResultsPage onNavigate={onNavigate} />;
       case "certificates": return <CertificatesPage onNavigate={onNavigate} />;
@@ -4753,13 +5100,6 @@ export default function App() {
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(true);
 
-  // Redirect chatbot requests to external deployment
-  useEffect(() => {
-    if (page === "ai-chat") {
-      window.location.href = "https://mentora-kai.vercel.app/";
-    }
-  }, [page]);
-
   // Synchronize theme class with html element
   useEffect(() => {
     if (isDark) {
@@ -4770,8 +5110,33 @@ export default function App() {
   }, [isDark]);
 
   // Supabase states
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<any>(() => {
+    if (localStorage.getItem("dev_bypass") === "true") {
+      return { id: "dev-user-id", email: "guest@gmail.com" };
+    }
+    return null;
+  });
+  const [profile, setProfile] = useState<any>(() => {
+    if (localStorage.getItem("dev_bypass") === "true") {
+      return {
+        name: "Disha Shree",
+        email: "guest@gmail.com",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop&auto=format",
+        role: "learner",
+        department: "Software Engineering",
+        plant: "Jamshedpur HQ",
+        designation: "Associate Engineer",
+        xp: 1240,
+        currentStreak: 12,
+        longestStreak: 15,
+        knowledgeCredits: 150,
+        mentoraCredits: 450,
+        currentJourney: "Agentic AI",
+        currentLevel: "Beginner"
+      };
+    }
+    return null;
+  });
   const [courses, setCourses] = useState<any[]>(COURSES);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(1);
@@ -5673,6 +6038,7 @@ export default function App() {
 
   const signOut = async () => {
     try {
+      localStorage.removeItem("dev_bypass");
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);

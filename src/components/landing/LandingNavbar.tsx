@@ -52,13 +52,7 @@ export function LandingNavbar({ activeTab, setActiveTab, onNavigate, user }: Lan
     } else if (itemId === "dashboard") {
       onNavigate("dashboard");
     } else if (itemId === "kai") {
-      setActiveTab("home");
-      setTimeout(() => {
-        const el = document.getElementById("kai-section");
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, 50);
+      onNavigate(user ? "ai-chat" : "auth");
     }
   };
 
