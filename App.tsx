@@ -143,7 +143,7 @@ const MISSION_CONFIGS: Record<string, { page: Page; completionType: 'manual' | '
 const COURSES = [
   {
     id: 1,
-    title: "Advanced Machine Learning & Neural Networks",
+    title: "Agentic AI",
     instructor: "Dr. Sarah Chen",
     instructorAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&auto=format",
     thumbnail: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&h=340&fit=crop&auto=format",
