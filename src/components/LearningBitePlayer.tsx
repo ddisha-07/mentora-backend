@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { 
   X, Zap, BookOpen, Trophy, ArrowRight, ArrowLeft, RotateCcw, 
-  CheckCircle, AlertCircle, HelpCircle
+  CheckCircle, AlertCircle, HelpCircle,
+  Eye, Brain, Play as PlayIcon, Sparkles, Check, AlertTriangle, Lock
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { LearningBite, UserBiteProgress } from "../types";
@@ -324,6 +325,17 @@ export function LearningBitePlayer({
       setIsSaving(false);
     }
   };
+
+  if (activeBite && Number(activeBite.id) === 1111) {
+    return (
+      <CustomSinglePagePlayer
+        activeBite={activeBite}
+        onClose={onClose}
+        handleClaimXp={handleClaimXp}
+        isSaving={isSaving}
+      />
+    );
+  }
 
   return (
     <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
@@ -785,6 +797,294 @@ export function BiteCompletionSection({
         >
           {isSaving ? "Saving..." : "Claim Reward & Continue"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom Single Page Player for Bite 1111 ───────────────────────────────────
+interface CustomSinglePagePlayerProps {
+  activeBite: any;
+  onClose: () => void;
+  handleClaimXp: () => void;
+  isSaving: boolean;
+}
+
+export function CustomSinglePagePlayer({
+  activeBite,
+  onClose,
+  handleClaimXp,
+  isSaving
+}: CustomSinglePagePlayerProps) {
+  // Quiz states
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
+    1: null,
+    2: null,
+    3: null
+  });
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState<Record<number, boolean>>({
+    1: false,
+    2: false,
+    3: false
+  });
+
+  const mcqs = [
+    {
+      id: 1,
+      question: "1. What is the primary role of an AI Agent's 'Brain'?",
+      options: [
+        "To store visual images of code files.",
+        "To reason through logical steps and formulate a plan of actions.",
+        "To connect directly to the hardware computer screens.",
+        "To run simple if-else regex patterns."
+      ],
+      correctAnswer: 1
+    },
+    {
+      id: 2,
+      question: "2. Which of the following is an example of an agent's 'Perception' sensing the environment?",
+      options: [
+        "Executing an SQL command to delete rows.",
+        "An agent receiving a database alert callback webhook.",
+        "The agent sending an email to human customers.",
+        "Printing logs to the console log stream."
+      ],
+      correctAnswer: 1
+    },
+    {
+      id: 3,
+      question: "3. What is a major difference between traditional automated programs and Agentic AI?",
+      options: [
+        "Traditional programs adapt to novel failures dynamically.",
+        "Agentic AI generates dynamic task planning paths and adapts to tool exceptions.",
+        "Traditional programs use natural language models.",
+        "Agentic AI runs only on offline machines."
+      ],
+      correctAnswer: 1
+    }
+  ];
+
+  const handleSelectOption = (qId: number, optIdx: number) => {
+    if (quizChecked && quizCorrect[qId]) return;
+    setQuizAnswers(prev => ({ ...prev, [qId]: optIdx }));
+  };
+
+  const handleCheckAnswers = () => {
+    const c1 = quizAnswers[1] === mcqs[0].correctAnswer;
+    const c2 = quizAnswers[2] === mcqs[1].correctAnswer;
+    const c3 = quizAnswers[3] === mcqs[2].correctAnswer;
+    setQuizCorrect({ 1: c1, 2: c2, 3: c3 });
+    setQuizChecked(true);
+  };
+
+  const allCorrect = quizCorrect[1] && quizCorrect[2] && quizCorrect[3];
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between max-h-[85vh]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold">
+            <Zap size={14} className="fill-cyan-400 text-cyan-400" />
+          </div>
+          <div>
+            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-black block">
+              Learning Bite Player &bull; 1 of 4
+            </span>
+            <h4 className="text-xs font-bold text-foreground mt-0.5">{activeBite.title}</h4>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
+        
+        {/* Objectives Panel */}
+        <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
+          <p className="text-xs text-foreground font-semibold">Explain what an AI Agent is.</p>
+        </div>
+
+        {/* Concept Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <Sparkles size={14} className="text-cyan-400" /> Concept Introduction
+          </h3>
+          <div className="text-xs text-muted-foreground space-y-2.5 leading-relaxed">
+            <p>
+              At its core, an <strong>AI Agent</strong> is an autonomous system powered by a large language model that acts as its cognitive engine. Unlike traditional chatbots that simply answer questions, an agent is designed to achieve high-level goals by planning its own actions, observing the consequences, and self-correcting along the way.
+            </p>
+            <p>
+              Agents operate in an environment by receiving signals (perception), evaluating options (reasoning), and executing decisions through API calls, databases, and scripts (actions). This continuous loop of feedback allows them to handle complex, multi-step tasks without needing human prompts at every step.
+            </p>
+            <p>
+              By integrating memory and external tool access, agents transition from text assistants to proactive digital workers. They can automate repetitive processes, coordinate with other software nodes, and adapt to changing system environments.
+            </p>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground">How It Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex flex-col items-center text-center">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 mb-2">
+                <Eye size={16} />
+              </div>
+              <h4 className="text-xs font-bold text-foreground mb-1">Perceives</h4>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                The agent senses its environment by reading databases, monitoring system metrics, or parsing incoming emails and webhooks.
+              </p>
+            </div>
+            
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex flex-col items-center text-center">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mb-2">
+                <Brain size={16} />
+              </div>
+              <h4 className="text-xs font-bold text-foreground mb-1">Reasons</h4>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                The central LLM brain reviews the perceived state, references its memory of past actions, and formulates a step-by-step logic path.
+              </p>
+            </div>
+            
+            <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex flex-col items-center text-center">
+              <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 mb-2">
+                <PlayIcon size={14} className="fill-pink-400/20" />
+              </div>
+              <h4 className="text-xs font-bold text-foreground mb-1">Acts</h4>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                The agent calls tools (such as database writers, external API keys, or web browsers) to execute its decided actions.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Enterprise Example Section */}
+        <div className="bg-purple-500/5 border border-purple-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-purple-400 block mb-1">Enterprise Workplace Example</span>
+          <h4 className="text-xs font-bold text-foreground mb-1.5">Automated Refund & Discrepancy Manager</h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            An agent monitors the finance inbox. When it receives a customer billing dispute, it queries the Stripe API for the transaction ID, checks the internal ship ledger, resolves whether the customer was double-charged, processes the refund transaction autonomously, and posts a Slack notification to the finance channel for auditing records.
+          </p>
+        </div>
+
+        {/* Key Takeaways */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-bold text-foreground">Key Takeaways</h3>
+          <ul className="space-y-2 text-xs text-muted-foreground list-none">
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Goal-Driven Autonomy:</strong> Agents work toward high-level objectives rather than answering single prompt inputs.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Tool Integration:</strong> They extend LLM capability by executing code, calling APIs, and updating records.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Feedback Loops:</strong> Agents continuously inspect tool outputs to verify correctness before proceeding.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Cognitive Brain:</strong> The model acts as the router and planner, replacing nested hardcoded logical blocks.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Graceful Error Detours:</strong> Agents can handle network or tool failure logs by planning alternative paths.</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Quick Quiz Section */}
+        <div className="space-y-4 border-t border-white/5 pt-5">
+          <div className="flex items-center gap-2">
+            <HelpCircle size={16} className="text-cyan-400" />
+            <h3 className="text-sm font-bold text-foreground">Quick Quiz (Answer 3 Questions)</h3>
+          </div>
+
+          <div className="space-y-5">
+            {mcqs.map((q) => {
+              const isCorrect = quizCorrect[q.id];
+              return (
+                <div key={q.id} className="space-y-2 bg-white/[0.005] border border-white/5 rounded-2xl p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs font-semibold text-foreground leading-relaxed">{q.question}</h4>
+                    {quizChecked && (
+                      isCorrect ? (
+                        <span className="text-[10px] text-emerald-400 font-extrabold flex items-center gap-1"><Check size={12} /> Correct</span>
+                      ) : (
+                        <span className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1"><AlertTriangle size={12} /> Try Again</span>
+                      )
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    {q.options.map((opt, oIdx) => {
+                      const isSelected = quizAnswers[q.id] === oIdx;
+                      return (
+                        <button
+                          key={oIdx}
+                          onClick={() => handleSelectOption(q.id, oIdx)}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
+                            isSelected
+                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {!allCorrect && (
+            <button
+              onClick={handleCheckAnswers}
+              disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+            >
+              Verify Answers
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Footer / Completion Button */}
+      <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-between z-10">
+        <div className="flex flex-col items-start">
+          <span className="text-[10px] text-muted-foreground font-semibold">Reward</span>
+          <span className="text-xs font-mono font-bold text-cyan-400">⚡ 50 XP</span>
+        </div>
+
+        {allCorrect ? (
+          <button
+            onClick={handleClaimXp}
+            disabled={isSaving}
+            className="bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] hover:opacity-95 text-white font-extrabold px-6 py-3 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-1.5"
+          >
+            {isSaving ? "Completing..." : "Complete Lesson"} <ArrowRight size={13} />
+          </button>
+        ) : (
+          <button
+            disabled
+            className="bg-muted text-muted-foreground/50 cursor-not-allowed font-extrabold px-6 py-3 rounded-xl text-xs flex items-center gap-1.5"
+          >
+            Complete Lesson <Lock size={12} />
+          </button>
+        )}
       </div>
     </div>
   );
