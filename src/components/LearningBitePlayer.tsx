@@ -388,6 +388,15 @@ export function LearningBitePlayer({
     );
   }
 
+  if (activeBite && Number(activeBite.stageId || activeBite.stage_id) === 104) {
+    return (
+      <CustomLockedStage4Player
+        activeBite={activeBite}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
       <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -2124,6 +2133,90 @@ export function CustomLockedStage3Player({
             Stage 3 Roadmap Outline (4 Bites)
           </span>
           {stage3Bites.map((b) => (
+            <div key={b.id} className="flex items-center justify-between text-xs py-1.5 border-b border-white/[0.02] last:border-0 opacity-60">
+              <span className="text-muted-foreground font-medium">{b.title}</span>
+              <Lock size={12} className="text-muted-foreground/50" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-end z-10">
+        <button
+          onClick={onClose}
+          className="bg-muted text-foreground font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-muted/80 transition-all active:scale-95"
+        >
+          Back to Roadmap
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom Player for Stage 4 (Enterprise Agent Applications) ────────────────
+interface CustomLockedStage4PlayerProps {
+  activeBite: any;
+  onClose: () => void;
+}
+
+export function CustomLockedStage4Player({
+  activeBite,
+  onClose
+}: CustomLockedStage4PlayerProps) {
+  const stage4Bites = [
+    { id: 1141, title: "1. Long-Term Vector Memory" },
+    { id: 1142, title: "2. Multi-Modal Sensory Channels" },
+    { id: 1143, title: "3. Safe Tool Sandboxing & Guardrails" },
+    { id: 1144, title: "4. Enterprise Human-in-the-Loop Orchestration" }
+  ];
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-bold">
+            <Lock size={14} className="text-indigo-400" />
+          </div>
+          <div>
+            <span className="text-[10px] text-indigo-400 uppercase tracking-widest font-mono font-black block">
+              Stage 4 &bull; Enterprise Agent Applications
+            </span>
+            <h4 className="text-xs font-bold text-foreground mt-0.5">{activeBite.title}</h4>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 my-6 z-10">
+        <div className="w-16 h-16 rounded-full bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/5">
+          <Sparkles size={28} className="text-indigo-400 animate-pulse" />
+        </div>
+        
+        <div className="space-y-2 max-w-md">
+          <h3 className="text-lg font-black text-indigo-400 tracking-tight">Coming Soon</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This module is currently under active development.
+          </p>
+          <div className="inline-block bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-4 py-2 mt-2">
+            <span className="text-xs font-semibold text-indigo-400">
+              Available after Stage 3.
+            </span>
+          </div>
+        </div>
+
+        {/* Outline of the 4 bites */}
+        <div className="w-full max-w-sm bg-white/[0.01] border border-white/5 rounded-2xl p-4 space-y-2.5 text-left">
+          <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block mb-1">
+            Stage 4 Roadmap Outline (4 Bites)
+          </span>
+          {stage4Bites.map((b) => (
             <div key={b.id} className="flex items-center justify-between text-xs py-1.5 border-b border-white/[0.02] last:border-0 opacity-60">
               <span className="text-muted-foreground font-medium">{b.title}</span>
               <Lock size={12} className="text-muted-foreground/50" />

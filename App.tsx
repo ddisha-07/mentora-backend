@@ -2498,6 +2498,8 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         alert("Available after completing Stage 1.");
       } else if (Number(activity.stageId || activity.stage_id) === 103) {
         alert("Available after Stage 2.");
+      } else if (Number(activity.stageId || activity.stage_id) === 104) {
+        alert("Available after Stage 3.");
       } else {
         alert("This activity is currently locked. Please complete the preceding activities to unlock it!");
       }
