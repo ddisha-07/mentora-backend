@@ -91,7 +91,7 @@ export const LOCAL_STAGES = [
     "id": 101,
     "courseId": 1,
     "title": "Autonomous Agent Basics",
-    "description": "Understand single agent perception, reasoning, and acting loops.",
+    "description": "Learn how intelligent agents perceive information, reason, make decisions and perform actions autonomously.",
     "stageLevel": "Beginner",
     "orderIndex": 1,
     "xpRequired": 0
@@ -450,8 +450,8 @@ export const LOCAL_BITES = [
     "activityId": 111,
     "courseId": 1,
     "stageId": 101,
-    "title": "Introduction to AI Agents",
-    "subtitle": "What is an autonomous agent?",
+    "title": "What is an AI Agent?",
+    "subtitle": "Introduction to goal-driven autonomy",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
@@ -459,11 +459,11 @@ export const LOCAL_BITES = [
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Introduction to AI Agents",
-        "description": "An AI agent is a software entity powered by a foundation model that operates autonomously. Unlike simple chatbots, an agent observes its environment, reasons through problems, designs a plan, and executes actions using tools to achieve a target goal without human intervention."
+        "title": "What is an AI Agent?",
+        "description": "An AI Agent is an autonomous program that uses a foundation language model as its central brain. Unlike static chatbots that wait for inputs, an AI agent continuously perceives its environment, makes logical decisions, plans detours, and calls tools autonomously to achieve a high-level goal."
       },
       "simpleExplanation": {
-        "text": "Think of a simple script like a light switch (fixed response), while an AI agent is like a smart thermostat that monitors the room temperature, checks the weather forecast, and dynamically adjusts the heating output."
+        "text": "A standard script is like a train on a fixed track (stops at obstacles), whereas an AI agent is like a self-driving car equipped with GPS, rerouting and braking dynamically based on local obstacles."
       },
       "visual": {
         "type": "cards",
@@ -471,33 +471,33 @@ export const LOCAL_BITES = [
           "cardItems": [
             {
               "title": "Autonomy",
-              "desc": "Agents run reasoning loops without constant human prompt cycles."
+              "desc": "Runs reasoning cycles independently to reach goals."
             },
             {
-              "title": "Tool Bindings",
-              "desc": "They utilize external systems (calculators, web browsers, databases)."
+              "title": "Adaptivity",
+              "desc": "Reacts dynamically to changing external inputs and logs."
             }
           ]
         }
       },
       "realWorldExample": {
         "title": "E-Commerce Stock Agent",
-        "description": "An online store agent regularly monitors stock counts. If an item falls below 10 units, it automatically searches vendor prices, selects the cheapest supplier, issues a purchase order, and alerts the store manager via Slack."
+        "description": "An inventory agent tracks stock metrics. When a product drops below 5 units, it independently queries vendor APIs, places orders at the lowest price, and emails confirmation summaries without manual developer inputs."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What differentiates an autonomous agent from a static chatbot?",
+        "question": "What defines an autonomous AI Agent?",
         "options": [
-          "Agents can process user texts.",
-          "Agents run reasoning loops, plan steps, and call tools autonomously.",
-          "Agents are faster to compile.",
-          "Agents do not require neural network models."
+          "It relies strictly on user prompt intervals.",
+          "It runs reasoning loops, plans steps, and calls tools independently.",
+          "It does not use LLM backends.",
+          "It is a static text filter."
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! The key difference lies in autonomous reasoning, planning, and tool usage.",
-        "incorrect": "Not quite. Standard chatbots process text, but they do not dynamically choose to run actions or call tools without user instructions."
+        "correct": "Correct! Autonomous loop reasoning and tool execution define agent architectures.",
+        "incorrect": "Incorrect. Static chatbots wait for prompts. Agents run continuous reasoning and tool execution cycles autonomously."
       }
     }
   },
@@ -506,8 +506,8 @@ export const LOCAL_BITES = [
     "activityId": 111,
     "courseId": 1,
     "stageId": 101,
-    "title": "Perception & Environment Sensors",
-    "subtitle": "How agents receive information",
+    "title": "Components of an AI Agent",
+    "subtitle": "Brain, Senses, Hands, and memory",
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
@@ -515,45 +515,45 @@ export const LOCAL_BITES = [
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Perception & Environment Sensors",
-        "description": "Perception is the gateway for agents to interact with their environment. Sensors in software are inputs such as system logs, database updates, file changes, API payloads, or raw user queries. The agent parses this information to model the current environment state."
+        "title": "Components of an AI Agent",
+        "description": "An AI agent consists of four core modules: 1) Senses (Sensors/Perception layer translating APIs and databases), 2) Brain (The core LLM reasoning through logic), 3) Senses/Hands (Tools/Action API bindings), and 4) Memory (Short-term conversation threads and long-term vector lookups)."
       },
       "simpleExplanation": {
-        "text": "Just as human eyes and ears sense physical surroundings, software agents use read-only APIs and databases to see what is happening inside an enterprise system."
+        "text": "It mimics a human worker: eyes and ears gather observations (Sensors), the brain decides the plan (LLM), hands write code (Tools), and notebooks recall past tasks (Memory)."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "State Modeling",
-              "desc": "Sensors deliver the environment data needed to update internal model state."
+              "title": "Sensors & Tools",
+              "desc": "Sensors read environmental state; tools write actions back to the environment."
             },
             {
-              "title": "Dynamic Fetching",
-              "desc": "Perception can be active (querying a database) or passive (receiving webhooks)."
+              "title": "Context Memory",
+              "desc": "Maintains session chat logs and queries vector databases for long-term facts."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Industrial Safety Monitor",
-        "description": "A factory agent monitors continuous temperature streams from machinery sensors. If a threshold is crossed, it perceives the issue as critical and triggers safety override procedures."
+        "title": "Industrial Alert Handler",
+        "description": "A factory boiler agent perceives anomalous pressure readings (Perception), plans relief steps (Brain), triggers pressure valves (Tools), and logs this in the safety history ledger (Memory)."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "In a software agent, what acts as a sensor for perception?",
+        "question": "Which component of an AI agent executes actions in the external world?",
         "options": [
-          "Only the output monitor",
-          "Read-only databases, system logs, and incoming API payloads",
-          "Model weights",
-          "The user UI toggle button"
+          "Brain",
+          "Tools",
+          "Sensors",
+          "Short-term Memory"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Sensors are any sources that feed environmental and status data into the agent's context.",
-        "incorrect": "Incorrect. Model weights store learned patterns; sensors are the active inputs from the external system environment."
+        "correct": "Correct! Tools are the API bindings and actions used to interact with external environments.",
+        "incorrect": "Not quite. The Brain plans the actions, but the Tools actually execute them."
       }
     }
   },
@@ -562,8 +562,8 @@ export const LOCAL_BITES = [
     "activityId": 111,
     "courseId": 1,
     "stageId": 101,
-    "title": "Reasoning Loops & ReAct Framework",
-    "subtitle": "Reasoning and Acting combined",
+    "title": "The Agent Lifecycle",
+    "subtitle": "The cycle of perception and action",
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
@@ -571,45 +571,45 @@ export const LOCAL_BITES = [
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Reasoning Loops & ReAct Framework",
-        "description": "The ReAct (Reasoning + Acting) framework structures the agent loop into pairs of thoughts and actions. The model first outputs a 'Thought' explaining what it needs to do, then invokes an 'Action' (calls a tool), and then receives an 'Observation' (tool output). This process repeats until the goal is met."
+        "title": "The Agent Lifecycle",
+        "description": "The agent lifecycle is a continuous loop: Perception (reading env state) -> Reasoning (thinking of the problem) -> Planning (creating tasks) -> Action (invoking tools) -> Observation (evaluating tool responses). This loop repeats until the goal is achieved or a max limit is hit."
       },
       "simpleExplanation": {
-        "text": "It is like a chef cooking a new recipe: they check what ingredient is missing (Thought), retrieve it from the pantry (Action), and check if it smells correct (Observation) before moving to the next step."
+        "text": "It is like a diagnostic technician: they check the machine warning lights (Perception), think of options (Reasoning), choose a test (Action), read the metrics (Observation), and repeat until repaired."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Thought-Action-Observation",
-              "desc": "The core cycle that structures how agents run step-by-step reasoning."
+              "title": "Feedback Loop",
+              "desc": "Observations feed the next reasoning thought, creating a dynamic feedback channel."
             },
             {
-              "title": "Transparency",
-              "desc": "ReAct makes agent decision-making highly auditable for human operators."
+              "title": "Termination Guard",
+              "desc": "A threshold checker that halts execution when goals are met or loop counts exceed safety limits."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Logistics Router",
-        "description": "A shipping agent is asked to deliver a parcel. Thought: 'I need to check the local traffic condition.' Action: Calls `traffic_api`. Observation: 'Highway is blocked.' Thought: 'Since the highway is blocked, I must seek a detour.' and routes accordingly."
+        "title": "Logistics Dispatcher Swarm",
+        "description": "A delivery coordinator agent checks shipping schedules, notices a vehicle breakdown, assigns a backup carrier, evaluates the updated arrival estimates, and closes the ticket when shipping is confirmed."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What is the correct order of steps in a ReAct loop cycle?",
+        "question": "What is the final stage of the reasoning and action loop cycle?",
         "options": [
-          "Action -> Thought -> Observation",
-          "Observation -> Thought -> Action",
-          "Thought -> Action -> Observation",
-          "Thought -> Observation -> Action"
+          "Thought",
+          "Action",
+          "Observation",
+          "Planning"
         ],
         "correctAnswer": 2
       },
       "kaiFeedback": {
-        "correct": "Correct! Thought leads to Action, which generates an Observation, feeding the next Thought.",
-        "incorrect": "Not quite. ReAct begins with a reasoning Thought, executes an Action, and records the resulting Observation."
+        "correct": "Correct! The result of the Action is parsed as an Observation, which feeds back into the loop.",
+        "incorrect": "Incorrect. An Action triggers a response. Reading that response is the Observation phase."
       }
     }
   },
@@ -618,8 +618,8 @@ export const LOCAL_BITES = [
     "activityId": 111,
     "courseId": 1,
     "stageId": 101,
-    "title": "Execution & Goal Cycles",
-    "subtitle": "Completing tasks systematically",
+    "title": "Traditional AI vs Agentic AI",
+    "subtitle": "Fixed rules vs dynamic planning",
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
@@ -627,45 +627,45 @@ export const LOCAL_BITES = [
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Execution & Goal Cycles",
-        "description": "The execution cycle is the operational loop that continues until a termination condition is reached. Each cycle updates the agent's working context with new thoughts and actions. The loop exits when the model recognizes the task is completed or hits a safety limit."
+        "title": "Traditional AI vs Agentic AI",
+        "description": "Traditional AI relies on fixed logic, classification boundaries, or rigid decision trees. Agentic AI uses the reasoning capabilities of LLMs to generate flexible plans, handle unstructured tools, inspect intermediate outcomes, and adapt to unpredictable errors on the fly."
       },
       "simpleExplanation": {
-        "text": "It is like a software compiler running test cases: it loops through each test block, reports the outcomes, and stops when all test items pass or the max run-time limit is reached."
+        "text": "Traditional AI is like a automated train (follows tracks; stops if track is damaged), while Agentic AI is like an off-road driver (dynamically detours around roadblocks)."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Termination Check",
-              "desc": "Loops must have explicit criteria to stop running and return the final answer."
+              "title": "Adaptability",
+              "desc": "Agentic AI scales to complex scenarios without requiring hardcoded nested if-else statements."
             },
             {
-              "title": "Max Limit Safeguard",
-              "desc": "Setting loop iteration maximums prevents infinite run cycles and budget waste."
+              "title": "Error Tolerance",
+              "desc": "Reflects on tool failures and retries alternative variables autonomously."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Financial Report Audit",
-        "description": "An accounting agent loops through monthly spreadsheets, flags anomalies, queries transactions, and halts only when all discrepancies are marked as reconciled."
+        "title": "Invoice Audit Assistant",
+        "description": "A traditional parser fails if an invoice format shifts slightly. An agentic auditor reads the shifted layout, locates the fields semantically, queries missing items, and completes the reconciliation."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "Why are iteration limits (max loops) critical in agent execution?",
+        "question": "What is a major advantage of Agentic AI over traditional rule-based AI?",
         "options": [
-          "They increase generation quality.",
-          "They prevent the agent from getting stuck in infinite runs if tools fail.",
-          "They reduce database storage size.",
-          "They are required by the CSS styling."
+          "Lower total computational run cost",
+          "Ability to dynamically adapt to novel environments and plan detours",
+          "Bypassing neural network weights",
+          "None of the above"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Iteration limits are critical safeguards to prevent looping runaways and excessive API token costs.",
-        "incorrect": "Incorrect. The main purpose of iteration limits is safety and cost control, not formatting or storage size."
+        "correct": "Correct! Generative reasoning lets Agentic AI handle unstructured inputs and adapt to novel errors.",
+        "incorrect": "Not quite. Rule-based systems are low cost, but Agentic AI shines in handling novel environments dynamically."
       }
     }
   },
