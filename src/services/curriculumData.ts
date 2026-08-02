@@ -108,7 +108,7 @@ export const LOCAL_STAGES = [
   {
     "id": 103,
     "courseId": 1,
-    "title": "Multi-Agent Systems",
+    "title": "Multi-Agent Collaboration",
     "description": "Explore collaborative swarms, supervisor routing, and conflict consensus.",
     "stageLevel": "Intermediate",
     "orderIndex": 3,

@@ -379,6 +379,15 @@ export function LearningBitePlayer({
     );
   }
 
+  if (activeBite && Number(activeBite.stageId || activeBite.stage_id) === 103) {
+    return (
+      <CustomLockedStage3Player
+        activeBite={activeBite}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
       <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -2031,6 +2040,90 @@ export function CustomLockedStage2Player({
             Stage 2 Roadmap Outline (4 Bites)
           </span>
           {stage2Bites.map((b) => (
+            <div key={b.id} className="flex items-center justify-between text-xs py-1.5 border-b border-white/[0.02] last:border-0 opacity-60">
+              <span className="text-muted-foreground font-medium">{b.title}</span>
+              <Lock size={12} className="text-muted-foreground/50" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-end z-10">
+        <button
+          onClick={onClose}
+          className="bg-muted text-foreground font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-muted/80 transition-all active:scale-95"
+        >
+          Back to Roadmap
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom Player for Stage 3 (Multi-Agent Collaboration) ────────────────────
+interface CustomLockedStage3PlayerProps {
+  activeBite: any;
+  onClose: () => void;
+}
+
+export function CustomLockedStage3Player({
+  activeBite,
+  onClose
+}: CustomLockedStage3PlayerProps) {
+  const stage3Bites = [
+    { id: 1131, title: "1. Introduction to Multi-Agent Systems" },
+    { id: 1132, title: "2. Supervisor and Worker Routing" },
+    { id: 1133, title: "3. Collaborative Swarms" },
+    { id: 1134, title: "4. Conflict Resolution Consensus" }
+  ];
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold">
+            <Lock size={14} className="text-purple-400" />
+          </div>
+          <div>
+            <span className="text-[10px] text-purple-400 uppercase tracking-widest font-mono font-black block">
+              Stage 3 &bull; Multi-Agent Collaboration
+            </span>
+            <h4 className="text-xs font-bold text-foreground mt-0.5">{activeBite.title}</h4>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 my-6 z-10">
+        <div className="w-16 h-16 rounded-full bg-purple-500/5 border border-purple-500/10 flex items-center justify-center text-purple-400 shadow-lg shadow-purple-500/5">
+          <Sparkles size={28} className="text-purple-400 animate-pulse" />
+        </div>
+        
+        <div className="space-y-2 max-w-md">
+          <h3 className="text-lg font-black text-purple-400 tracking-tight">Coming Soon</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This module is currently under active development.
+          </p>
+          <div className="inline-block bg-purple-500/5 border border-purple-500/10 rounded-xl px-4 py-2 mt-2">
+            <span className="text-xs font-semibold text-purple-400">
+              Available after Stage 2.
+            </span>
+          </div>
+        </div>
+
+        {/* Outline of the 4 bites */}
+        <div className="w-full max-w-sm bg-white/[0.01] border border-white/5 rounded-2xl p-4 space-y-2.5 text-left">
+          <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block mb-1">
+            Stage 3 Roadmap Outline (4 Bites)
+          </span>
+          {stage3Bites.map((b) => (
             <div key={b.id} className="flex items-center justify-between text-xs py-1.5 border-b border-white/[0.02] last:border-0 opacity-60">
               <span className="text-muted-foreground font-medium">{b.title}</span>
               <Lock size={12} className="text-muted-foreground/50" />

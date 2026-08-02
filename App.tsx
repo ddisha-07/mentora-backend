@@ -2496,6 +2496,8 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     if (status === 'locked') {
       if (Number(activity.stageId || activity.stage_id) === 102) {
         alert("Available after completing Stage 1.");
+      } else if (Number(activity.stageId || activity.stage_id) === 103) {
+        alert("Available after Stage 2.");
       } else {
         alert("This activity is currently locked. Please complete the preceding activities to unlock it!");
       }
