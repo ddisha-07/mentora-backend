@@ -16,9 +16,11 @@ export default function LearnPage({
 }) {
   const { enrollments } = useApp();
 
-  // Find progress for Agentic AI (Course ID: 1)
-  const agenticEnrollment = enrollments.find(e => Number(e.course_id) === 1);
-  const agenticProgress = agenticEnrollment ? agenticEnrollment.progress : 0;
+  // Find progress for journeys dynamically
+  const getProgress = (id: number) => {
+    const e = enrollments.find(env => Number(env.course_id) === Number(id));
+    return e ? e.progress : 0;
+  };
 
   const journeys = [
     {
@@ -29,8 +31,9 @@ export default function LearnPage({
       difficulty: "Advanced",
       duration: "12 Hours",
       xpReward: "2,500 XP",
-      progress: agenticProgress,
-      isAccessible: true
+      progress: getProgress(1),
+      isAccessible: true,
+      isPreview: false
     },
     {
       id: 2,
@@ -40,8 +43,9 @@ export default function LearnPage({
       difficulty: "Intermediate",
       duration: "8 Hours",
       xpReward: "1,800 XP",
-      progress: 0,
-      isAccessible: false
+      progress: getProgress(2),
+      isAccessible: true,
+      isPreview: true
     },
     {
       id: 3,
@@ -51,8 +55,9 @@ export default function LearnPage({
       difficulty: "Beginner",
       duration: "4 Hours",
       xpReward: "1,000 XP",
-      progress: 0,
-      isAccessible: false
+      progress: getProgress(3),
+      isAccessible: true,
+      isPreview: true
     },
     {
       id: 4,
@@ -62,8 +67,9 @@ export default function LearnPage({
       difficulty: "Advanced",
       duration: "6 Hours",
       xpReward: "1,500 XP",
-      progress: 0,
-      isAccessible: false
+      progress: getProgress(4),
+      isAccessible: true,
+      isPreview: true
     }
   ];
 
@@ -133,13 +139,11 @@ export default function LearnPage({
                 <div className="absolute inset-0 bg-gradient-to-t from-[#06060F] to-transparent opacity-80" />
                 
                 {/* Accessibility Badge Overlay */}
-                {!j.isAccessible && (
+                {j.isPreview ? (
                   <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md text-[10px] font-black uppercase text-pink-400 tracking-wider flex items-center gap-1.5 shadow-lg">
                     <Lock size={10} /> Coming in Phase 2
                   </div>
-                )}
-
-                {j.isAccessible && (
+                ) : (
                   <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md text-[10px] font-black uppercase text-primary tracking-wider flex items-center gap-1.5 shadow-lg">
                     <Sparkles size={10} className="animate-pulse" /> Accessible Track
                   </div>

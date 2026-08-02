@@ -26,6 +26,7 @@ import { ROLES_CONFIG, canAccessFeature } from "./src/config/roles";
 import { mockService, MOCK_USERS } from "./src/services/mockData";
 import { RoleBadge, XPBadge, StreakIndicator, MissionCard, StatCard as ReusableStatCard, CourseCard } from "./src/components/reusable";
 import LearnPage from "./src/pages/LearnPage";
+import { LOCAL_COURSES, LOCAL_STAGES, LOCAL_ACTIVITIES, LOCAL_BITES } from "./src/services/curriculumData";
 import { LearningBitePlayer } from "./src/components/LearningBitePlayer";
 import KnowledgePage from "./src/pages/KnowledgePage";
 import KnowledgeExchangePage from "./src/pages/KnowledgeExchangePage";
@@ -2463,6 +2464,9 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   };
 
   const getActivityStatus = (activity: any, index: number) => {
+    if (Number(course.id) !== 1) {
+      return 'locked';
+    }
     const prog = progressRecords.find(p => Number(p.activity_id) === Number(activity.id));
     if (prog) {
       return prog.status;
@@ -2481,6 +2485,10 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   };
 
   const handleNodeClick = (activity: any, status: string) => {
+    if (Number(course.id) !== 1) {
+      alert("Available in the next phase");
+      return;
+    }
     if (!isEnrolled) {
       alert("Please enroll in this journey to start the learning map.");
       return;
@@ -4899,17 +4907,17 @@ export default function App() {
     }
     return null;
   });
-  const [courses, setCourses] = useState<any[]>(COURSES);
+  const [courses, setCourses] = useState<any[]>(LOCAL_COURSES);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(1);
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Learning Journeys states
-  const [journeyStages, setJourneyStages] = useState<any[]>([]);
-  const [learningActivities, setLearningActivities] = useState<any[]>([]);
+  const [journeyStages, setJourneyStages] = useState<any[]>(LOCAL_STAGES);
+  const [learningActivities, setLearningActivities] = useState<any[]>(LOCAL_ACTIVITIES);
   const [activityProgress, setActivityProgress] = useState<any[]>([]);
-  const [learningBites, setLearningBites] = useState<any[]>([]);
+  const [learningBites, setLearningBites] = useState<any[]>(LOCAL_BITES);
   const [biteProgress, setBiteProgress] = useState<any[]>([]);
   const [curriculumError, setCurriculumError] = useState<string | null>(null);
 
@@ -5485,109 +5493,12 @@ export default function App() {
     let active = true;
 
     const initApp = async () => {
-      // Fetch public courses first
-      try {
-        const { data: coursesData, error: coursesErr } = await supabase
-          .from("courses")
-          .select("*")
-          .order("id", { ascending: true });
-
-        if (coursesErr) {
-          console.error("[Curriculum Debug] Supabase error fetching courses:", coursesErr);
-          throw coursesErr;
-        }
-
-        if (active && coursesData) {
-          setCourses(coursesData);
-        }
-
-        // Fetch journey stages
-        const { data: stagesData, error: stagesErr } = await supabase
-          .from("journey_stages")
-          .select("*")
-          .order("order_index", { ascending: true });
-        
-        if (stagesErr) {
-          console.error("[Curriculum Debug] Supabase error fetching journey_stages:", stagesErr);
-          throw stagesErr;
-        }
-
-        // Fetch learning activities
-        const { data: actsData, error: actsErr } = await supabase
-          .from("learning_activities")
-          .select("*")
-          .order("order_index", { ascending: true });
-
-        if (actsErr) {
-          console.error("[Curriculum Debug] Supabase error fetching learning_activities:", actsErr);
-          throw actsErr;
-        }
-
-        // Fetch learning bites
-        const { data: bitesData, error: bitesErr } = await supabase
-          .from("learning_bites")
-          .select("*")
-          .order("order_index", { ascending: true });
-
-        if (bitesErr) {
-          console.error("[Curriculum Debug] Supabase error fetching learning_bites:", bitesErr);
-          throw bitesErr;
-        }
-
-        if (active) {
-          if (stagesData) {
-            const mappedStages = stagesData.map((s: any) => ({
-              id: s.id,
-              courseId: s.course_id,
-              title: s.title,
-              description: s.description,
-              stageLevel: s.stage_level,
-              orderIndex: s.order_index,
-              xpRequired: s.xp_required
-            }));
-            setJourneyStages(mappedStages);
-          }
-          if (actsData) {
-            const mappedActs = actsData.map((a: any) => ({
-              id: a.id,
-              stageId: a.stage_id,
-              courseId: a.course_id,
-              title: a.title,
-              description: a.description,
-              activityType: a.activity_type,
-              content: a.content,
-              orderIndex: a.order_index,
-              xpReward: a.xp_reward,
-              estimatedMinutes: a.estimated_minutes,
-              isRequired: a.is_required
-            }));
-            setLearningActivities(mappedActs);
-          }
-          if (bitesData) {
-            const mappedBites = bitesData.map((b: any) => ({
-              id: b.id,
-              activityId: b.activity_id,
-              courseId: b.course_id,
-              stageId: b.stage_id,
-              title: b.title,
-              subtitle: b.subtitle,
-              biteType: b.bite_type,
-              content: b.content,
-              orderIndex: b.order_index,
-              estimatedMinutes: b.estimated_minutes,
-              xpReward: b.xp_reward,
-              isRequired: b.is_required,
-              createdAt: b.created_at,
-              updatedAt: b.updated_at
-            }));
-            setLearningBites(mappedBites);
-          }
-        }
-      } catch (err: any) {
-        console.error("Error loading courses or journey metadata on mount:", err);
-        if (active) {
-          setCurriculumError(err.message || String(err));
-        }
+      // Initialize dynamic local curriculum
+      if (active) {
+        setCourses(LOCAL_COURSES);
+        setJourneyStages(LOCAL_STAGES);
+        setLearningActivities(LOCAL_ACTIVITIES);
+        setLearningBites(LOCAL_BITES);
       }
 
       // Get current auth session
