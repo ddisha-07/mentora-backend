@@ -2645,18 +2645,55 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   <div className="absolute top-12 bottom-12 w-0.5 bg-muted left-1/2 -translate-x-1/2 z-0" />
                   
                   {courseStages.map((stage, sIdx) => {
-                    const stageActivities = courseActivities.filter(a => Number(a.stage_id) === Number(stage.id));
+                    const stageActivities = courseActivities.filter(a => Number(a.stageId || a.stage_id) === Number(stage.id));
+                    const stageBites = (learningBites || []).filter((b: any) => Number(b.stageId || b.stage_id) === Number(stage.id));
+                    const stageXp = stageActivities.reduce((sum, a) => sum + (a.xpReward || a.xp_reward || 0), 0) + stageBites.reduce((sum, b) => sum + (b.xpReward || b.xp_reward || 0), 0);
+                    
+                    const completedStageBites = stageBites.filter((b: any) => 
+                      (biteProgress || []).some((p: any) => Number(p.bite_id) === Number(b.id) && p.status === 'completed')
+                    );
+                    const completedStageActs = stageActivities.filter((a: any) =>
+                      (activityProgress || []).some((p: any) => Number(p.activity_id) === Number(a.id) && p.status === 'completed')
+                    );
+                    
+                    let stageStatus = "Locked";
+                    const firstActIdx = courseActivities.findIndex(a => Number(a.stageId || a.stage_id) === Number(stage.id));
+                    const isStageAvailable = firstActIdx !== -1 && getActivityStatus(courseActivities[firstActIdx], firstActIdx) !== 'locked';
+                    
+                    if (completedStageActs.length === stageActivities.length && stageActivities.length > 0) {
+                      stageStatus = "Completed";
+                    } else if (isStageAvailable || completedStageBites.length > 0 || completedStageActs.length > 0) {
+                      stageStatus = "In Progress";
+                    }
+
                     return (
                       <div key={stage.id} className="w-full flex flex-col items-center mb-10 relative z-10">
-                        {/* Stage Badge */}
-                        <div className="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-extrabold text-[11px] uppercase tracking-wider mb-6 shadow-sm">
-                          Stage {sIdx + 1}: {stage.title}
+                        {/* Stage Badge & Meta */}
+                        <div className="flex flex-col items-center mb-6 text-center space-y-2">
+                          <div className="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-extrabold text-[11px] uppercase tracking-wider shadow-sm">
+                            Stage {sIdx + 1}: {stage.title}
+                          </div>
+                          {stage.description && (
+                            <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
+                              {stage.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground uppercase pt-1">
+                            <span>📚 {stageBites.length} Learning Bites</span>
+                            <span>&bull;</span>
+                            <span>⚡ {stageXp} XP</span>
+                            <span>&bull;</span>
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                              stageStatus === 'Completed'
+                                ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
+                                : stageStatus === 'In Progress'
+                                ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
+                                : 'text-muted-foreground bg-muted/40 border border-border/10'
+                            }`}>
+                              {stageStatus}
+                            </span>
+                          </div>
                         </div>
-                        {stage.description && (
-                          <p className="text-xs text-muted-foreground text-center max-w-xs mb-6 -mt-4 leading-relaxed">
-                            {stage.description}
-                          </p>
-                        )}
                         
                         {/* Nodes */}
                         <div className="space-y-4 w-full flex flex-col items-center">
@@ -2707,10 +2744,10 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                                     <h4 className={`text-xs font-bold leading-snug ${status === 'locked' ? 'text-muted-foreground' : 'text-foreground'}`}>
                                       {act.title}
                                     </h4>
-                                    {learningBites && (learningBites || []).some((b: any) => Number(b.activity_id) === Number(act.id)) ? (
+                                    {learningBites && (learningBites || []).some((b: any) => Number(b.activityId || b.activity_id) === Number(act.id)) ? (
                                       <div className="flex items-center gap-2 mt-1 text-[10px]">
                                         <span className="text-cyan-400 font-extrabold font-mono">
-                                          {(biteProgress || []).filter((p: any) => Number(p.activity_id) === Number(act.id) && p.status === 'completed').length} / {(learningBites || []).filter((b: any) => Number(b.activity_id) === Number(act.id)).length} Bites Complete
+                                          {(biteProgress || []).filter((p: any) => Number(p.activity_id) === Number(act.id) && p.status === 'completed').length} / {(learningBites || []).filter((b: any) => Number(b.activityId || b.activity_id) === Number(act.id)).length} Bites Complete
                                         </span>
                                       </div>
                                     ) : (

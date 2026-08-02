@@ -8,16 +8,16 @@ export const LOCAL_COURSES = [
     "thumbnail": "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&h=340&fit=crop&auto=format",
     "category": "AI & ML",
     "difficulty": "Advanced",
-    "duration": "12 Hours",
+    "duration": "12 Days",
     "lessons": 16,
     "students": 1240,
     "rating": 4.9,
-    "description": "Master the design of autonomous agents, multi-agent frameworks, tool usage, planning loops, and robust error recovery.",
+    "description": "Build intelligent autonomous systems that can reason, plan, and act independently.",
     "tags": [
       "Agents",
       "ReAct",
-      "Function Calling",
-      "Swarms"
+      "10 min/day",
+      "1200 XP"
     ],
     "journey_type": "Standard"
   },
@@ -29,7 +29,7 @@ export const LOCAL_COURSES = [
     "thumbnail": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=600&h=340&fit=crop&auto=format",
     "category": "AI & ML",
     "difficulty": "Intermediate",
-    "duration": "8 Hours",
+    "duration": "8 Days",
     "lessons": 16,
     "students": 840,
     "rating": 4.8,
@@ -50,7 +50,7 @@ export const LOCAL_COURSES = [
     "thumbnail": "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=600&h=340&fit=crop&auto=format",
     "category": "AI & ML",
     "difficulty": "Beginner",
-    "duration": "4 Hours",
+    "duration": "4 Days",
     "lessons": 16,
     "students": 2310,
     "rating": 4.7,
@@ -71,7 +71,7 @@ export const LOCAL_COURSES = [
     "thumbnail": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&h=340&fit=crop&auto=format",
     "category": "AI & ML",
     "difficulty": "Advanced",
-    "duration": "6 Hours",
+    "duration": "6 Days",
     "lessons": 16,
     "students": 950,
     "rating": 4.9,
@@ -99,8 +99,8 @@ export const LOCAL_STAGES = [
   {
     "id": 102,
     "courseId": 1,
-    "title": "Multi-Agent Collaboration",
-    "description": "Explore agent swarms, supervisor delegation, and communication.",
+    "title": "Reasoning & Planning",
+    "description": "Master advanced reasoning frameworks, chain-of-thought, and task planning.",
     "stageLevel": "Intermediate",
     "orderIndex": 2,
     "xpRequired": 100
@@ -108,8 +108,8 @@ export const LOCAL_STAGES = [
   {
     "id": 103,
     "courseId": 1,
-    "title": "Tool Use & API Integration",
-    "description": "Learn functional bindings, JSON schemas, and API execution.",
+    "title": "Multi-Agent Systems",
+    "description": "Explore collaborative swarms, supervisor routing, and conflict consensus.",
     "stageLevel": "Intermediate",
     "orderIndex": 3,
     "xpRequired": 250
@@ -117,8 +117,8 @@ export const LOCAL_STAGES = [
   {
     "id": 104,
     "courseId": 1,
-    "title": "Planning & Error Recovery",
-    "description": "Master self-reflection memory loops and tool error resolution.",
+    "title": "Enterprise Agent Applications",
+    "description": "Implement long-term vector database memories and robust retry policies.",
     "stageLevel": "Advanced",
     "orderIndex": 4,
     "xpRequired": 500
@@ -243,7 +243,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -251,12 +251,12 @@ export const LOCAL_ACTIVITIES = [
     "id": 112,
     "stageId": 102,
     "courseId": 1,
-    "title": "Multi-Agent Collaboration Skill Node",
-    "description": "Complete the bite-sized lessons for Multi-Agent Collaboration",
+    "title": "Reasoning & Planning Skill Node",
+    "description": "Complete the bite-sized lessons for Reasoning & Planning",
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -264,12 +264,12 @@ export const LOCAL_ACTIVITIES = [
     "id": 113,
     "stageId": 103,
     "courseId": 1,
-    "title": "Tool Use & API Integration Skill Node",
-    "description": "Complete the bite-sized lessons for Tool Use & API Integration",
+    "title": "Multi-Agent Systems Skill Node",
+    "description": "Complete the bite-sized lessons for Multi-Agent Systems",
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -277,12 +277,12 @@ export const LOCAL_ACTIVITIES = [
     "id": 114,
     "stageId": 104,
     "courseId": 1,
-    "title": "Planning & Error Recovery Skill Node",
-    "description": "Complete the bite-sized lessons for Planning & Error Recovery",
+    "title": "Enterprise Agent Applications Skill Node",
+    "description": "Complete the bite-sized lessons for Enterprise Agent Applications",
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -295,7 +295,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -308,7 +308,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -321,7 +321,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -334,7 +334,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -347,7 +347,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -360,7 +360,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -373,7 +373,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -386,7 +386,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -399,7 +399,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -412,7 +412,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -425,7 +425,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   },
@@ -438,7 +438,7 @@ export const LOCAL_ACTIVITIES = [
     "activityType": "concept",
     "content": {},
     "orderIndex": 1,
-    "xpReward": 50,
+    "xpReward": 100,
     "estimatedMinutes": 15,
     "isRequired": true
   }
@@ -455,7 +455,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -511,7 +511,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -567,7 +567,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -623,7 +623,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -674,54 +674,54 @@ export const LOCAL_BITES = [
     "activityId": 112,
     "courseId": 1,
     "stageId": 102,
-    "title": "Multi-Agent Systems Introduction",
-    "subtitle": "Dividing tasks among specialized roles",
+    "title": "Introduction to Planning",
+    "subtitle": "Dividing goals into steps",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Multi-Agent Systems Introduction",
-        "description": "In a Multi-Agent System (MAS), a single large problem is divided among multiple specialized agents. Each agent has its own system prompts, tools, and domain limits. A supervisor agent or scheduler coordinates their tasks to deliver a combined solution."
+        "title": "Introduction to Planning",
+        "description": "Planning is the ability of an agent to formulate a sequence of actions before executing them. This is critical for solving complex, multi-step tasks where direct single-step action generation fails."
       },
       "simpleExplanation": {
-        "text": "Instead of one developer attempting to handle marketing, design, backend, and testing, a team of specialized specialists works together on their relative areas."
+        "text": "Think of it like planning a roadmap before a roadtrip, rather than making random turns at every intersection."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Specialization",
-              "desc": "Agents perform better when focused on small, well-defined system prompts."
+              "title": "Sub-goal Decomposition",
+              "desc": "Splitting a large objective into smaller milestones."
             },
             {
-              "title": "Reduced Context",
-              "desc": "Individual agents don't need to load every tool description at once."
+              "title": "Dynamic Re-planning",
+              "desc": "Modifying steps when tools report unexpected results."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "AI Writing Agency",
-        "description": "A content swarm has three agents: a Researcher gathers facts, a Writer drafts paragraphs, and an Editor checks style. They pass files between each other to produce polished blog posts."
+        "title": "Software Deployment Bot",
+        "description": "A deployment agent plans: 1) Run unit tests. 2) Build docker image. 3) Push to registry. 4) Deploy to Kubernetes. If step 1 fails, it stops and alerts developers instead of pushing broken code."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What is the primary architectural benefit of a multi-agent system?",
+        "question": "What is the primary value of planning in autonomous agents?",
         "options": [
-          "It simplifies network setup.",
-          "It delegates tasks to specialized, focused agents, reducing context complexity.",
-          "It eliminates the need for APIs.",
-          "It guarantees zero latency."
+          "To increase token consumption",
+          "To define a structured sequence of sub-goals before execution",
+          "To format HTML output",
+          "To speed up local caching"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Specialization lets you structure clean roles and prevents context-window bloat.",
-        "incorrect": "Not quite. Multi-agent designs improve task efficiency by splitting tasks into specialized domains rather than dealing with networks or speed."
+        "correct": "Correct! Planning allows agents to break down complex goals and execute them sequentially.",
+        "incorrect": "Not quite. Planning is about decomposing large tasks into manageable steps to increase success rates."
       }
     }
   },
@@ -730,54 +730,54 @@ export const LOCAL_BITES = [
     "activityId": 112,
     "courseId": 1,
     "stageId": 102,
-    "title": "Inter-Agent Communication",
-    "subtitle": "Passing structured messages",
+    "title": "Chain-of-Thought Reasoning",
+    "subtitle": "Letting the model think step-by-step",
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Inter-Agent Communication",
-        "description": "For multi-agent coordination, agents must pass data using clear communication channels. Communication can be peer-to-peer or broadcasted to a shared board. Messages are usually formatted as structured JSON containing task status, inputs, and outputs."
+        "title": "Chain-of-Thought Reasoning",
+        "description": "Chain-of-Thought (CoT) is a reasoning pattern where the model is prompted to output its intermediate reasoning steps before declaring the final answer. This dramatically increases mathematical, logical, and structural accuracy."
       },
       "simpleExplanation": {
-        "text": "It is like team members using Slack to update task progress or assign sub-tasks to other departments."
+        "text": "It is like showing your work in a math exam to get partial credit and verify each step, instead of just guessing the final number."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Structured Message Format",
-              "desc": "Standardizing messages as JSON ensures all agents parse arguments cleanly."
+              "title": "Explicit Steps",
+              "desc": "Forces the model to calculate intermediate variables first."
             },
             {
-              "title": "Shared Workspace",
-              "desc": "A common blackboard or context database allows agents to check updates."
+              "title": "Error Isolation",
+              "desc": "Allows engineers to inspect exactly at which step the logic failed."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Code Delivery System",
-        "description": "A coder agent writes a script and saves it in a shared repository, sending a JSON message to the QA agent: `{ \"task\": \"test\", \"file\": \"app.js\" }`. The QA agent reads the file, runs lint checks, and responds."
+        "title": "Billing Audit Checker",
+        "description": "When auditing invoices, the agent outputs: 'Step 1: Parse subtotal ($100). Step 2: Apply tax rate 15% ($15). Step 3: Verify sum is $115.'"
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "How do agents in a multi-agent framework typically coordinate?",
+        "question": "How does Chain-of-Thought (CoT) improve model outputs?",
         "options": [
-          "By editing the physical server configuration",
-          "By passing structured messages (such as JSON) with target arguments",
-          "Through random memory interrupts",
-          "They do not coordinate"
+          "By bypassing the system prompts",
+          "By generating intermediate reasoning steps before the final response",
+          "By training the model on new data",
+          "By adding visual layouts"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Structured message passing is the standard coordination method in multi-agent frameworks.",
-        "incorrect": "Incorrect. Agents communicate via clear message protocols containing state values, not by config files or interrupts."
+        "correct": "Correct! Writing intermediate steps keeps the model on a logical track, reducing reasoning errors.",
+        "incorrect": "Incorrect. CoT works by prompting the model to reason step-by-step, not by retraining weights or changing layout."
       }
     }
   },
@@ -786,54 +786,54 @@ export const LOCAL_BITES = [
     "activityId": 112,
     "courseId": 1,
     "stageId": 102,
-    "title": "Conflict Resolution & Review",
-    "subtitle": "Ensuring output quality and alignment",
+    "title": "Self-Reflection & Correction",
+    "subtitle": "Double checking work before delivery",
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Conflict Resolution & Review",
-        "description": "When agents collaborate, they can output conflicting suggestions. Multi-agent architectures implement evaluation-moderation loops. A critic agent reviews output against a rubric, or a supervisor overrides differences using pre-defined priorities."
+        "title": "Self-Reflection & Correction",
+        "description": "Self-reflection is the capability of an agent to inspect its own generated output and evaluate its correctness. If errors are detected, it executes correction cycles to refine the final answer."
       },
       "simpleExplanation": {
-        "text": "It is like a senior engineer reviewing a junior developer's pull request: the reviewer flags bugs, and the developer edits code until the checks pass."
+        "text": "It is like proofreading your email draft before clicking send."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Refinement Loop",
-              "desc": "Feedback channels between writer and editor agents improve final output quality."
+              "title": "Critique-Refine Loop",
+              "desc": "Evaluating outputs against constraints and instructions."
             },
             {
-              "title": "Arbitration rules",
-              "desc": "Pre-set decision trees resolve issues when agents disagree on steps."
+              "title": "Auto-Debugging",
+              "desc": "Re-submitting compilation errors back to the model context to self-repair code."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Financial Translation Verification",
-        "description": "A translator agent converts financial summaries to French. A separate audit agent verifies terms against local regulatory definitions, sending corrections back until approved."
+        "title": "SQL Generator Self-Correction",
+        "description": "An agent writes a SQL query. Before running it, a syntax-checker agent checks it, flags a missing JOIN condition, corrects it, and sends the revised clean SQL for execution."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What is the role of an evaluator/critic agent in a swarm?",
+        "question": "What is self-reflection in agent loops?",
         "options": [
-          "To slow down generation",
-          "To check outputs against standards and guide refinements",
-          "To replace user databases",
-          "To translate code to binary"
+          "Mirroring input texts",
+          "An internal checkpoint where the agent evaluates and corrects its own outputs",
+          "Resetting the session context",
+          "Logging database queries"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Critic agents review tasks against instructions, helping refine drafts before delivery.",
-        "incorrect": "Not quite. Evaluator agents act as quality inspectors to ensure outputs meet standards."
+        "correct": "Correct! Reflection lets agents assess progress and fix mistakes autonomously.",
+        "incorrect": "Not quite. Self-reflection is the process of reviewing and fixing errors in thoughts or tools before returning results."
       }
     }
   },
@@ -842,54 +842,54 @@ export const LOCAL_BITES = [
     "activityId": 112,
     "courseId": 1,
     "stageId": 102,
-    "title": "Orchestration Styles",
-    "subtitle": "Hierarchical vs. Peer networks",
+    "title": "Tree of Thoughts Planning",
+    "subtitle": "Searching multiple decision branches",
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Orchestration Styles",
-        "description": "Orchestration defines the structure of agent teams. Hierarchical systems use a coordinator to assign tasks and compile responses. Peer networks (swarms) let agents communicate directly based on dynamic routing protocols."
+        "title": "Tree of Thoughts Planning",
+        "description": "Tree of Thoughts (ToT) is a planning pattern where the agent maintains a tree of possible reasoning steps. It evaluates multiple paths, backtracks if a path hits a dead-end, and selects the optimal path using search algorithms (like DFS or BFS)."
       },
       "simpleExplanation": {
-        "text": "Hierarchical is like a corporate manager directing employees, while peer network is like a volunteer group coordinate-routing tasks dynamically."
+        "text": "Like playing chess: you calculate several moves ahead for different scenarios before choosing your piece."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Hierarchical Orchestration",
-              "desc": "Best for structured processes with strict approval sequences."
+              "title": "Branching Exploration",
+              "desc": "Generating multiple alternative paths for a problem."
             },
             {
-              "title": "Peer Swarms",
-              "desc": "Best for flexible, creative, or unpredictable task routing."
+              "title": "Backtracking",
+              "desc": "Undoing steps when a branch leads to an failure."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Customer Complaint Triage",
-        "description": "A routing supervisor agent parses incoming emails, decides whether a query is billing or technical, and sends it to the respective support agent for resolution."
+        "title": "Optimal Route Carrier",
+        "description": "A scheduling agent explores route combinations for deliveries. If one route runs into heavy delays, it backtracks and selects the next best alternative branch."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "Which orchestration style uses a central controller to route tasks to sub-agents?",
+        "question": "What distinguishes Tree of Thoughts (ToT) from standard prompting?",
         "options": [
-          "Peer Network",
-          "Hierarchical Orchestration",
-          "Unsupervised Swarm",
-          "Static Loop"
+          "ToT disables tool calling.",
+          "ToT explores and evaluates multiple reasoning paths, supporting backtracking.",
+          "ToT works only for image models.",
+          "ToT does not use LLMs."
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Hierarchical systems use a supervisor node to manage tasks and aggregate results.",
-        "incorrect": "Incorrect. Peer networks communicate directly. Hierarchical is the one with a central controller."
+        "correct": "Correct! ToT introduces branching and path evaluation into LLM planning.",
+        "incorrect": "Incorrect. ToT is a method of generating and searching multiple reasoning branches to find the optimal path."
       }
     }
   },
@@ -898,20 +898,20 @@ export const LOCAL_BITES = [
     "activityId": 113,
     "courseId": 1,
     "stageId": 103,
-    "title": "Function Calling Principles",
-    "subtitle": "Bridging the gap between LLMs and code",
+    "title": "Introduction to Swarms",
+    "subtitle": "Coordinating teams of agents",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Function Calling Principles",
-        "description": "Function calling allows an LLM to interface with the physical world. Instead of executing code directly, the model outputs a structured JSON object containing the function name and parameters it wants to run. The client application executes this function and returns the results to the LLM."
+        "title": "Introduction to Swarms",
+        "description": "A multi-agent swarm is a group of specialized agents that collaborate to solve complex, multi-disciplinary problems. Each agent is configured with focused prompts and tools to minimize context bloat."
       },
       "simpleExplanation": {
-        "text": "It is like a patient writing a prescription (parameters) for a pharmacist (client code) to fill, rather than the patient going behind the counter and mixing the chemicals themselves."
+        "text": "Like a team of specialists (designer, developer, PM) working together on a software project rather than one person doing it all."
       },
       "visual": {
         "type": "cards",
@@ -919,33 +919,33 @@ export const LOCAL_BITES = [
           "cardItems": [
             {
               "title": "Separation of Concerns",
-              "desc": "The LLM acts as the brain; the host client application executes the actual tools."
+              "desc": "Giving agents focused boundaries increases efficiency."
             },
             {
-              "title": "Structured API Calls",
-              "desc": "Enables natural text interfaces to query databases and trigger APIs."
+              "title": "Context Optimization",
+              "desc": "Reduces token overhead by only sharing necessary tools."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Database Inquiry Bot",
-        "description": "A user asks: 'Find sales in Berlin.' The model recognizes this, pauses text generation, and returns a JSON payload: `{\n  \"name\": \"query_sales\",\n  \"parameters\": { \"city\": \"Berlin\" }\n}`. The app runs the query and feeds the result back."
+        "title": "Enterprise Writing Swarm",
+        "description": "A marketing request enters. The Researcher gathers trends, the Copywriter drafts the text, and the Compliance Agent verifies safety. They pass files sequentially to publish posts."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "How does an LLM execute a tool in function calling?",
+        "question": "What is a major advantage of agent swarms?",
         "options": [
-          "It runs the code directly in its neural weights.",
-          "It outputs a JSON payload specifying the function name and arguments for the client to run.",
-          "It writes a script and runs it in the browser.",
-          "It requires manual user copy-paste."
+          "Lower total memory storage",
+          "Delegating work to specialized agents with focused context boundaries",
+          "Zero dependency on API networks",
+          "They do not require LLM prompting"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! The model returns a structured JSON calling signature, and the client code executes it.",
-        "incorrect": "Incorrect. LLMs do not execute code within their neural structure; they output JSON instructions for the client host."
+        "correct": "Correct! Swarms improve accuracy by keeping agent tasks focused and compact.",
+        "incorrect": "Not quite. Swarms split tasks into specialized roles to manage context-window limits."
       }
     }
   },
@@ -954,54 +954,54 @@ export const LOCAL_BITES = [
     "activityId": 113,
     "courseId": 1,
     "stageId": 103,
-    "title": "Tool Definitions & JSON Schema",
-    "subtitle": "Describing tools to the model",
+    "title": "Dynamic Routing Protocols",
+    "subtitle": "Passing tasks dynamically",
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Tool Definitions & JSON Schema",
-        "description": "To use tools, the model needs to know what tools are available and how to call them. Tools are defined using JSON Schema. This schema describes the function name, its purpose, argument names, types (string, number, array), and which arguments are required."
+        "title": "Dynamic Routing Protocols",
+        "description": "Dynamic routing defines how control is passed between agents. Agents can pass tasks using supervisors (who route work) or peer-to-peer protocols based on output conditions."
       },
       "simpleExplanation": {
-        "text": "It is like labeling a switchboard: each dial has its function written below it, detailing what parameters it accepts."
+        "text": "It is like a ticket system routing support requests to billing, engineering, or sales depending on keywords."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "JSON Schema",
-              "desc": "The standard format for specifying function signatures to the model."
+              "title": "Supervisor Routing",
+              "desc": "A central agent determines which worker agent is next."
             },
             {
-              "title": "Descriptive Prompts",
-              "desc": "Providing clear descriptions of function arguments helps the model choose the right tools."
+              "title": "Peer Handoff",
+              "desc": "Worker agents directly return specific codes to trigger transition handlers."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Weather Tool Binding",
-        "description": "An API binds `get_weather` with a schema detailing: `location` (string, required, 'city name'), and `units` (enum: 'celsius', 'fahrenheit'). The model reads this description and parses user inputs accordingly."
+        "title": "Customer Care Router",
+        "description": "An inbound email arrives. The Triage Agent identifies a billing issue, invokes `transfer_to_billing()`, passing the context to the Billing Specialist agent."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "Which schema standard is widely used to define tools for LLMs?",
+        "question": "Which pattern uses a central orchestrator to route work?",
         "options": [
-          "YAML Specs",
-          "JSON Schema",
-          "Binary Protobuf",
-          "CSS Rules"
+          "Peer Network",
+          "Supervisor Routing",
+          "Linear Loop",
+          "Static Array"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! JSON Schema is the industry standard for declaring function parameter bounds.",
-        "incorrect": "Not quite. JSON Schema is used to declare names, types, and descriptions of arguments for function binding."
+        "correct": "Correct! Supervisor nodes orchestrate the handoffs and aggregate worker responses.",
+        "incorrect": "Incorrect. Peer networks communicate directly. Supervisor routing uses a central controller."
       }
     }
   },
@@ -1010,54 +1010,54 @@ export const LOCAL_BITES = [
     "activityId": 113,
     "courseId": 1,
     "stageId": 103,
-    "title": "Processing Tool Inputs & Outputs",
-    "subtitle": "Managing the context feedback loops",
+    "title": "Shared Blackboard Systems",
+    "subtitle": "Using a global memory space",
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Processing Tool Inputs & Outputs",
-        "description": "Once the client executes a function, the result is packaged as a 'Tool message' and returned to the model. The model reads this output as truth, updates its reasoning state, and continues text generation or decides to call another tool."
+        "title": "Shared Blackboard Systems",
+        "description": "Blackboard systems maintain a shared database/state space that all agents can read and write to. Instead of passing direct payloads, agents read current updates and contribute their outputs to the shared space."
       },
       "simpleExplanation": {
-        "text": "It is like looking up a dictionary word: you pause reading (function call), find the definition (execution), and continue reading with that new understanding."
+        "text": "It is like team members updating sections on a shared Google Doc."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Context Integration",
-              "desc": "Tool responses are injected directly into the conversation history thread."
+              "title": "State Persistence",
+              "desc": "A single source of truth for current environment status."
             },
             {
-              "title": "Type Conversion",
-              "desc": "Convert tool return values (ints, lists, databases) to JSON string messages for the model."
+              "title": "Decoupling",
+              "desc": "Agents do not need to know which other agents are currently active."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Order Tracker Integration",
-        "description": "The client runs a local database search for order `1042`, fetching `status: 'Shipped', arrival: 'Tuesday'`. It feeds this data back to the agent, which replies: 'Good news! Your order has shipped and will arrive on Tuesday.'"
+        "title": "Collaborative Report Compiler",
+        "description": "Five agents write sections of an annual company report. They read the outlines from a shared database, paste their sections, and review others' work dynamically."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What happens after the client executes a tool?",
+        "question": "How do agents coordinate in a blackboard architecture?",
         "options": [
-          "The session is ended.",
-          "The tool output is returned to the model context as a tool message.",
-          "The model updates its weights.",
-          "The script restarts."
+          "By calling local APIs only",
+          "By reading and writing to a shared global state space",
+          "Through hardcoded file links",
+          "They do not coordinate"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! The tool output feeds back into the model's chat history so it can formulate the final answer.",
-        "incorrect": "Incorrect. The tool response is sent back to the model context as a message, letting it complete the answer."
+        "correct": "Correct! The blackboard acts as the global state space for agent contributions.",
+        "incorrect": "Not quite. Blackboard systems rely on a shared global state space where all agents read updates."
       }
     }
   },
@@ -1066,54 +1066,54 @@ export const LOCAL_BITES = [
     "activityId": 113,
     "courseId": 1,
     "stageId": 103,
-    "title": "Parallel Tool Calling",
-    "subtitle": "Calling multiple tools in a single turn",
+    "title": "Consensus & Voting Protocols",
+    "subtitle": "Resolving agent disagreements",
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Parallel Tool Calling",
-        "description": "Parallel tool calling allows the model to request multiple tool executions in a single reasoning step. For example, if a user queries data for multiple dates, the model can output a list of multiple function calls, which the client runs concurrently to save time."
+        "title": "Consensus & Voting Protocols",
+        "description": "When agents in a swarm have conflicting recommendations, consensus protocols resolve the issue. Swarms implement voting blocks, supervisor overrides, or critic-guided reconciliation to reach a single decision."
       },
       "simpleExplanation": {
-        "text": "Instead of going to the kitchen to fetch water, returning, and going back to fetch salt, you write down both items and bring them back together."
+        "text": "Like a board of directors voting on a corporate strategy before execution."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Concurrency",
-              "desc": "Executing independent API calls in parallel speeds up agent response times."
+              "title": "Critic Auditing",
+              "desc": "A neutral evaluator checks the arguments of competing agents."
             },
             {
-              "title": "Aggregation",
-              "desc": "Combine all tool responses into the conversation history before running the next step."
+              "title": "Voting Mechanisms",
+              "desc": "Majority wins structure for simple diagnostic classifications."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Dashboard Aggregator",
-        "description": "A dashboard agent is asked to load user metrics, current tasks, and streaks. It issues three parallel tool calls: `get_metrics()`, `get_tasks()`, and `get_streak()`, completing the page in a single turn."
+        "title": "Medical Scan Validation",
+        "description": "Three diagnostic agents review an MRI. Two detect anomalies; one returns clean. A consensus auditor flags the scan for human doctor review based on majority output."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What is a primary benefit of parallel tool calling?",
+        "question": "What is the purpose of consensus protocols in multi-agent swarms?",
         "options": [
-          "It reduces API costs.",
-          "It runs independent tools concurrently, saving total turnaround latency.",
-          "It makes the model run offline.",
-          "It disables error messages."
+          "To speed up requests",
+          "To resolve conflicting outputs and arrive at a single decision",
+          "To reduce GPU temperature",
+          "To backup user files"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Parallel execution allows concurrent tool runs, dramatically reducing network round trips and latency.",
-        "incorrect": "Not quite. Parallel tool calling reduces latency by grouping independent requests, not by changing API costs or running offline."
+        "correct": "Correct! Consensus models resolve conflicts when agents outputs disagree.",
+        "incorrect": "Incorrect. Consensus is designed to resolve disagreements and unify outputs."
       }
     }
   },
@@ -1122,54 +1122,54 @@ export const LOCAL_BITES = [
     "activityId": 114,
     "courseId": 1,
     "stageId": 104,
-    "title": "Self-Reflection & Correction",
-    "subtitle": "Evaluating outputs inside the loop",
+    "title": "Vector Databases & Semantics",
+    "subtitle": "Implementing long-term memories",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Self-Reflection & Correction",
-        "description": "Self-reflection is a mechanism where an agent reviews its generated outputs before returning them to the user. The model checks for logical mistakes, code bugs, formatting errors, or instructions compliance, and automatically repairs them."
+        "title": "Vector Databases & Semantics",
+        "description": "Vector databases index text chunks as high-dimensional mathematical vectors. This allows agents to retrieve relevant information based on semantic meaning rather than exact keyword matches, creating a long-term memory system."
       },
       "simpleExplanation": {
-        "text": "It is like proofreading an email: you read through your draft, spot a spelling mistake, fix it, and then hit send."
+        "text": "It is like looking up books by topic in a library, rather than searching by alphabetical titles."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Self-Correction",
-              "desc": "Saves API failures by letting the model catch its own errors before returning."
+              "title": "Semantic Retrieval",
+              "desc": "Matching concepts based on mathematical similarity scores."
             },
             {
-              "title": "Critique Prompting",
-              "desc": "Instructing the model to find flaws in its code improves code compliance."
+              "title": "Context Augmenting",
+              "desc": "Injecting relevant retrieved documents into active prompts."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "XML Formatter Agent",
-        "description": "An agent drafts a data summary in XML. It runs a self-check parser tool. The tool flags a missing tag. The agent reflects on the error message, fixes the formatting, and returns valid XML."
+        "title": "Customer History Recaller",
+        "description": "An assistant queries a vector database for customer preferences. It retrieves: 'User struggled with database setup.' and adjusts its active tutorial script to focus on database tips."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What does self-reflection enable an agent to do?",
+        "question": "How do vector databases help autonomous agents?",
         "options": [
-          "Copy data to other servers",
-          "Critique and correct its own mistakes before final output",
-          "Increase model prompt token count",
-          "Avoid using system prompts"
+          "By running unit tests",
+          "By storing and retrieving text embeddings for semantic long-term memory",
+          "By replacing regular SQL tables completely",
+          "By speeding up CSS rendering"
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Reflection lets agents verify outputs and auto-repair errors internally.",
-        "incorrect": "Incorrect. Reflection is about self-assessment and correcting mistakes, not file copy or parameter count."
+        "correct": "Correct! Vector databases allow semantic memory storage and lookup.",
+        "incorrect": "Not quite. Vector databases store and query text embeddings, enabling long-term memory retrieval."
       }
     }
   },
@@ -1178,54 +1178,54 @@ export const LOCAL_BITES = [
     "activityId": 114,
     "courseId": 1,
     "stageId": 104,
-    "title": "Short-term Thread Memory",
-    "subtitle": "Tracking local conversation history",
+    "title": "RAG Pipeline Architectures",
+    "subtitle": "Connecting agents to files",
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Short-term Thread Memory",
-        "description": "Short-term memory keeps track of the active session context. It stores the chronological list of messages (user inputs, assistant responses, and tool call results). This history lets the model understand references like 'it', 'them', or 'the previous one'."
+        "title": "RAG Pipeline Architectures",
+        "description": "Retrieval-Augmented Generation (RAG) is a pipeline that retrieves facts from external databases to ground model generation. This keeps responses accurate, prevents hallucinations, and allows access to proprietary data."
       },
       "simpleExplanation": {
-        "text": "It is like retaining the last few minutes of a phone conversation: you know what topic is currently being discussed."
+        "text": "It is like an open-book exam: instead of guessing, you search the textbook for the correct formula before answering."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Context Window Limit",
-              "desc": "Short-term memory is constrained by the maximum token limit of the model."
+              "title": "Retrieval Stage",
+              "desc": "Querying database indexes to fetch context documents."
             },
             {
-              "title": "Conversation Truncation",
-              "desc": "Implementing strategies to compress or summarize old messages keeps loops from crashing."
+              "title": "Generation Stage",
+              "desc": "Model synthesizes response using the retrieved facts."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Interactive Troubleshooting Bot",
-        "description": "A user asks: 'My machine is leaking.' Bot suggests checking the seal. User responds: 'I checked it, it looks good.' The bot knows 'it' refers to the machine's seal from the history."
+        "title": "Tech Support Query Assistant",
+        "description": "When asked about error `0x403`, the RAG pipeline fetches documentation for `0x403` from a vector index, letting the agent describe the fix exactly."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "How is short-term memory typically managed in an agent session?",
+        "question": "What is the primary benefit of RAG in agent systems?",
         "options": [
-          "By saving to long-term SQL partitions",
-          "By holding the message history list in the active session context",
-          "By retraining model parameters",
-          "By resetting the browser cookies"
+          "It removes the need for prompting.",
+          "It grounds responses in retrieved documents, preventing model hallucinations.",
+          "It compiles JS to binary.",
+          "It automates Git commits."
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Short-term memory is maintained by passing the rolling message history list within the API payload.",
-        "incorrect": "Not quite. Short-term memory is kept as a list of conversation messages within the active runtime context."
+        "correct": "Correct! RAG grounds outputs in database facts to ensure factual correctness.",
+        "incorrect": "Incorrect. RAG is designed to fetch supporting context files to prevent hallucinations."
       }
     }
   },
@@ -1234,54 +1234,54 @@ export const LOCAL_BITES = [
     "activityId": 114,
     "courseId": 1,
     "stageId": 104,
-    "title": "Long-term Retrieval Memory",
-    "subtitle": "Recalling facts across long periods",
+    "title": "Tool Call Error Recovery",
+    "subtitle": "Handling exceptions gracefully",
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Long-term Retrieval Memory",
-        "description": "Long-term memory lets agents store and recall information across multiple sessions. This is implemented using vector databases. Important milestones or facts are converted to embeddings and saved, allowing the agent to retrieve them days or weeks later."
+        "title": "Tool Call Error Recovery",
+        "description": "Enterprise agents must handle tool call failures. If a database query fails or a network timeout occurs, recovery loops trigger retries, switch to backup tools, or dynamically format query parameters."
       },
       "simpleExplanation": {
-        "text": "If short-term memory is what you are holding in your head right now, long-term memory is a journal where you write down details to look up later."
+        "text": "Like taking a detour when a GPS maps a road closure."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Vector Storage",
-              "desc": "Embeddings of past context allow semantic search matching across sessions."
+              "title": "Exception Catching",
+              "desc": "Intercepting error messages and feeding them back to the agent."
             },
             {
-              "title": "User Profiles",
-              "desc": "Persistent profiles store preferences and past conversation summaries."
+              "title": "Tool Fallbacks",
+              "desc": "Switching to alternative tools when primary options fail."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Enterprise Assistant",
-        "description": "An employee logs in after a week. The assistant queries the vector database for the user's ID, finding: 'User preferred PyTorch for code examples.' It immediately defaults code answers to PyTorch."
+        "title": "Flight Booking Resilient Tool",
+        "description": "A booking tool fails with a timeout. The agent catches the issue, runs a status-check tool, detects the booking was incomplete, and retries the booking safely."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "Which database system is key to implementing long-term agent memory?",
+        "question": "What does an agent do during a tool call error recovery cycle?",
         "options": [
-          "Relational MySQL only",
-          "Vector Databases",
-          "Local browser memory variables",
-          "None of the above"
+          "It shuts down the program.",
+          "It feeds the error message back to its reasoning loop to plan a correction step.",
+          "It bypasses RLS rules.",
+          "It asks the user to rewrite code."
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Vector databases store text embeddings, enabling semantic retrieval of long-term memory records.",
-        "incorrect": "Incorrect. Vector databases are specifically designed for storing and recalling text embeddings for long-term agent memory."
+        "correct": "Correct! Intercepting errors lets agents evaluate and retry tool execution safely.",
+        "incorrect": "Not quite. Resilient agents catch errors and feed them back to the reasoning context to plan detour actions."
       }
     }
   },
@@ -1290,54 +1290,54 @@ export const LOCAL_BITES = [
     "activityId": 114,
     "courseId": 1,
     "stageId": 104,
-    "title": "Error Recovery & Tool Fallbacks",
-    "subtitle": "Making tool execution resilient",
+    "title": "Human-in-the-Loop Safeguards",
+    "subtitle": "Introducing approval gates",
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
-        "title": "Error Recovery & Tool Fallbacks",
-        "description": "Agents must handle tool failures gracefully. If an API call fails or times out, error recovery patterns ensure the agent continues working. Common techniques include retries with exponential backoffs, falling back to cached local data, or asking the user for clarification."
+        "title": "Human-in-the-Loop Safeguards",
+        "description": "Human-in-the-Loop (HITL) introduces gate checkpoints where the agent pauses and waits for explicit human sign-off before executing high-risk or critical actions (like transfers or deployments)."
       },
       "simpleExplanation": {
-        "text": "It is like GPS routing: if a road is closed, it recalculates a detour rather than shutting down the engine."
+        "text": "It is like a two-key lock system on a bank vault: the manager must turn the key to approve the vault opening."
       },
       "visual": {
         "type": "cards",
         "data": {
           "cardItems": [
             {
-              "title": "Fallback Routing",
-              "desc": "If a main search API fails, switch to a backup database tool."
+              "title": "Risk Mitigation",
+              "desc": "Prevents autonomous actions from creating financial or security risks."
             },
             {
-              "title": "Graceful Degrade",
-              "desc": "Returning informative error messages to the model lets it try alternative parameters."
+              "title": "Interactive Triage",
+              "desc": "Lets human operators inspect proposed tool inputs before run execution."
             }
           ]
         }
       },
       "realWorldExample": {
-        "title": "Inventory Check Fallback",
-        "description": "An agent tries to query live stock levels. The inventory API times out. The agent catches the error, queries the cached database from yesterday, and flags: 'Live API down; displaying cached inventory from 24h ago.'"
+        "title": "Stock Portfolio Sales Bot",
+        "description": "An investment agent plans to sell $50,000 in shares. It generates the transaction payload, pauses execution, sends an approval request via Slack, and completes the sale only after the user clicks 'Approve'."
       },
       "quickActivity": {
         "type": "multiple_choice",
-        "question": "What is a robust strategy for handling tool execution failures?",
+        "question": "Why is Human-in-the-Loop (HITL) critical in enterprise agents?",
         "options": [
-          "Terminate the application immediately",
-          "Use try-catch blocks with fallback actions and retry backoffs",
-          "Ignore the error and return empty answers",
-          "Restart the operating system"
+          "It speed up loops.",
+          "It guards high-risk actions with human approval, ensuring safety and compliance.",
+          "It removes the need for databases.",
+          "It replaces the frontend framework."
         ],
         "correctAnswer": 1
       },
       "kaiFeedback": {
-        "correct": "Correct! Try-catch structures and fallback tool bindings ensure agent resilience.",
-        "incorrect": "Not quite. Terminating or ignoring errors leads to crashes or bad outputs. Robust systems implement retries and fallback alternatives."
+        "correct": "Correct! HITL ensures safety and compliance by routing high-risk plans through human approvals.",
+        "incorrect": "Incorrect. HITL acts as a safety gate for high-risk actions to guarantee operational security."
       }
     }
   },
@@ -1351,7 +1351,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1407,7 +1407,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1463,7 +1463,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1519,7 +1519,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1575,7 +1575,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1631,7 +1631,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1687,7 +1687,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1743,7 +1743,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1799,7 +1799,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1855,7 +1855,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1911,7 +1911,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -1967,7 +1967,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2023,7 +2023,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2079,7 +2079,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2135,7 +2135,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2191,7 +2191,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2247,7 +2247,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2303,7 +2303,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2359,7 +2359,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2415,7 +2415,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2471,7 +2471,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2527,7 +2527,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2583,7 +2583,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2639,7 +2639,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2695,7 +2695,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2751,7 +2751,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2807,7 +2807,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2863,7 +2863,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2919,7 +2919,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -2975,7 +2975,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3031,7 +3031,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3087,7 +3087,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3143,7 +3143,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3199,7 +3199,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3255,7 +3255,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3311,7 +3311,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3367,7 +3367,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3423,7 +3423,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3479,7 +3479,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3535,7 +3535,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3591,7 +3591,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3647,7 +3647,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3703,7 +3703,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3759,7 +3759,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3815,7 +3815,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3871,7 +3871,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 2,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3927,7 +3927,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
@@ -3983,7 +3983,7 @@ export const LOCAL_BITES = [
     "biteType": "concept",
     "orderIndex": 4,
     "estimatedMinutes": 3,
-    "xpReward": 20,
+    "xpReward": 50,
     "isRequired": true,
     "content": {
       "concept": {
