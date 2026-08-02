@@ -117,7 +117,7 @@ export const useApp = () => {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Page =
-  | "landing" | "login" | "dashboard" | "courses" | "course-detail"
+  | "landing" | "auth" | "dashboard" | "courses" | "course-detail"
   | "lesson" | "ai-chat" | "quiz" | "quiz-results" | "certificates"
   | "profile" | "settings" | "announcements"
   | "learn" | "knowledge" | "knowledge-exchange" | "training"
@@ -685,7 +685,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
                   <motion.button
                     whileHover={{ scale: 1.04, y: -2 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => onNavigate(user ? "dashboard" : "login")}
+                    onClick={() => onNavigate(user ? "dashboard" : "auth")}
                     className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white flex items-center gap-2 shadow-xl shadow-pink-500/20 transition-all duration-300 hover:shadow-pink-500/30 cursor-pointer"
                     style={{ fontFamily: "'Raleway', sans-serif" }}
                   >
@@ -1059,7 +1059,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
                     </li>
                   ))}
                 </ul>
-                <CyanButton onClick={() => onNavigate("login")} className="mt-8">Try AI Assistant</CyanButton>
+                <CyanButton onClick={() => onNavigate("auth")} className="mt-8">Try AI Assistant</CyanButton>
               </div>
               <div>
                 <Card className="p-1 overflow-hidden shadow-2xl">
@@ -1241,7 +1241,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
                 <motion.button
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => onNavigate(user ? "dashboard" : "login")}
+                  onClick={() => onNavigate(user ? "dashboard" : "auth")}
                   className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white flex items-center gap-2 shadow-xl shadow-pink-500/20 transition-all duration-300 hover:shadow-pink-500/30 cursor-pointer"
                   style={{ fontFamily: "'Raleway', sans-serif" }}
                 >
@@ -1252,7 +1252,7 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
                 <motion.button
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => onNavigate(user ? "dashboard" : "login")}
+                  onClick={() => onNavigate(user ? "dashboard" : "auth")}
                   className="px-8 py-3.5 text-sm font-extrabold rounded-full bg-[#0F0F1B]/40 hover:bg-[#0F0F1B]/70 border border-white/10 text-foreground transition-all duration-300 cursor-pointer"
                   style={{ fontFamily: "'Raleway', sans-serif" }}
                 >
@@ -1273,50 +1273,113 @@ function LandingPage({ onNavigate, user }: { onNavigate: (p: Page) => void; user
   );
 }
 
-// ─── Login Page ───────────────────────────────────────────────────────────────
-function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+// ─── Authentication Page ───────────────────────────────────────────────────────
+function AuthPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const { isDark, toggle } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
     if (!email || !password) {
       setErrorMsg("Please enter both email and password.");
       return;
     }
+
     setAuthLoading(true);
-    setErrorMsg("");
     try {
       if (isSignUp) {
-        // Sign Up Flow
+        if (!fullName) {
+          setErrorMsg("Please enter your full name.");
+          setAuthLoading(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          setErrorMsg("Passwords do not match.");
+          setAuthLoading(false);
+          return;
+        }
+
+        // 1. Create Supabase Auth Account
         const { data, error: signUpErr } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
-              full_name: email.split("@")[0],
-              username: email.split("@")[0]
+              full_name: fullName,
+              username: email.split("@")[0] + "_" + Math.floor(Math.random() * 1000),
+              role: "junior_employee"
             }
           }
         });
         if (signUpErr) throw signUpErr;
-        
-        if (data && !data.session) {
-          setErrorMsg("Account created! A confirmation link has been sent to your email.");
-        } else if (data && data.session) {
-          onNavigate("dashboard");
+
+        if (data && data.user) {
+          // 2. Insert user profile into profiles table
+          const profileData = {
+            id: data.user.id,
+            full_name: fullName,
+            email: email,
+            created_at: new Date().toISOString(),
+            xp: 0,
+            current_streak: 0,
+            longest_streak: 0,
+            skill_level: "Beginner",
+            current_journey: null,
+            current_level: "Beginner",
+            avatar_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
+            role: "junior_employee"
+          };
+
+          const { error: profileErr } = await supabase
+            .from("profiles")
+            .upsert(profileData, { onConflict: "id" });
+
+          if (profileErr) {
+            console.warn("Retrying profile insert without missing columns...", profileErr.message);
+            const fallbackProfileData = { ...profileData };
+            delete (fallbackProfileData as any).current_journey;
+            delete (fallbackProfileData as any).current_level;
+
+            const { error: fallbackErr } = await supabase
+              .from("profiles")
+              .upsert(fallbackProfileData, { onConflict: "id" });
+
+            if (fallbackErr) {
+              console.error("Fallback profile insertion failed:", fallbackErr.message);
+            }
+          }
+
+          if (!data.session) {
+            setSuccessMsg("Account created successfully! A confirmation link has been sent to your email.");
+          } else {
+            setSuccessMsg("Account created successfully! Redirecting...");
+            setTimeout(() => {
+              onNavigate("dashboard");
+            }, 1000);
+          }
         }
       } else {
         // Sign In Flow
         const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
         if (signInErr) throw signInErr;
-        onNavigate("dashboard");
+
+        setSuccessMsg("Welcome back! Redirecting...");
+        setTimeout(() => {
+          onNavigate("dashboard");
+            }, 1000);
       }
     } catch (err: any) {
       console.error("Auth error caught:", err);
@@ -1328,12 +1391,6 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           msg = err.message;
         } else if (err.error_description) {
           msg = err.error_description;
-        } else if (typeof err === "object") {
-          try {
-            msg = JSON.stringify(err);
-          } catch (_) {
-            msg = String(err);
-          }
         }
       }
       setErrorMsg(msg);
@@ -1341,6 +1398,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       setAuthLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-transparent text-foreground flex relative z-10" style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* Left Panel */}
@@ -1348,10 +1406,10 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="relative z-10 text-center">
           <div onClick={() => onNavigate("landing")} className="flex items-center justify-center gap-2 mb-12 cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0 animate-pulse">
               <img src="/logo.png" alt="Mentora Logo" className="w-5.5 h-5.5 object-contain brightness-0 invert" />
             </div>
-            <span {...sg("text-2xl font-bold")}>Mentora</span>
+            <span className="text-2xl font-bold">Mentora</span>
           </div>
           <NeuralNetSVG className="w-80 mb-10 opacity-70" />
           <h2 style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 900, fontSize: "2rem", marginBottom: "1rem", lineHeight: 1.15 }}>
@@ -1374,7 +1432,7 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
         <button onClick={toggle}
-          className="absolute top-6 right-6 w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+          className="absolute top-6 right-6 w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
           title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
@@ -1383,8 +1441,9 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <img src="/logo.png" alt="Mentora Logo" className="w-4.5 h-4.5 object-contain brightness-0 invert" />
             </div>
-            <span {...sg("text-lg font-semibold")}>Mentora</span>
+            <span className="text-lg font-semibold">Mentora</span>
           </div>
+
           <h2 style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 900, fontSize: "2rem", marginBottom: "0.5rem" }}>
             {isSignUp ? (
               <>Create your <span style={{ fontFamily: "'Dancing Script', cursive", color: "var(--primary)", fontWeight: 700 }}>account</span></>
@@ -1396,18 +1455,60 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             {isSignUp ? "Sign up to begin your learning journey." : "Sign in to continue your learning journey."}
           </p>
 
+          {/* Tabs Selector */}
+          <div className="flex bg-[#0A0A15]/80 border border-white/5 p-1 rounded-2xl mb-8">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(false);
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${!isSignUp ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(true);
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${isSignUp ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Sign Up
+            </button>
+          </div>
+
           {errorMsg && (
             <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 rounded-xl mb-4">
               {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          {successMsg && (
+            <div className="p-3 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl mb-4">
+              {successMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label className="text-sm text-muted-foreground block mb-2">Full Name</label>
+                <Input
+                  type="text" placeholder="John Doe" value={fullName}
+                  onChange={(e: any) => setFullName(e.target.value)} icon={<User size={15} />}
+                  disabled={authLoading}
+                />
+              </div>
+            )}
             <div>
               <label className="text-sm text-muted-foreground block mb-2">Work email</label>
               <Input
                 type="email" placeholder="you@company.com" value={email}
-                onChange={(e) => setEmail(e.target.value)} icon={<Mail size={15} />}
+                onChange={(e: any) => setEmail(e.target.value)} icon={<Mail size={15} />}
                 disabled={authLoading}
               />
             </div>
@@ -1416,16 +1517,35 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"} placeholder="••••••••••" value={password}
-                  onChange={(e) => setPassword(e.target.value)} icon={<Lock size={15} />}
+                  onChange={(e: any) => setPassword(e.target.value)} icon={<Lock size={15} />}
                   disabled={authLoading}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   disabled={authLoading}>
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
+
+            {isSignUp && (
+              <div>
+                <label className="text-sm text-muted-foreground block mb-2">Confirm Password</label>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"} placeholder="••••••••••" value={confirmPassword}
+                    onChange={(e: any) => setConfirmPassword(e.target.value)} icon={<Lock size={15} />}
+                    disabled={authLoading}
+                  />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    disabled={authLoading}>
+                    {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {!isSignUp && (
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -1440,41 +1560,9 @@ function LoginPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               </div>
             )}
             <CyanButton className="w-full py-3 mt-2 text-center" disabled={authLoading}>
-              {authLoading ? "Authenticating..." : isSignUp ? "Sign up" : "Sign in"}
+              {authLoading ? "Authenticating..." : isSignUp ? "Sign Up" : "Login"}
             </CyanButton>
           </form>
-
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            {isSignUp ? (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUp(false);
-                    setErrorMsg("");
-                  }}
-                  className="text-primary hover:text-primary/80 font-semibold cursor-pointer transition-colors bg-transparent border-0 p-0"
-                >
-                  Sign in
-                </button>
-              </>
-            ) : (
-              <>
-                Don't have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUp(true);
-                    setErrorMsg("");
-                  }}
-                  className="text-primary hover:text-primary/80 font-semibold cursor-pointer transition-colors bg-transparent border-0 p-0"
-                >
-                  Create account
-                </button>
-              </>
-            )}
-          </p>
         </div>
       </div>
     </div>
@@ -5195,10 +5283,16 @@ export default function App() {
     }
     const cleanPath = pathname.replace("/", "");
     const matchedPage = cleanPath === "" ? "landing" : cleanPath;
-    if (appPages.includes(matchedPage as Page) || matchedPage === "landing" || matchedPage === "login") {
-      setPage(matchedPage as Page);
+    if (matchedPage === "landing" || matchedPage === "auth") {
+      setPage(matchedPage);
     } else {
-      setPage("dashboard");
+      if (!user) {
+        setPage("auth");
+      } else if (appPages.includes(matchedPage as Page)) {
+        setPage(matchedPage as Page);
+      } else {
+        setPage("dashboard");
+      }
     }
   };
 
@@ -5231,7 +5325,11 @@ export default function App() {
   }, [page, selectedSopId]);
 
   const navigateTo = (newPage: Page) => {
-    setPage(newPage);
+    if (!user && newPage !== "landing" && newPage !== "auth") {
+      setPage("auth");
+    } else {
+      setPage(newPage);
+    }
   };
 
   const fetchProfileAndData = async (userId: string) => {
@@ -5272,7 +5370,9 @@ export default function App() {
           mentoraCredits: profData.mentora_credits !== undefined ? profData.mentora_credits : 0,
           currentStreak: profData.current_streak !== undefined ? profData.current_streak : 0,
           longestStreak: profData.longest_streak !== undefined ? profData.longest_streak : 0,
-          leaderboardRank: profData.leaderboard_rank !== undefined ? profData.leaderboard_rank : 0
+          leaderboardRank: profData.leaderboard_rank !== undefined ? profData.leaderboard_rank : 0,
+          currentJourney: profData.current_journey !== undefined ? profData.current_journey : null,
+          currentLevel: profData.current_level || "Beginner"
         };
       } else {
         // Create a temporary fallback profile conforming to the User interface
@@ -5294,7 +5394,9 @@ export default function App() {
           mentoraCredits: 0,
           currentStreak: 0,
           longestStreak: 0,
-          leaderboardRank: 0
+          leaderboardRank: 0,
+          currentJourney: null,
+          currentLevel: "Beginner"
         };
       }
 
@@ -5476,10 +5578,12 @@ export default function App() {
             parsePathname(window.location.pathname);
           } else {
             const path = window.location.pathname.replace("/", "");
-            if (path === "login") {
-              setPage("login");
-            } else {
+            if (path === "auth") {
+              setPage("auth");
+            } else if (path === "") {
               setPage("landing");
+            } else {
+              setPage("auth");
             }
           }
         }
@@ -5501,7 +5605,7 @@ export default function App() {
       if (currentUser) {
         await fetchProfileAndData(currentUser.id);
         if (event === "SIGNED_IN") {
-          setPage(prev => (prev === "login" || prev === "" ? "dashboard" : prev));
+          setPage(prev => (prev === "login" || prev === "auth" || prev === "" ? "dashboard" : prev));
         }
       } else {
         setProfile(null);
@@ -5520,32 +5624,45 @@ export default function App() {
   useEffect(() => {
     if (user && profile) {
       const syncProfile = async () => {
+        const updateData: any = {
+          full_name: profile.name,
+          avatar_url: profile.avatar,
+          email: profile.email || user.email,
+          role: profile.role?.toLowerCase(),
+          employee_id: profile.employeeId,
+          department: profile.department,
+          plant: profile.plant,
+          designation: profile.designation,
+          years_of_experience: profile.yearsOfExperience,
+          expertise: profile.expertise,
+          skill_level: profile.skillLevel,
+          xp: profile.xp,
+          knowledge_credits: profile.knowledgeCredits,
+          mentora_credits: profile.mentoraCredits,
+          current_streak: profile.currentStreak,
+          longest_streak: profile.longestStreak,
+          leaderboard_rank: profile.leaderboardRank,
+          current_journey: profile.currentJourney,
+          current_level: profile.currentLevel,
+          updated_at: new Date().toISOString()
+        };
+
         const { error } = await supabase
           .from("profiles")
-          .update({
-            full_name: profile.name,
-            avatar_url: profile.avatar,
-            email: profile.email || user.email,
-            role: profile.role?.toLowerCase(),
-            employee_id: profile.employeeId,
-            department: profile.department,
-            plant: profile.plant,
-            designation: profile.designation,
-            years_of_experience: profile.yearsOfExperience,
-            expertise: profile.expertise,
-            skill_level: profile.skillLevel,
-            xp: profile.xp,
-            knowledge_credits: profile.knowledgeCredits,
-            mentora_credits: profile.mentoraCredits,
-            current_streak: profile.currentStreak,
-            longest_streak: profile.longestStreak,
-            leaderboard_rank: profile.leaderboardRank,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq("id", user.id);
 
         if (error) {
-          console.error("Failed to sync profile to database:", error.message);
+          console.warn("Failed to sync full profile (likely missing columns), retrying without current_journey / current_level:", error.message);
+          delete updateData.current_journey;
+          delete updateData.current_level;
+          const { error: fallbackError } = await supabase
+            .from("profiles")
+            .update(updateData)
+            .eq("id", user.id);
+          if (fallbackError) {
+            console.error("Failed to sync profile to database on fallback:", fallbackError.message);
+          }
         }
       };
       syncProfile();

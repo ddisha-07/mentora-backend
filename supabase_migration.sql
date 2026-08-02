@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     current_streak INTEGER DEFAULT 0,
     longest_streak INTEGER DEFAULT 0,
     leaderboard_rank INTEGER DEFAULT 0,
+    current_journey TEXT,
+    current_level TEXT DEFAULT 'Beginner',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 

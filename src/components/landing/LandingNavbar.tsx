@@ -133,7 +133,7 @@ export function LandingNavbar({ activeTab, setActiveTab, onNavigate, user }: Lan
             <motion.button
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => onNavigate(user ? "dashboard" : "login")}
+              onClick={() => onNavigate(user ? "dashboard" : "auth")}
               className="px-5 py-2 text-xs font-bold rounded-full bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white flex items-center gap-1.5 shadow-lg shadow-pink-500/20 transition-all duration-300 hover:shadow-pink-500/30 cursor-pointer"
               style={{ fontFamily: "'Raleway', sans-serif" }}
             >
@@ -187,7 +187,7 @@ export function LandingNavbar({ activeTab, setActiveTab, onNavigate, user }: Lan
             <div className="border-t border-border/10 my-2 pt-2">
               <button
                 onClick={() => {
-                  onNavigate(user ? "dashboard" : "login");
+                  onNavigate(user ? "dashboard" : "auth");
                   setMobileMenuOpen(false);
                 }}
                 className="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white flex items-center justify-center gap-1.5 shadow-lg shadow-pink-500/25 transition-all duration-300 cursor-pointer"

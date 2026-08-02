@@ -25,6 +25,8 @@ export interface User {
   currentStreak: number;
   longestStreak: number;
   leaderboardRank: number;
+  currentJourney?: string | null;
+  currentLevel?: string;
 }
 
 export interface Mission {
