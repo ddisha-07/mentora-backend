@@ -100,7 +100,7 @@ export const LOCAL_STAGES = [
     "id": 102,
     "courseId": 1,
     "title": "Reasoning & Planning",
-    "description": "Master advanced reasoning frameworks, chain-of-thought, and task planning.",
+    "description": "Learn how AI Agents think, plan and make intelligent decisions.",
     "stageLevel": "Intermediate",
     "orderIndex": 2,
     "xpRequired": 100

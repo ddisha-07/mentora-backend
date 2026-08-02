@@ -2494,7 +2494,11 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       return;
     }
     if (status === 'locked') {
-      alert("This activity is currently locked. Please complete the preceding activities to unlock it!");
+      if (Number(activity.stageId || activity.stage_id) === 102) {
+        alert("Available after completing Stage 1.");
+      } else {
+        alert("This activity is currently locked. Please complete the preceding activities to unlock it!");
+      }
       return;
     }
     
