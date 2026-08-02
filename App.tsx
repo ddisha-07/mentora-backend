@@ -1573,63 +1573,65 @@ function AuthPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
   activePage: Page; onNavigate: (p: Page) => void; collapsed: boolean; onToggle: () => void;
 }) {
-  const { user, profile, enrollments, signOut } = useApp();
+  const { enrollments, signOut, profile, user } = useApp();
 
-  // Unified active user profile (fallback for type safety)
   const activeProfile = profile || {
     name: user?.email?.split('@')[0] || "Learner",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60&fit=crop&auto=format",
     role: "JUNIOR_EMPLOYEE" as UserRole
   };
 
-  const allNavItems = [
-    { page: "dashboard" as Page, icon: <LayoutDashboard size={18} />, label: "Home", feature: "Home" },
-    { page: "learn" as Page, icon: <BookOpen size={18} />, label: "Learn", feature: "Learn" },
-    { page: "knowledge" as Page, icon: <Database size={18} />, label: "Knowledge Hub", feature: "Knowledge Hub" },
-    { page: "knowledge-exchange" as Page, icon: <HelpCircle size={18} />, label: "Knowledge Exchange", feature: "Knowledge Exchange" },
-    { page: "training" as Page, icon: <Video size={18} />, label: "Training", feature: "Training" },
-    { page: "ai-in-my-work" as Page, icon: <Sparkles size={18} />, label: "AI in My Work", feature: "AI in My Work" },
-    { page: "saved" as Page, icon: <Bookmark size={18} />, label: "Saved Items", feature: "Home" },
-    { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard", feature: "Leaderboard" },
-    { page: "rewards" as Page, icon: <Gift size={18} />, label: "Rewards", feature: "Rewards" },
-    { page: "skill-passport" as Page, icon: <Award size={18} />, label: "Skill Passport", feature: "Skill Passport" },
-    { page: "admin" as Page, icon: <Shield size={18} />, label: "Admin Console", feature: "Admin Console" }
+  const navItems = [
+    { page: "learn" as Page, icon: <BookOpen size={18} />, label: "Learning Journeys" },
+    { page: "dashboard" as Page, icon: <FileText size={18} />, label: "Daily Tasks" },
+    { page: "leaderboard" as Page, icon: <Trophy size={18} />, label: "Leaderboard" },
+    { page: "knowledge-exchange" as Page, icon: <Users size={18} />, label: "Community" },
+    { page: "profile" as Page, icon: <User size={18} />, label: "Profile" }
   ];
-
-  const userRole = activeProfile.role as UserRole;
-  const navItems = allNavItems.filter(item => canAccessFeature(userRole, item.feature));
 
   const bottomItems = [
-    { page: "profile" as Page, icon: <User size={18} />, label: "Profile" },
-    { page: "settings" as Page, icon: <Settings size={18} />, label: "Settings" },
+    { page: "settings" as Page, icon: <Settings size={18} />, label: "Settings" }
   ];
 
-  const NavItem = ({ item }: { item: typeof allNavItems[0] }) => {
+  const NavItem = ({ item }: { item: typeof navItems[0] }) => {
     const isActive = activePage === item.page;
     return (
-      <button onClick={() => onNavigate(item.page)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? "bg-primary/10 text-primary" : item.accent ? "text-primary/70 hover:text-primary hover:bg-primary/5" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}>
-        <span className="flex-shrink-0">{item.icon}</span>
-        {!collapsed && <span style={{ fontFamily: "'Raleway', sans-serif" }} className="font-medium">{item.label}</span>}
-        {!collapsed && isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+      <button
+        onClick={() => onNavigate(item.page)}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-tight transition-all duration-300 relative group cursor-pointer ${
+          isActive
+            ? "bg-gradient-to-r from-[#FF2B8A]/15 to-[#FF2B8A]/5 text-[#FF2B8A] border-l-2 border-[#FF2B8A]"
+            : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+        }`}
+        style={{ fontFamily: "'Raleway', sans-serif" }}
+      >
+        <span className={`flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-[#FF2B8A]" : "text-muted-foreground group-hover:text-foreground"}`}>
+          {item.icon}
+        </span>
+        {!collapsed && (
+          <span className="transition-all duration-300">
+            {item.label}
+          </span>
+        )}
+        
+        {/* Glowing Active Indicator */}
+        {isActive && (
+          <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-[#FF2B8A] shadow-[0_0_8px_#FF2B8A]" />
+        )}
       </button>
     );
   };
 
-  const avgProgress = enrollments.length > 0
-    ? Math.round(enrollments.reduce((acc, curr) => acc + (curr.progress || 0), 0) / enrollments.length)
-    : 0;
-
   return (
-    <aside className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}>
+    <aside className={`flex-shrink-0 flex flex-col bg-[#06060F]/95 backdrop-blur-md border-r border-white/5 transition-all duration-300 ease-in-out ${collapsed ? "w-16" : "w-60"}`}>
       {/* Logo */}
-      <div className={`h-16 flex items-center border-b border-border px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
+      <div className={`h-16 flex items-center border-b border-white/5 px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
         {!collapsed && (
           <div onClick={() => onNavigate("landing")} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <img src="/logo.png" alt="Mentora Logo" className="w-4 h-4 object-contain brightness-0 invert" />
             </div>
-            <span {...sg("font-semibold text-base")}>Mentora</span>
+            <span className="font-extrabold text-base text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>Mentora</span>
           </div>
         )}
         {collapsed && (
@@ -1643,38 +1645,42 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }: {
       </div>
 
       {collapsed && (
-        <button onClick={onToggle} className="flex justify-center py-2 text-muted-foreground hover:text-foreground border-b border-border">
+        <button onClick={onToggle} className="flex justify-center py-2 text-muted-foreground hover:text-foreground border-b border-white/5 transition-colors">
           <ChevronRight size={16} />
         </button>
       )}
 
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {navItems.map((item, i) => <NavItem key={i} item={item} />)}
+      {/* Nav Menu */}
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        {navItems.map((item, i) => (
+          <NavItem key={i} item={item} />
+        ))}
       </nav>
 
-      <div className="p-3 space-y-0.5 border-t border-border">
-        {bottomItems.map((item, i) => <NavItem key={i} item={item} />)}
-        <button onClick={signOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground dark:hover:text-red-400 hover:text-red-600 hover:bg-red-500/5 transition-all">
+      {/* Bottom Menu */}
+      <div className="p-3 space-y-1 border-t border-white/5">
+        {bottomItems.map((item, i) => (
+          <NavItem key={i} item={item} />
+        ))}
+        <button
+          onClick={signOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-tight text-muted-foreground hover:text-red-400 hover:bg-red-500/5 transition-all duration-300 cursor-pointer"
+          style={{ fontFamily: "'Raleway', sans-serif" }}
+        >
           <LogOut size={18} />
-          {!collapsed && <span style={{ fontFamily: "'Raleway', sans-serif" }} className="font-medium">Sign Out</span>}
+          {!collapsed && <span>Logout</span>}
         </button>
       </div>
 
+      {/* Profile summary card */}
       {!collapsed && (
         <div className="p-3 pb-4">
-          <div className="bg-card border border-border rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <img src={activeProfile.avatar || activeProfile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&auto=format"} alt="User" className="w-7 h-7 rounded-full object-cover bg-muted" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium leading-none truncate">{activeProfile.name || activeProfile.full_name}</p>
-                <p className="text-[9px] text-muted-foreground mt-1 uppercase tracking-wider truncate">
-                  {ROLES_CONFIG[userRole]?.displayName || userRole}
-                </p>
-              </div>
+          <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3 flex items-center gap-2">
+            <img src={activeProfile.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover bg-muted border border-white/5" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold truncate text-foreground leading-none">{activeProfile.name}</p>
+              <span className="text-[8px] text-muted-foreground mt-0.5 tracking-wider uppercase font-bold block">{activeProfile.role?.replace('_', ' ')}</span>
             </div>
-            <ProgressBar value={avgProgress} className="mt-2" />
-            <p className="text-[10px] text-muted-foreground mt-1">{avgProgress}% avg. progress</p>
           </div>
         </div>
       )}
@@ -2058,12 +2064,6 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     })
     .filter(Boolean) as any[];
 
-  // Upcoming trainings
-  const upcomingTrainings = [
-    { id: 1, title: "Emergency Boiler Safety Calibration", time: "Tomorrow, 10:00 AM", instructor: "Chief Safety Officer" },
-    { id: 2, title: "Supabase JWT Auth Security Review", time: "Thursday, 2:30 PM", instructor: "DevOps Lead" }
-  ];
-
   const handleContinue = (courseId: number) => {
     setSelectedCourseId(courseId);
     onNavigate("course-detail");
@@ -2101,373 +2101,265 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     };
   };
 
-  const handleCompleteMissionClick = (missionId: number, e: React.MouseEvent) => {
-    completeMission(missionId, e);
-    if (selectedMission && selectedMission.id === missionId) {
-      setSelectedMission(prev => prev ? { ...prev, status: 'completed' } : null);
-    }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.05 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
       className="p-6 space-y-6 max-w-7xl mx-auto"
     >
-      {/* Welcome Banner */}
-      <div className="premium-glass-card p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-64 opacity-20 pointer-events-none">
+      {/* Top Banner Section */}
+      <div className="premium-glass-card p-6 md:p-8 border border-white/10 bg-[#FF2B8A]/5 relative overflow-hidden rounded-3xl shadow-xl">
+        <div className="absolute top-0 right-0 w-80 h-full opacity-10 pointer-events-none">
           <NeuralNetSVG className="w-full h-full" />
         </div>
         <div className="relative z-10 space-y-4">
           <div>
-            <span className="text-xs text-primary font-bold tracking-wider uppercase">Welcome Back</span>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-foreground mt-1" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              {getGreeting()} {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
-            </h2>
-            <p className="text-muted-foreground text-sm mt-1">Your Mentora journey continues.</p>
+            <span className="text-[10px] text-primary font-bold tracking-widest uppercase block mb-1">
+              AI-Powered Enterprise Learning
+            </span>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Welcome back, {getFirstName(activeProfile.name || activeProfile.full_name)} 👋
+            </h1>
+            <p className="text-xs text-muted-foreground max-w-3xl mt-2 leading-relaxed">
+              Mentora is your AI-Powered Enterprise Learning platform, transforming workplace upskilling through personalized learning journeys, bite-sized lessons, and instant expert/AI guidance.
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-3 text-xs font-semibold text-foreground">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
-              🔥 <strong className="text-foreground">{activeProfile.currentStreak || 12} Day Streak</strong>
-            </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
-              ⭐ <strong className="text-foreground">{activeProfile.xp || 1240} XP</strong>
-            </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
-              🪙 <strong className="text-foreground">{activeProfile.mentoraCredits || 450} Credits</strong>
-            </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/35 border border-border/10">
-              🏆 <strong className="text-foreground">Rank #{activeProfile.leaderboardRank || 7}</strong>
-            </span>
-          </div>
-        </div>
-
-        {/* Primary CTA today mission */}
-        <div className="relative z-10 flex-shrink-0">
-          {todayMission ? (
-            <div className="premium-glass-card p-5 max-w-sm space-y-3 relative overflow-hidden border border-primary/25 bg-gradient-to-br from-primary/5 to-transparent">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-xl pointer-events-none" />
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                Active Daily Mission
+          {/* Stats Bar */}
+          <div className="flex flex-wrap gap-3 pt-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+              <span className="text-base">🔥</span>
+              <div className="text-[10px] leading-none">
+                <span className="text-muted-foreground block text-[8px] uppercase font-bold">Current Streak</span>
+                <span className="text-foreground font-extrabold mt-0.5 block">{activeProfile.currentStreak || 0} Days</span>
               </div>
-              <h4 className="text-sm font-bold text-foreground leading-snug" style={{ fontFamily: "'Raleway', sans-serif" }}>{todayMission.title}</h4>
-              <p className="text-xs text-muted-foreground line-clamp-1">{todayMission.description}</p>
-              <button
-                onClick={() => setSelectedMission(todayMission)}
-                className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md shadow-primary/20 cursor-pointer"
-              >
-                Today's Mission &rarr; Complete Now
-              </button>
             </div>
-          ) : (
-            <div className="premium-glass-card p-5 max-w-sm space-y-2 text-center border-emerald-500/25 bg-emerald-500/5">
-              <span className="text-lg">🎉</span>
-              <h4 className="text-sm font-bold text-foreground">All Missions Completed!</h4>
-              <p className="text-xs text-muted-foreground">You are fully caught up with today's objectives.</p>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+              <span className="text-base">⭐</span>
+              <div className="text-[10px] leading-none">
+                <span className="text-muted-foreground block text-[8px] uppercase font-bold">XP Earned</span>
+                <span className="text-foreground font-extrabold mt-0.5 block">{activeProfile.xp || 0} XP</span>
+              </div>
             </div>
-          )}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+              <span className="text-base">🏆</span>
+              <div className="text-[10px] leading-none">
+                <span className="text-muted-foreground block text-[8px] uppercase font-bold">Learning Level</span>
+                <span className="text-foreground font-extrabold mt-0.5 block">{activeProfile.skillLevel || "Beginner"}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+              <span className="text-base">🎯</span>
+              <div className="text-[10px] leading-none">
+                <span className="text-muted-foreground block text-[8px] uppercase font-bold">Daily Goal</span>
+                <span className="text-emerald-400 font-extrabold mt-0.5 block">1 lesson + 1 bite</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column: Learning Journeys & Recommended Bites */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Daily Role Missions */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              📅 Today's Daily Missions ({activeMissions.length})
-            </h3>
-            {activeMissions.length === 0 ? (
-              <Card className="p-6 text-center text-muted-foreground text-sm">
-                No active missions assigned to your role today.
-              </Card>
-            ) : (
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-                className="grid md:grid-cols-2 gap-4"
-              >
-                {activeMissions.map((m) => (
-                  <motion.div
-                    key={m.id}
-                    variants={itemVariants}
-                    onClick={() => setSelectedMission(m)}
-                    className={"premium-glass-card p-5 cursor-pointer flex flex-col justify-between h-40 border hover:scale-[1.01] transition-all " + 
-                      getMissionCardClass(m.type) + " " + (m.status === 'completed' ? 'opacity-70 border-emerald-500/20' : '')
-                    }
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-secondary/35 border border-border/10 rounded-md text-foreground">
-                          {m.type}
-                        </span>
-                        {m.status === 'completed' ? (
-                          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                            <Check size={10} strokeWidth={3} /> Done
-                          </span>
-                        ) : m.status === 'in_progress' ? (
-                          <span className="text-[9px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
-                            In Progress
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                            Assigned
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-sm font-bold text-foreground line-clamp-1" style={{ fontFamily: "'Raleway', sans-serif" }}>{m.title}</h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{m.description}</p>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground border-t border-border/10 pt-2 mt-2">
-                      <span>⏱️ {m.estimatedTime}</span>
-                      <span className="text-primary uppercase tracking-wider">
-                        +{m.rewardAmount} {m.rewardType === 'both' ? 'XP + Credits' : m.rewardType.toUpperCase()}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Continue Learning */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">📖 Continue Your Journeys</h3>
+          {/* Continue Learning Journey */}
+          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              📖 Continue Your Learning Journey
+            </h2>
             {inProgress.length === 0 ? (
-              <Card className="p-6 text-center text-muted-foreground text-sm border-dashed">
-                <BookOpen size={30} className="mx-auto mb-2 text-border" />
-                No journeys in progress. <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-bold cursor-pointer">Enroll in a journey</button> to start learning!
-              </Card>
+              <div className="p-6 text-center text-muted-foreground text-sm border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
+                <BookOpen size={24} className="mx-auto mb-2 text-muted-foreground" />
+                <p className="font-semibold">No active journeys in progress.</p>
+                <button onClick={() => onNavigate("learn")} className="text-primary hover:underline font-bold mt-2 cursor-pointer bg-transparent border-0">
+                  Browse & Enroll in Journeys &rarr;
+                </button>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {inProgress.map((course) => {
                   const stats = getJourneyStats(course.id);
                   return (
-                    <Card key={course.id} className="p-4 flex gap-4 items-center cursor-pointer border border-border/10 bg-secondary/5" onClick={() => handleContinue(course.id)}>
-                      <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>{course.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{course.journey_type ? "Stage: " + stats.currentStage : course.instructor}</p>
-                        <div className="mt-2">
-                          <ProgressBar value={course.progress} />
-                          <p className="text-[10px] font-mono text-muted-foreground mt-1">{course.progress}% complete</p>
+                    <div
+                      key={course.id}
+                      onClick={() => handleContinue(course.id)}
+                      className="p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:scale-[1.005] group"
+                    >
+                      <div className="flex gap-4 items-center flex-1 min-w-0">
+                        <img src={course.thumbnail} alt={course.title} className="w-20 h-14 rounded-xl object-cover flex-shrink-0 bg-muted border border-white/5 shadow-md" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[9px] text-primary font-bold uppercase tracking-wider block mb-1">
+                            Current Learning Journey
+                          </span>
+                          <h3 className="text-sm font-extrabold truncate text-foreground group-hover:text-primary transition-colors" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                            {course.title}
+                          </h3>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Stage: {stats.currentStage}
+                          </p>
                         </div>
                       </div>
-                      <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
-                    </Card>
+                      
+                      {/* Current Progress Column */}
+                      <div className="w-full md:w-48 space-y-1.5 flex-shrink-0">
+                        <div className="flex justify-between text-[9px] font-semibold text-muted-foreground uppercase">
+                          <span>Current Progress</span>
+                          <span className="font-mono text-foreground font-bold">{course.progress}%</span>
+                        </div>
+                        <ProgressBar value={course.progress} />
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             )}
           </div>
 
-          {/* Recommended Learning */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">💡 Recommended Learning Journeys</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {recommendedCourses.map(course => {
-                const stats = getJourneyStats(course.id);
-                return (
-                  <CourseCard
-                    key={course.id}
-                    title={course.title}
-                    duration={course.duration}
-                    rating={course.rating}
-                    thumbnail={course.thumbnail}
-                    category={course.category}
-                    onNavigate={() => handleContinue(course.id)}
-                    currentStage={course.journey_type ? stats.currentStage : undefined}
-                    dailyMinutes={course.daily_minutes}
-                    totalXp={course.total_xp}
-                    earnedXp={stats.earnedXp}
-                    difficultyLevel={course.difficulty_level}
-                  />
-                );
-              })}
+          {/* Today's Recommended Bite */}
+          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4 relative overflow-hidden">
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-pink-500/10 rounded-full blur-2xl pointer-events-none" />
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              ⚡ Today's Recommended Bite
+            </h2>
+            <div className="p-4 rounded-2xl border border-pink-500/20 bg-pink-500/[0.02] flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:border-pink-500/30 transition-all">
+              <div className="flex gap-4 items-center">
+                <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center flex-shrink-0 border border-pink-500/20 shadow-md">
+                  <Zap size={20} className="text-[#FF2B8A] animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-[9px] text-pink-400 font-bold uppercase tracking-wider block mb-1">
+                    Daily Micro-Learning (Less than 5 min)
+                  </span>
+                  <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                    LOTO Standard Protocol Checklist
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed max-w-md">
+                    Test your knowledge on Boiler Lockout/Tagout overrides, isolated breaker setups, and lock placements.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4 flex-shrink-0 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-3 md:pt-0">
+                <div className="text-right">
+                  <span className="text-[9px] text-muted-foreground uppercase block font-bold">Reward</span>
+                  <span className="text-xs font-mono font-extrabold text-pink-400 block">+50 XP</span>
+                </div>
+                <button
+                  onClick={() => onNavigate("learn")}
+                  className="bg-gradient-to-r from-[#FF2B8A] to-[#F72585] hover:from-[#FF4CA0] hover:to-[#FF3E96] text-white font-extrabold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 cursor-pointer active:scale-95 transition-all"
+                  style={{ fontFamily: "'Raleway', sans-serif" }}
+                >
+                  Start Lesson <ArrowRight size={12} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Quick Actions, Daily Tasks & Community */}
+        <div className="space-y-6">
+          {/* Quick Actions Panel */}
+          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+              ⚡ Quick Actions
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => onNavigate("learn")}
+                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-primary/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
+              >
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <Play size={16} className="text-primary fill-primary" />
+                </div>
+                <span className="text-[10px] font-bold text-foreground">Resume Journey</span>
+              </button>
+              <button
+                onClick={() => setChatOpen(true)}
+                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-cyan-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
+              >
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                  <Bot size={16} className="text-cyan-400" />
+                </div>
+                <span className="text-[10px] font-bold text-foreground">Ask Kai</span>
+              </button>
+              <button
+                onClick={() => {
+                  if (todayMission) {
+                    setSelectedMission(todayMission);
+                  } else {
+                    onNavigate("learn");
+                  }
+                }}
+                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-amber-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
+              >
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                  <Clock size={16} className="text-amber-400" />
+                </div>
+                <span className="text-[10px] font-bold text-foreground">Daily Tasks</span>
+              </button>
+              <button
+                onClick={() => onNavigate("leaderboard")}
+                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-purple-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02]"
+              >
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                  <Trophy size={16} className="text-purple-400" />
+                </div>
+                <span className="text-[10px] font-bold text-foreground">Leaderboard</span>
+              </button>
+              <button
+                onClick={() => onNavigate("knowledge-exchange")}
+                className="p-3 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-emerald-500/30 transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:scale-[1.02] col-span-2"
+              >
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                  <Users size={16} className="text-emerald-400" />
+                </div>
+                <span className="text-[10px] font-bold text-foreground">Community Forums</span>
+              </button>
             </div>
           </div>
 
-          {/* Mentora Knowledge Loop */}
-          <Card className="p-6 space-y-6 border border-cyan-500/25 bg-gradient-to-br from-cyan-500/5 to-transparent">
-            <div>
-              <h3 className="text-base font-extrabold text-foreground flex items-center gap-2" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                🔄 Mentora Knowledge Loop
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                How information flows dynamically between employees, AI, and experienced retired experts at Tata Steel.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-7 gap-3 relative pt-2">
-              {[
-                { step: '1', title: 'Learn', desc: 'Acquire new skills & SOP courses', color: 'border-blue-500/20 text-blue-400 bg-blue-500/5' },
-                { step: '2', title: 'Ask', desc: 'Query Kai AI chatbot & SOP vault', color: 'border-cyan-500/20 text-cyan-400 bg-cyan-500/5' },
-                { step: '3', title: 'Share', desc: 'Escalate complex gaps to forum', color: 'border-amber-500/20 text-amber-400 bg-amber-500/5' },
-                { step: '4', title: 'Verify', desc: 'Senior/retired experts check answers', color: 'border-purple-500/20 text-purple-400 bg-purple-500/5' },
-                { step: '5', title: 'Preserve', desc: 'Solutions saved into legacy SOPs', color: 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5' },
-                { step: '6', title: 'Improve', desc: 'Plant safety & metrics increase', color: 'border-rose-500/20 text-rose-400 bg-rose-500/5' },
-                { step: '7', title: 'Learn', desc: 'Cycle loops back to employee base', color: 'border-indigo-500/20 text-indigo-400 bg-indigo-500/5' }
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className={"border p-3 rounded-2xl flex flex-col justify-between h-32 transition-all hover:scale-[1.02] hover:-translate-y-1 relative " + item.color}
-                >
-                  <div>
-                    <span className="text-[9px] font-bold uppercase opacity-60 block">Step {item.step}</span>
-                    <h4 className="text-[10px] font-bold mt-1 uppercase tracking-wider">{item.title}</h4>
-                  </div>
-                  <p className="text-[9px] leading-normal opacity-85 mt-2">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Visual indicator of loop */}
-            <div className="flex flex-wrap items-center justify-between bg-secondary/15 border border-border/10 p-3.5 rounded-xl text-[9px] text-muted-foreground font-bold uppercase tracking-wider gap-3 leading-relaxed">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                <span>Employees Learn</span>
-              </div>
-              <span>&rarr;</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                <span>AI Vault Queries</span>
-              </div>
-              <span>&rarr;</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                <span>Experts Review</span>
-              </div>
-              <span>&rarr;</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Legacy Preserved</span>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Right column */}
-        <div className="space-y-6">
-          {/* Streak 7-Day Tracker */}
-          <Card className="p-5 space-y-4 border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-transparent">
-            <div className="flex items-center justify-between border-b border-border/10 pb-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Streak Tracker</h3>
-              <span className="text-xs text-orange-400 font-bold flex items-center gap-0.5">
-                🔥 {activeProfile.currentStreak || 12} Day Streak
+          {/* Active Missions (Daily Tasks) */}
+          <div className="premium-glass-card p-6 border border-white/5 rounded-3xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                📅 Today's Tasks
+              </h2>
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                {activeMissions.length} Active
               </span>
             </div>
-            <div className="grid grid-cols-7 gap-2 text-center pt-2">
-              {streakDays.map((d, i) => (
-                <div key={i} className="space-y-2 relative flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-muted-foreground">{d.day}</span>
+            {activeMissions.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-4">No active daily tasks for your role today.</p>
+            ) : (
+              <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                {activeMissions.map((m) => (
                   <div
-                    className={"w-7 h-7 rounded-full flex items-center justify-center transition-all " + (
-                      d.active
-                        ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20 font-bold"
-                        : d.current
-                        ? "border-2 border-primary bg-primary/5 animate-pulse font-bold"
-                        : "bg-secondary/20 border border-border/10 text-muted-foreground"
-                    )}
+                    key={m.id}
+                    onClick={() => setSelectedMission(m)}
+                    className="p-3 rounded-xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] cursor-pointer flex items-center justify-between gap-3 group transition-all"
                   >
-                    {d.active ? (
-                      <Check size={12} strokeWidth={3} />
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-foreground group-hover:text-primary truncate transition-colors leading-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                        {m.title}
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">⏱️ {m.estimatedTime}</p>
+                    </div>
+                    {m.status === 'completed' ? (
+                      <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                        <Check size={8} strokeWidth={3} /> Done
+                      </span>
                     ) : (
-                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                      <span className="text-[9px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all">
+                        +{m.rewardAmount} XP
+                      </span>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground pt-2.5 border-t border-border/10 mt-2">
-              <span>Longest streak: {activeProfile.longestStreak || 12} days</span>
-              <span>XP Multiplier: 1.2x</span>
-            </div>
-          </Card>
-
-          {/* Skill Passport Preview */}
-          <Card className="p-5 space-y-4 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Skill Passport</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <img src={activeProfile.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-border/15" />
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">{activeProfile.name}</h4>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{activeProfile.designation}</p>
-                </div>
+                ))}
               </div>
-              <div className="space-y-2 text-xs pt-2.5 border-t border-border/10">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground font-semibold">Expertise Level</span>
-                  <span className="font-bold text-foreground">{activeProfile.skillLevel}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground font-semibold">Verified Skills</span>
-                  <span className="font-bold text-foreground">8 Completed</span>
-                </div>
-              </div>
-              <button
-                onClick={() => onNavigate("skill-passport")}
-                className="w-full text-center bg-secondary/35 border border-border/10 hover:bg-secondary/50 font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                Open Skill Passport <ChevronRight size={14} />
-              </button>
-            </div>
-          </Card>
-
-          {/* Upcoming Training */}
-          <Card className="p-5 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Upcoming Live Training</h3>
-            <div className="space-y-3">
-              {upcomingTrainings.map(t => (
-                <div key={t.id} className="p-3 border border-border/10 bg-secondary/15 rounded-xl space-y-1 relative overflow-hidden">
-                  <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1" style={{ fontFamily: "'Raleway', sans-serif" }}>{t.title}</h4>
-                  <p className="text-[10px] text-muted-foreground">{t.time}</p>
-                  <p className="text-[9px] font-bold text-primary uppercase tracking-wider">{t.instructor}</p>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => onNavigate("training")}
-              className="w-full text-center bg-secondary/35 border border-border/10 hover:bg-secondary/50 font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              View Calendar <ChevronRight size={14} />
-            </button>
-          </Card>
-
-          {/* AI Assistant Banner */}
-          <Card className="p-5 border-primary/20 bg-gradient-to-br from-secondary/5 to-primary/5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot size={16} className="text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground" style={{ fontFamily: "'Raleway', sans-serif" }}>Mentora AI</p>
-                <p className="text-[9px] text-emerald-400 uppercase tracking-wider font-bold">Online</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">Ask me anything about plant operations, safety overrides, or certification guidelines.</p>
-            <CyanButton size="sm" className="w-full text-center cursor-pointer font-bold" onClick={() => onNavigate("ai-chat")}>
-              Start Conversation
-            </CyanButton>
-          </Card>
+            )}
+          </div>
         </div>
       </div>
 
@@ -5868,7 +5760,7 @@ export default function App() {
               <LandingPage onNavigate={navigateTo} user={user} />
             </div>
           )}
-          {page === "login" && <LoginPage onNavigate={navigateTo} />}
+          {page === "auth" && <AuthPage onNavigate={navigateTo} />}
           {appPages.includes(page) && <AppLayout page={page} onNavigate={navigateTo} />}
 
           {/* Onboarding Profile Modal */}
