@@ -337,6 +337,17 @@ export function LearningBitePlayer({
     );
   }
 
+  if (activeBite && Number(activeBite.id) === 1112) {
+    return (
+      <CustomBite2Player
+        activeBite={activeBite}
+        onClose={onClose}
+        handleClaimXp={handleClaimXp}
+        isSaving={isSaving}
+      />
+    );
+  }
+
   return (
     <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[500px]">
       <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -997,6 +1008,301 @@ export function CustomSinglePagePlayer({
             <li className="flex items-start gap-2">
               <span className="text-cyan-400 pt-0.5">&bull;</span>
               <span><strong>Graceful Error Detours:</strong> Agents can handle network or tool failure logs by planning alternative paths.</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Quick Quiz Section */}
+        <div className="space-y-4 border-t border-white/5 pt-5">
+          <div className="flex items-center gap-2">
+            <HelpCircle size={16} className="text-cyan-400" />
+            <h3 className="text-sm font-bold text-foreground">Quick Quiz (Answer 3 Questions)</h3>
+          </div>
+
+          <div className="space-y-5">
+            {mcqs.map((q) => {
+              const isCorrect = quizCorrect[q.id];
+              return (
+                <div key={q.id} className="space-y-2 bg-white/[0.005] border border-white/5 rounded-2xl p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs font-semibold text-foreground leading-relaxed">{q.question}</h4>
+                    {quizChecked && (
+                      isCorrect ? (
+                        <span className="text-[10px] text-emerald-400 font-extrabold flex items-center gap-1"><Check size={12} /> Correct</span>
+                      ) : (
+                        <span className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1"><AlertTriangle size={12} /> Try Again</span>
+                      )
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    {q.options.map((opt, oIdx) => {
+                      const isSelected = quizAnswers[q.id] === oIdx;
+                      return (
+                        <button
+                          key={oIdx}
+                          onClick={() => handleSelectOption(q.id, oIdx)}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
+                            isSelected
+                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {!allCorrect && (
+            <button
+              onClick={handleCheckAnswers}
+              disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+            >
+              Verify Answers
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Footer / Completion Button */}
+      <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-between z-10">
+        <div className="flex flex-col items-start">
+          <span className="text-[10px] text-muted-foreground font-semibold">Reward</span>
+          <span className="text-xs font-mono font-bold text-cyan-400">⚡ 50 XP</span>
+        </div>
+
+        {allCorrect ? (
+          <button
+            onClick={handleClaimXp}
+            disabled={isSaving}
+            className="bg-gradient-to-r from-[#FF2B8A] to-[#7C3AED] hover:opacity-95 text-white font-extrabold px-6 py-3 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-1.5"
+          >
+            {isSaving ? "Completing..." : "Complete Lesson"} <ArrowRight size={13} />
+          </button>
+        ) : (
+          <button
+            disabled
+            className="bg-muted text-muted-foreground/50 cursor-not-allowed font-extrabold px-6 py-3 rounded-xl text-xs flex items-center gap-1.5"
+          >
+            Complete Lesson <Lock size={12} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom Single Page Player for Bite 1112 ───────────────────────────────────
+interface CustomBite2PlayerProps {
+  activeBite: any;
+  onClose: () => void;
+  handleClaimXp: () => void;
+  isSaving: boolean;
+}
+
+export function CustomBite2Player({
+  activeBite,
+  onClose,
+  handleClaimXp,
+  isSaving
+}: CustomBite2PlayerProps) {
+  // Quiz states
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number | null>>({
+    1: null,
+    2: null,
+    3: null
+  });
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState<Record<number, boolean>>({
+    1: false,
+    2: false,
+    3: false
+  });
+
+  const mcqs = [
+    {
+      id: 1,
+      question: "1. Which component acts as the cognitive engine for decision making and planning?",
+      options: [
+        "Sensors",
+        "Brain (LLM)",
+        "Tools",
+        "Memory"
+      ],
+      correctAnswer: 1
+    },
+    {
+      id: 2,
+      question: "2. If an agent recalls a customer's preference from an interaction two weeks ago, which component is it utilizing?",
+      options: [
+        "Sensors",
+        "Brain",
+        "Tools",
+        "Memory (Long-term)"
+      ],
+      correctAnswer: 3
+    },
+    {
+      id: 3,
+      question: "3. What is the primary role of 'Sensors' in an AI agent system?",
+      options: [
+        "To run code functions in the console.",
+        "To parse environment signals and load states into the context.",
+        "To decrease total token sizes.",
+        "To delete database files."
+      ],
+      correctAnswer: 1
+    }
+  ];
+
+  const handleSelectOption = (qId: number, optIdx: number) => {
+    if (quizChecked && quizCorrect[qId]) return;
+    setQuizAnswers(prev => ({ ...prev, [qId]: optIdx }));
+  };
+
+  const handleCheckAnswers = () => {
+    const c1 = quizAnswers[1] === mcqs[0].correctAnswer;
+    const c2 = quizAnswers[2] === mcqs[1].correctAnswer;
+    const c3 = quizAnswers[3] === mcqs[2].correctAnswer;
+    setQuizCorrect({ 1: c1, 2: c2, 3: c3 });
+    setQuizChecked(true);
+  };
+
+  const allCorrect = quizCorrect[1] && quizCorrect[2] && quizCorrect[3];
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between max-h-[85vh]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold">
+            <Zap size={14} className="fill-cyan-400 text-cyan-400" />
+          </div>
+          <div>
+            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-black block">
+              Learning Bite Player &bull; 2 of 4
+            </span>
+            <h4 className="text-xs font-bold text-foreground mt-0.5">{activeBite.title}</h4>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
+        
+        {/* Objectives Panel */}
+        <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
+          <p className="text-xs text-foreground font-semibold">Identify and describe the four core components of an AI Agent: Senses, Brain, Hands, and Memory.</p>
+        </div>
+
+        {/* Concept Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <Sparkles size={14} className="text-cyan-400" /> Core Concepts
+          </h3>
+          <div className="text-xs text-muted-foreground space-y-2.5 leading-relaxed">
+            <p>
+              An autonomous AI Agent is not a single piece of code; rather, it is a dynamic system built by coupling four distinct component layers: <strong>Senses (Perception)</strong>, the <strong>Brain (LLM)</strong>, <strong>Hands (Action Tools)</strong>, and <strong>Memory (Context)</strong>.
+            </p>
+            <p>
+              Each layer serves a unique role. Senses read inputs from the active environment. The Brain translates these signals using context templates to form plans. The Hands run functions that edit external databases, and the Memory queries files and histories to build a continuous learning thread.
+            </p>
+          </div>
+        </div>
+
+        {/* Visual Explanation Table */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground">Visual Explanation</h3>
+          <div className="overflow-x-auto border border-white/5 rounded-2xl bg-white/[0.005]">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/[0.01]">
+                  <th className="p-3 text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Component</th>
+                  <th className="p-3 text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Role</th>
+                  <th className="p-3 text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Software Example</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-muted-foreground">
+                <tr>
+                  <td className="p-3 font-semibold text-foreground flex items-center gap-2">
+                    <span className="text-cyan-400">👀</span> Senses
+                  </td>
+                  <td className="p-3">Reads inputs and metrics</td>
+                  <td className="p-3 font-mono text-[10px]">webhook_receivers, log_monitors</td>
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-foreground">
+                    <span className="text-purple-400">🧠</span> Brain
+                  </td>
+                  <td className="p-3">Plans logic steps and detours</td>
+                  <td className="p-3 font-mono text-[10px]">LLMs (Gemini, Claude)</td>
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-foreground">
+                    <span className="text-pink-400">🛠️</span> Hands
+                  </td>
+                  <td className="p-3">Executes tasks in the env</td>
+                  <td className="p-3 font-mono text-[10px]">stripe_apis, sql_writers, send_slack()</td>
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-foreground">
+                    <span className="text-amber-400">💾</span> Memory
+                  </td>
+                  <td className="p-3">Recalls history and context</td>
+                  <td className="p-3 font-mono text-[10px]">vector_dbs, session_cookies</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Real World Example Section */}
+        <div className="bg-purple-500/5 border border-purple-500/10 rounded-2xl p-4">
+          <span className="text-[9px] font-black uppercase tracking-wider text-purple-400 block mb-1">Real-World Case Study</span>
+          <h4 className="text-xs font-bold text-foreground mb-1.5">Automated Customer Care Specialist</h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            An incoming complaint email triggers the agent. The <strong>Sensors (Senses)</strong> read and parse the text content. The <strong>Brain</strong> decides the ticket requires checking order histories. It queries the database using its database query <strong>Tool (Hands)</strong> and recalls past return policies from its documentation <strong>Memory</strong>. Finally, the Brain drafts the response email and updates the ticket status to resolved.
+          </p>
+        </div>
+
+        {/* Key Takeaways */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-bold text-foreground">Key Takeaways</h3>
+          <ul className="space-y-2 text-xs text-muted-foreground list-none">
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>The Senses (Sensors)</strong> act as the entry point that reads system state and triggers agent loops.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>The Brain (LLM)</strong> functions as the supervisor engine that decides planning paths.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>The Hands (Tools)</strong> represent the interface wrappers (databases, scripts, webhooks) that alter the external system.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Short-Term Memory</strong> maintains the active conversation context window to prevent repetition.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-400 pt-0.5">&bull;</span>
+              <span><strong>Long-Term Memory</strong> uses vector representations to query thousands of document files semantically on demand.</span>
             </li>
           </ul>
         </div>
