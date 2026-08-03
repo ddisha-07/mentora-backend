@@ -2035,8 +2035,13 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               Continue your AI learning journey.
             </p>
           </div>
-          <div className="text-[10px] text-muted-foreground bg-white/5 border border-white/5 rounded-xl px-3 py-1 font-mono">
-            {activeProfile.plant || "Enterprise HQ"}
+          <div className="flex gap-2 text-[10px] text-muted-foreground font-mono items-center">
+            <div className="bg-white/5 border border-white/5 rounded-xl px-3 py-1 capitalize">
+              Role: {(activeProfile.designation || activeProfile.role || "Learner").replace(/_/g, ' ')}
+            </div>
+            <div className="bg-white/5 border border-white/5 rounded-xl px-3 py-1">
+              {activeProfile.plant || "Enterprise HQ"}
+            </div>
           </div>
         </div>
 
@@ -2315,6 +2320,10 @@ function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   });
 
   const handleCourseClick = (courseId: number) => {
+    if (Number(courseId) !== 1) {
+      alert("Coming in Phase 2");
+      return;
+    }
     setSelectedCourseId(courseId);
     onNavigate("course-detail");
   };
@@ -2363,7 +2372,12 @@ function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <div className="h-44 overflow-hidden bg-surface relative">
                 <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-                {course.progress > 0 && (
+                {Number(course.id) !== 1 && (
+                  <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md text-[9px] font-black uppercase text-pink-400 tracking-wider flex items-center gap-1.5">
+                    <Lock size={10} /> Coming in Phase 2
+                  </div>
+                )}
+                {course.progress > 0 && Number(course.id) === 1 && (
                   <div className="absolute bottom-3 left-3 right-3">
                      <ProgressBar value={course.progress} />
                      <p {...mono("text-[10px] text-white/80 mt-1")}>{course.progress}% complete</p>
@@ -2389,8 +2403,15 @@ function CourseCatalogPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   <span className="flex items-center gap-1"><BookOpen size={12} />{course.lessons} lessons</span>
                   <span className="flex items-center gap-1"><Star size={12} className="text-amber-400" />{course.rating}</span>
                 </div>
-                <CyanButton className="w-full text-center" size="sm" onClick={(e) => { e.stopPropagation(); handleCourseClick(course.id); }}>
-                  {course.progress > 0 ? "Continue Learning" : "Start Learning"}
+                <CyanButton 
+                  className="w-full text-center" 
+                  size="sm" 
+                  onClick={(e) => { e.stopPropagation(); handleCourseClick(course.id); }}
+                  disabled={Number(course.id) !== 1}
+                >
+                  {Number(course.id) === 1 
+                    ? (course.progress > 0 ? "Continue Learning" : "Start Learning")
+                    : "Coming in Phase 2"}
                 </CyanButton>
               </div>
             </Card>
@@ -2414,7 +2435,8 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     learningBites,
     biteProgress,
     setBiteProgress,
-    curriculumError
+    curriculumError,
+    activeMissions
   } = useApp();
 
   const [openModule, setOpenModule] = useState<number | null>(null);
@@ -5236,6 +5258,12 @@ export default function App() {
   // Load initial Q&A datasets from Supabase on mount
   useEffect(() => {
     const loadQAAndArticles = async () => {
+      if (localStorage.getItem("dev_bypass") === "true") {
+        setKnowledgeQuestions([]);
+        setKnowledgeAnswers({});
+        setPreservedKnowledge([]);
+        return;
+      }
       if (!user) {
         setKnowledgeQuestions([]);
         setKnowledgeAnswers({});
@@ -5325,6 +5353,24 @@ export default function App() {
   useEffect(() => {
     let active = true;
     const fetchMissionsAndProgress = async () => {
+      if (localStorage.getItem("dev_bypass") === "true") {
+        if (active) {
+          setActiveMissions([
+            {
+              id: 1,
+              title: "Explore Agentic AI",
+              description: "Launch the Agentic AI journey map and complete the first lesson.",
+              type: "daily",
+              assignedRole: "learner",
+              rewardType: "xp",
+              rewardAmount: 50,
+              estimatedTime: "5 mins",
+              status: "assigned"
+            }
+          ]);
+        }
+        return;
+      }
       if (!user || !profile) return;
       try {
         const userRoleUpper = (profile.role || "JUNIOR_EMPLOYEE").toUpperCase();
@@ -5722,6 +5768,21 @@ export default function App() {
       }
 
       // Get current auth session
+      if (localStorage.getItem("dev_bypass") === "true") {
+        if (active) {
+          setEnrollments([{
+            id: 99999,
+            user_id: "dev-user-id",
+            course_id: 1,
+            progress: 0,
+            completed_lessons: []
+          }]);
+          parsePathname(window.location.pathname);
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (active) {
@@ -5752,6 +5813,7 @@ export default function App() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (localStorage.getItem("dev_bypass") === "true") return;
       if (!active) return;
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -5778,6 +5840,7 @@ export default function App() {
   useEffect(() => {
     if (user && profile) {
       const syncProfile = async () => {
+        if (localStorage.getItem("dev_bypass") === "true") return;
         const updateData: any = {
           full_name: profile.name,
           avatar_url: profile.avatar,
@@ -5825,6 +5888,17 @@ export default function App() {
 
   const enrollInCourse = async (courseId: number) => {
     if (!user) return;
+    if (localStorage.getItem("dev_bypass") === "true") {
+      const newEnrollment = {
+        id: Math.floor(Math.random() * 100000),
+        user_id: user.id,
+        course_id: courseId,
+        progress: 0,
+        completed_lessons: []
+      };
+      setEnrollments(prev => [...prev, newEnrollment]);
+      return;
+    }
     try {
       const { error } = await supabase.from("enrollments").insert({
         user_id: user.id,
@@ -5846,6 +5920,36 @@ export default function App() {
 
   const updateLessonProgress = async (courseId: number, lessonId: number, completed: boolean) => {
     if (!user) return;
+    if (localStorage.getItem("dev_bypass") === "true") {
+      const currentEnrollment = enrollments.find(e => Number(e.course_id) === Number(courseId));
+      let completedLessons: number[] = currentEnrollment?.completed_lessons || [];
+
+      if (completed) {
+        if (!completedLessons.includes(lessonId)) {
+          completedLessons = [...completedLessons, lessonId];
+        }
+      } else {
+        completedLessons = completedLessons.filter((id: number) => id !== lessonId);
+      }
+
+      const courseObj = courses.find(c => Number(c.id) === Number(courseId));
+      const totalLessons = courseObj?.lessons || 1;
+      const newProgress = Math.min(100, Math.max(0, Math.round((completedLessons.length / totalLessons) * 100)));
+
+      if (currentEnrollment) {
+        setEnrollments(prev => prev.map(e => e.id === currentEnrollment.id ? { ...e, completed_lessons: completedLessons, progress: newProgress } : e));
+      } else {
+        const newEnrollment = {
+          id: Math.floor(Math.random() * 100000),
+          user_id: user.id,
+          course_id: courseId,
+          progress: newProgress,
+          completed_lessons: completedLessons
+        };
+        setEnrollments(prev => [...prev, newEnrollment]);
+      }
+      return;
+    }
     try {
       const currentEnrollment = enrollments.find(e => Number(e.course_id) === Number(courseId));
       let completedLessons: number[] = currentEnrollment?.completed_lessons || [];

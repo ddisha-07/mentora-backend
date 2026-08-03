@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { 
   X, Zap, BookOpen, Trophy, ArrowRight, ArrowLeft, RotateCcw, 
   CheckCircle, AlertCircle, HelpCircle,
-  Eye, Brain, Play as PlayIcon, Sparkles, Check, AlertTriangle, Lock
+  Eye, Brain, Play as PlayIcon, Sparkles, Check, AlertTriangle, Lock, Clock
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { LearningBite, UserBiteProgress } from "../types";
@@ -20,6 +20,303 @@ interface LearningBitePlayerProps {
   onAllBitesCompleted: (xpEarned: number) => void;
 }
 
+
+const LESSON_DATA: Record<number, {
+  title: string;
+  readingTime: string;
+  objective: string;
+  content: string;
+  keyTakeaways: string[];
+  enterpriseExamples: Record<string, string>;
+}> = {
+  1111: {
+    title: "What is an AI Agent?",
+    readingTime: "3 min read",
+    objective: "Understand the definition and core characteristics of autonomous AI Agents.",
+    content: "An AI Agent is an autonomous software system that uses a large language model (LLM) as its central brain. Unlike traditional automated scripts that require strict if-else paths, an AI agent operates dynamically. It perceives its environment, makes logical decisions, plans execution paths, and invokes external tools independently to achieve a specific goal without constant human-in-the-loop triggers.",
+    keyTakeaways: [
+      "AI Agents run reasoning cycles autonomously to resolve open-ended goals.",
+      "They use a central foundation language model (LLM) for cognitive decisions.",
+      "Unlike simple chatbots, agents execute actions directly in their environment via APIs."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "As an engineer, an AI Agent can act as your development assistant: parsing repository updates, reasoning about code improvements, drafting automated pull requests, and setting up unit tests.",
+      SHOP_FLOOR_WORKER: "On the shop floor, an AI Agent can continuously monitor safety reports, analyze machinery sensor warnings, and schedule proactive repair tickets before equipment breaks down.",
+      OFFICER_MANAGER: "For management workflows, an AI Agent can compile monthly business reviews, flag budget variances in accounting sheets, and draft vendor notifications for your approval.",
+      RETIRED_EMPLOYEE: "To support retired engineers, an AI Agent can assist you in converting decades of hands-on plant operation logs into structured, searchable digital guides for active employees.",
+      learner: "As an engineer, an AI Agent can act as your development assistant: parsing repository updates, reasoning about code improvements, drafting automated pull requests, and setting up unit tests."
+    }
+  },
+  1112: {
+    title: "Components of an AI Agent",
+    readingTime: "3 min read",
+    objective: "Learn the core architectural building blocks of an autonomous agent.",
+    content: "An agent is composed of four critical components: 1) Senses (Perception) which reads states, file paths, or databases; 2) Brain (LLM Core) which performs logical reasoning; 3) Memory (Short-term chat logs and long-term vector embeddings); and 4) Hands (Tools) which execute actions by calling APIs, writing to databases, or sending files.",
+    keyTakeaways: [
+      "Perception translates raw database, text, or visual inputs into context the agent understands.",
+      "The LLM Brain serves as the controller, formulating plans and interpreting tool logs.",
+      "Tools (API endpoints, shell commands) enable the agent to affect changes in the real world."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "In software engineering, a review agent reads code diffs (Perception), evaluates standards (Brain), checks historical style guides (Memory), and writes suggestions to GitHub (Tools).",
+      SHOP_FLOOR_WORKER: "A maintenance coordinator agent receives thermal scan alerts (Perception), plans repairs (Brain), reviews parts logs (Memory), and generates parts orders (Tools).",
+      OFFICER_MANAGER: "A document compliance agent screens incoming PDFs (Perception), evaluates regulatory gaps (Brain), reviews past checklists (Memory), and sends warnings to vendors (Tools).",
+      RETIRED_EMPLOYEE: "A historical archiver agent reads handwritten maintenance logs (Perception), interprets technical diagrams (Brain), checks model indices (Memory), and saves digital metadata (Tools).",
+      learner: "In software engineering, a review agent reads code diffs (Perception), evaluates standards (Brain), checks historical style guides (Memory), and writes suggestions to GitHub (Tools)."
+    }
+  },
+  1113: {
+    title: "Agent Lifecycle",
+    readingTime: "3 min read",
+    objective: "Trace the continuous lifecycle loop of perception, reasoning, planning, execution, and feedback.",
+    content: "An agent does not run as a single-turn script. It operates in a continuous lifecycle loop: Perceive → Reason → Plan → Act → Feedback. After reading its environment, it reasons through its progress, plans its next sub-goal, executes a tool action, and observes the feedback. This cycle loops dynamically until the final goal is met or it hits a safety loop limit.",
+    keyTakeaways: [
+      "The agent lifecycle is iterative, allowing the system to self-correct based on intermediate outcomes.",
+      "Feedback from tool executions is evaluated as new perception inputs for the next cycle.",
+      "A loop termination guard is essential to prevent infinite cycles if tools fail repeatedly."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "A code-generation agent runs in a loop: it writes code (Action), observes compile test errors (Feedback), plans code modifications (Plan), and edits lines until the build passes (Goal Met).",
+      SHOP_FLOOR_WORKER: "A scheduling agent monitors plant deliveries (Perceive), reasons about delayed shipping times, assigns backup truck schedules (Action), and evaluates updated route times.",
+      OFFICER_MANAGER: "A billing manager agent parses vendor invoices (Perceive), flags payment variances, requests credit offsets from vendor APIs (Action), and verifies invoice balance records.",
+      RETIRED_EMPLOYEE: "A search agent indexes old blueprints (Action), scans for catalog matches, checks system directories, and requests manual review feedback when records are ambiguous.",
+      learner: "A code-generation agent runs in a loop: it writes code (Action), observes compile test errors (Feedback), plans code modifications (Plan), and edits lines until the build passes (Goal Met)."
+    }
+  },
+  1121: {
+    title: "Reasoning and Planning",
+    readingTime: "4 min read",
+    objective: "Explore how agents deconstruct complex goals using advanced reasoning frameworks.",
+    content: "To solve multi-step problems, agents use logical planning frameworks like ReAct (Reason + Act). ReAct prompts the model to generate 'thoughts' before actions, writing down its rationale at each step. This transparency lets the agent evaluate intermediate tool errors, rethink plans on the fly, and systematically navigate obstacles.",
+    keyTakeaways: [
+      "ReAct combines reasoning logs with actions, letting agents detail their logical plan at each step.",
+      "Self-correction loops enable agents to adapt when external systems return errors.",
+      "Chain-of-thought planning breaks down complex calculations and workflows into logical steps."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "A database update agent checks constraints first (Reason), tests migration scripts (Act), reads constraint warnings (Feedback), and rollbacks coordinates automatically.",
+      SHOP_FLOOR_WORKER: "A quality checker agent plans a batch test, notes a chemical variance alert, schedules a secondary verification test, and logs the variance root cause.",
+      OFFICER_MANAGER: "A resource planner agent evaluates staff workloads, notices shortfalls in QA capacity, drafts contractor requests, and updates the scheduling boards.",
+      RETIRED_EMPLOYEE: "An operations coordinator agent references historic records, handles layout changes, and drafts safety protocol revisions for team approval.",
+      learner: "A database update agent checks constraints first (Reason), tests migration scripts (Act), reads constraint warnings (Feedback), and rollbacks coordinates automatically."
+    }
+  },
+  1131: {
+    title: "Multi-Agent Systems",
+    readingTime: "4 min read",
+    objective: "Understand how specialized agents collaborate to solve complex enterprise problems.",
+    content: "In multi-agent systems, complex workflows are divided among a group of specialized agents. Each agent has its own role, system prompt, and tools (e.g., Writer Agent, Editor Agent, and Publisher Agent). They communicate via message queues or shared blackboards, peer-reviewing intermediate work to deliver higher quality results than a single LLM could.",
+    keyTakeaways: [
+      "Multi-agent architectures modularize responsibilities, improving workflow reliability and accuracy.",
+      "Specialized system prompts allow each agent to focus on its specific domain of expertise.",
+      "Peer-review loops between agents ensure output validation before human-in-the-loop signs off."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "A QA agent writes test frameworks for code produced by a Dev agent, while a Deploy agent packages the results into a staging branch.",
+      SHOP_FLOOR_WORKER: "An inventory agent coordinates steel levels with a procurement agent, who in turn queries a vendor agent for shipping times.",
+      OFFICER_MANAGER: "An onboarding agent compiles HR documents, a security agent provisions employee permissions, and a facilities agent assigns workspace coordinates.",
+      RETIRED_EMPLOYEE: "An archiver agent transcribes paper blueprints while a catalog agent indexes metadata and a reviewer agent flags layout differences.",
+      learner: "A QA agent writes test frameworks for code produced by a Dev agent, while a Deploy agent packages the results into a staging branch."
+    }
+  },
+  1141: {
+    title: "Enterprise Applications",
+    readingTime: "4 min read",
+    objective: "Understand the deployment of autonomous workflows and safety guardrails in production.",
+    content: "Enterprise agent deployment focuses on scale, safety, and integration. Key patterns include Human-in-the-Loop (HITL) overrides for high-risk actions (e.g., executing financial transfers or changing plant configurations), vector search retrieval (RAG) for absolute accuracy, and comprehensive log audit ledgers to monitor agent activities.",
+    keyTakeaways: [
+      "Human-in-the-Loop safeguards ensure agents ask for approval before high-risk actions.",
+      "Enterprise integrations require secure sandboxes, API access controls, and logging.",
+      "Agents personalize employee training, manage inventory logistics, and monitor security."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "A pipeline deployment agent monitors integration builds, flags vulnerability warnings, and pauses deployment until approved by a lead engineer.",
+      SHOP_FLOOR_WORKER: "An equipment control agent detects critical temperature spikes and shuts down power grids while alerting operators.",
+      OFFICER_MANAGER: "A corporate travel coordinator agent schedules flights, cross-checks travel policy rules, and routes expense approvals to directors.",
+      RETIRED_EMPLOYEE: "A documentation compiler agent organizes historical knowledge folders and requests editor sign-off before publishing.",
+      learner: "A pipeline deployment agent monitors integration builds, flags vulnerability warnings, and pauses deployment until approved by a lead engineer."
+    }
+  }
+};
+
+function UnifiedLessonPlayer({
+  activeBite,
+  onClose,
+  handleClaimXp,
+  isSaving
+}: {
+  activeBite: LearningBite;
+  onClose: () => void;
+  handleClaimXp: () => Promise<void>;
+  isSaving: boolean;
+}) {
+  const { profile, setPage, setChatInitialQuery } = useApp();
+  const userRole = profile?.role || "JUNIOR_EMPLOYEE";
+  
+  const data = LESSON_DATA[activeBite.id] || {
+    title: activeBite.title,
+    readingTime: "3 min read",
+    objective: "Learn about " + activeBite.title,
+    content: "This lesson is currently under preparation for Phase 2. It will cover advanced concepts, enterprise examples, and hands-on exercises.",
+    keyTakeaways: [
+      "Detailed content will be available in the Phase 2 launch.",
+      "Interact with Kai for questions about this topic."
+    ],
+    enterpriseExamples: {
+      JUNIOR_EMPLOYEE: "This is a placeholder enterprise example for junior employees in Phase 2.",
+      SHOP_FLOOR_WORKER: "This is a placeholder enterprise example for shop floor workers in Phase 2.",
+      OFFICER_MANAGER: "This is a placeholder enterprise example for office managers in Phase 2.",
+      RETIRED_EMPLOYEE: "This is a placeholder enterprise example for retired employees in Phase 2.",
+      learner: "This is a placeholder enterprise example for learners in Phase 2."
+    }
+  };
+
+  const handleAskKai = () => {
+    setChatInitialQuery(`Tell me about the lesson: ${data.title}`);
+    setPage("ai-chat");
+  };
+
+  return (
+    <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col min-h-[600px] z-50 text-foreground">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold">
+            <BookOpen size={16} />
+          </div>
+          <div>
+            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-black block">
+              Active Lesson
+            </span>
+            <h2 className="text-sm font-bold mt-0.5">{data.title}</h2>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Scrollable Content Container */}
+      <div className="flex-1 space-y-6 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+        
+        {/* Objective & Meta */}
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+          <div className="space-y-1 max-w-[80%]">
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">Learning Objective</span>
+            <p className="text-xs text-foreground font-medium">{data.objective}</p>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] text-cyan-400 bg-cyan-400/5 px-2.5 py-1 rounded-full border border-cyan-400/10 font-bold uppercase tracking-wider font-mono">
+            <Clock size={12} /> {data.readingTime}
+          </div>
+        </div>
+
+        {/* Lesson Content */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Lesson Concept</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">{data.content}</p>
+        </div>
+
+        {/* Personalization (Enterprise Example) */}
+        <div className="space-y-2 bg-gradient-to-r from-purple-500/5 via-cyan-500/5 to-transparent border border-white/5 p-4 rounded-xl relative overflow-hidden">
+          <div className="absolute right-0 bottom-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl pointer-events-none" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-purple-400 uppercase tracking-wider">
+            <Sparkles size={14} className="animate-pulse" />
+            Personalized Workplace Example
+          </div>
+          <span className="text-[9px] text-muted-foreground uppercase font-mono font-bold block">
+            Customized for: <span className="text-purple-400">{userRole.replace(/_/g, ' ')}</span>
+          </span>
+          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+            {data.enterpriseExamples[userRole] || data.enterpriseExamples.JUNIOR_EMPLOYEE}
+          </p>
+        </div>
+
+        {/* Key Takeaways */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Key Takeaways</h3>
+          <ul className="space-y-2">
+            {data.keyTakeaways.map((takeaway, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+                <CheckCircle size={14} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                <span>{takeaway}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Resources Section */}
+        <div className="border-t border-white/5 pt-5 space-y-3">
+          <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Lesson Resources</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button className="flex items-center gap-2 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground">
+              <span className="text-lg">📄</span>
+              <div>
+                <span className="block">AI Glossary</span>
+                <span className="text-[9px] text-muted-foreground font-normal">Common terms & definitions</span>
+              </div>
+            </button>
+            <button className="flex items-center gap-2 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground">
+              <span className="text-lg">📄</span>
+              <div>
+                <span className="block">Quick Revision Notes</span>
+                <span className="text-[9px] text-muted-foreground font-normal">Summary points for recap</span>
+              </div>
+            </button>
+            <button className="flex items-center gap-2 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground">
+              <span className="text-lg">📄</span>
+              <div>
+                <span className="block">One-page Cheat Sheet</span>
+                <span className="text-[9px] text-muted-foreground font-normal">Core formulas & shortcuts</span>
+              </div>
+            </button>
+            <button 
+              onClick={handleAskKai}
+              className="flex items-center gap-2 bg-cyan-500/5 border border-cyan-500/10 p-3 rounded-xl hover:bg-cyan-500/10 text-left hover:border-cyan-500/20 transition-all text-xs font-bold text-cyan-400"
+            >
+              <span className="text-lg">🤖</span>
+              <div>
+                <span className="block">Ask Kai</span>
+                <span className="text-[9px] text-cyan-400/70 font-normal">Discuss topic with assistant</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Ask Kai Box */}
+        <div className="bg-[#0A0B1A]/80 border border-white/5 p-4 rounded-xl flex items-center justify-between gap-4 mt-6">
+          <div className="space-y-1">
+            <span className="text-xs text-foreground font-bold block">Need help understanding this topic?</span>
+            <span className="text-[10px] text-muted-foreground block">Ask Kai, our AI learning assistant, for help anytime.</span>
+          </div>
+          <button 
+            onClick={handleAskKai}
+            className="flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+            style={{ fontFamily: "'Raleway', sans-serif" }}
+          >
+            Ask Kai <ArrowRight size={12} />
+          </button>
+        </div>
+
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-white/5 pt-4 mt-6 flex justify-end">
+        <button 
+          onClick={handleClaimXp}
+          disabled={isSaving}
+          className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-black px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-cyan-500/15 disabled:opacity-50"
+          style={{ fontFamily: "'Raleway', sans-serif" }}
+        >
+          {isSaving ? "Saving Progress..." : "Complete Lesson"} <ArrowRight size={14} />
+        </button>
+      </div>
+
+    </div>
+  );
+}
+
 export function LearningBitePlayer({
   bites,
   courseId,
@@ -31,6 +328,7 @@ export function LearningBitePlayer({
   onCompleteBite,
   onAllBitesCompleted
 }: LearningBitePlayerProps) {
+  const { profile, setPage, setChatInitialQuery, updateLessonProgress, biteProgress, activityProgress } = useApp();
   // Navigation states
   const [currentBiteIdx, setCurrentBiteIdx] = useState(0);
   const [step, setStep] = useState<number>(1); // Step 1 to 7: Concept, Explanation, Visual, Real-World, Activity, Feedback, Completion
@@ -178,6 +476,95 @@ export function LearningBitePlayer({
 
   const handleClaimXp = async () => {
     setIsSaving(true);
+    if (localStorage.getItem("dev_bypass") === "true") {
+      try {
+        const xpEarned = activeBite.xpReward || 50;
+        
+        // 1. Record User Bite Progress
+        const newProgressRecord = {
+          id: Math.floor(Math.random() * 100000),
+          user_id: "dev-user-id",
+          bite_id: activeBite.id,
+          activity_id: activityId,
+          course_id: courseId,
+          status: "completed",
+          attempts: 1,
+          is_correct: true,
+          xp_earned: xpEarned,
+          completed_at: new Date().toISOString(),
+          last_accessed_at: new Date().toISOString()
+        };
+
+        const alreadyCompleted = (biteProgress || []).some(
+          (p: any) => Number(p.bite_id) === Number(activeBite.id) && p.status === "completed"
+        );
+
+        setBiteProgress((prev: any[]) => {
+          const filtered = (prev || []).filter(p => Number(p.bite_id) !== Number(activeBite.id));
+          return [...filtered, newProgressRecord];
+        });
+
+        // 2. Award bite XP to profile if this is the first completion
+        if (!alreadyCompleted) {
+          setProfile((prev: any) => prev ? { ...prev, xp: (prev.xp || 0) + xpEarned } : null);
+        }
+
+        onCompleteBite(activeBite.id, alreadyCompleted ? 0 : xpEarned);
+
+        // Check if all bites for this activity are completed
+        const completedBiteIds = new Set([
+          ...(biteProgress || []).filter((p: any) => p.status === "completed" && Number(p.activity_id) === Number(activityId)).map((p: any) => Number(p.bite_id)),
+          Number(activeBite.id)
+        ]);
+        const allCompleted = bites.every((b) => completedBiteIds.has(Number(b.id)));
+
+        if (allCompleted) {
+          const activityXp = Number(activityId) === 111 ? 100 : 50;
+          
+          const newActRecord = {
+            id: Math.floor(Math.random() * 100000),
+            user_id: "dev-user-id",
+            course_id: courseId,
+            activity_id: activityId,
+            status: "completed",
+            xp_earned: activityXp,
+            completed_at: new Date().toISOString(),
+            last_accessed_at: new Date().toISOString()
+          };
+
+          setActivityProgress((prev: any[]) => {
+            const filtered = (prev || []).filter(p => Number(p.activity_id) !== Number(activityId));
+            return [...filtered, newActRecord];
+          });
+
+          const actAlreadyCompleted = (activityProgress || []).some(
+            (p: any) => Number(p.activity_id) === Number(activityId) && p.status === "completed"
+          );
+
+          if (!actAlreadyCompleted) {
+            setProfile((prev: any) => prev ? { ...prev, xp: (prev.xp || 0) + activityXp } : null);
+            onAllBitesCompleted(activityXp);
+          } else {
+            onAllBitesCompleted(0);
+          }
+
+          await updateLessonProgress(courseId, activityId, true);
+          onClose();
+        } else {
+          if (currentBiteIdx < bites.length - 1) {
+            setCurrentBiteIdx(prev => prev + 1);
+            setStep(1);
+          } else {
+            onClose();
+          }
+        }
+      } catch (err) {
+        console.error("Error in handleClaimXp guest mode:", err);
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -326,6 +713,18 @@ export function LearningBitePlayer({
       setIsSaving(false);
     }
   };
+
+    // Render unified lesson player for any course lessons
+  if (activeBite) {
+    return (
+      <UnifiedLessonPlayer
+        activeBite={activeBite}
+        onClose={onClose}
+        handleClaimXp={handleClaimXp}
+        isSaving={isSaving}
+      />
+    );
+  }
 
   if (activeBite && Number(activeBite.id) === 1111) {
     return (

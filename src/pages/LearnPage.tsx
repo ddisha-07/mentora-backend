@@ -44,7 +44,7 @@ export default function LearnPage({
       duration: "8 Hours",
       xpReward: "1,800 XP",
       progress: getProgress(2),
-      isAccessible: true,
+      isAccessible: false,
       isPreview: true
     },
     {
@@ -56,7 +56,7 @@ export default function LearnPage({
       duration: "4 Hours",
       xpReward: "1,000 XP",
       progress: getProgress(3),
-      isAccessible: true,
+      isAccessible: false,
       isPreview: true
     },
     {
@@ -68,7 +68,7 @@ export default function LearnPage({
       duration: "6 Hours",
       xpReward: "1,500 XP",
       progress: getProgress(4),
-      isAccessible: true,
+      isAccessible: false,
       isPreview: true
     }
   ];

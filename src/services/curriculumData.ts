@@ -9,7 +9,7 @@ export const LOCAL_COURSES = [
     "category": "AI & ML",
     "difficulty": "Advanced",
     "duration": "12 Days",
-    "lessons": 16,
+    "lessons": 6,
     "students": 1240,
     "rating": 4.9,
     "description": "Build intelligent autonomous systems that can reason, plan, and act independently.",
@@ -458,47 +458,8 @@ export const LOCAL_BITES = [
     "xpReward": 50,
     "isRequired": true,
     "content": {
-      "concept": {
-        "title": "What is an AI Agent?",
-        "description": "An AI Agent is an autonomous program that uses a foundation language model as its central brain. Unlike static chatbots that wait for inputs, an AI agent continuously perceives its environment, makes logical decisions, plans detours, and calls tools autonomously to achieve a high-level goal."
-      },
-      "simpleExplanation": {
-        "text": "A standard script is like a train on a fixed track (stops at obstacles), whereas an AI agent is like a self-driving car equipped with GPS, rerouting and braking dynamically based on local obstacles."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Autonomy",
-              "desc": "Runs reasoning cycles independently to reach goals."
-            },
-            {
-              "title": "Adaptivity",
-              "desc": "Reacts dynamically to changing external inputs and logs."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "E-Commerce Stock Agent",
-        "description": "An inventory agent tracks stock metrics. When a product drops below 5 units, it independently queries vendor APIs, places orders at the lowest price, and emails confirmation summaries without manual developer inputs."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What defines an autonomous AI Agent?",
-        "options": [
-          "It relies strictly on user prompt intervals.",
-          "It runs reasoning loops, plans steps, and calls tools independently.",
-          "It does not use LLM backends.",
-          "It is a static text filter."
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Autonomous loop reasoning and tool execution define agent architectures.",
-        "incorrect": "Incorrect. Static chatbots wait for prompts. Agents run continuous reasoning and tool execution cycles autonomously."
-      }
+      "objective": "Understand the definition and core characteristics of autonomous AI Agents.",
+      "readingTime": "3 min"
     }
   },
   {
@@ -514,47 +475,8 @@ export const LOCAL_BITES = [
     "xpReward": 50,
     "isRequired": true,
     "content": {
-      "concept": {
-        "title": "Components of an AI Agent",
-        "description": "An AI agent consists of four core modules: 1) Senses (Sensors/Perception layer translating APIs and databases), 2) Brain (The core LLM reasoning through logic), 3) Senses/Hands (Tools/Action API bindings), and 4) Memory (Short-term conversation threads and long-term vector lookups)."
-      },
-      "simpleExplanation": {
-        "text": "It mimics a human worker: eyes and ears gather observations (Sensors), the brain decides the plan (LLM), hands write code (Tools), and notebooks recall past tasks (Memory)."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Sensors & Tools",
-              "desc": "Sensors read environmental state; tools write actions back to the environment."
-            },
-            {
-              "title": "Context Memory",
-              "desc": "Maintains session chat logs and queries vector databases for long-term facts."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Industrial Alert Handler",
-        "description": "A factory boiler agent perceives anomalous pressure readings (Perception), plans relief steps (Brain), triggers pressure valves (Tools), and logs this in the safety history ledger (Memory)."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "Which component of an AI agent executes actions in the external world?",
-        "options": [
-          "Brain",
-          "Tools",
-          "Sensors",
-          "Short-term Memory"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Tools are the API bindings and actions used to interact with external environments.",
-        "incorrect": "Not quite. The Brain plans the actions, but the Tools actually execute them."
-      }
+      "objective": "Learn the architectural building blocks of an agent.",
+      "readingTime": "3 min"
     }
   },
   {
@@ -562,111 +484,16 @@ export const LOCAL_BITES = [
     "activityId": 111,
     "courseId": 1,
     "stageId": 101,
-    "title": "The Agent Lifecycle",
-    "subtitle": "The cycle of perception and action",
+    "title": "Agent Lifecycle",
+    "subtitle": "The loop of perception and action",
     "biteType": "concept",
     "orderIndex": 3,
     "estimatedMinutes": 3,
     "xpReward": 50,
     "isRequired": true,
     "content": {
-      "concept": {
-        "title": "The Agent Lifecycle",
-        "description": "The agent lifecycle is a continuous loop: Perception (reading env state) -> Reasoning (thinking of the problem) -> Planning (creating tasks) -> Action (invoking tools) -> Observation (evaluating tool responses). This loop repeats until the goal is achieved or a max limit is hit."
-      },
-      "simpleExplanation": {
-        "text": "It is like a diagnostic technician: they check the machine warning lights (Perception), think of options (Reasoning), choose a test (Action), read the metrics (Observation), and repeat until repaired."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Feedback Loop",
-              "desc": "Observations feed the next reasoning thought, creating a dynamic feedback channel."
-            },
-            {
-              "title": "Termination Guard",
-              "desc": "A threshold checker that halts execution when goals are met or loop counts exceed safety limits."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Logistics Dispatcher Swarm",
-        "description": "A delivery coordinator agent checks shipping schedules, notices a vehicle breakdown, assigns a backup carrier, evaluates the updated arrival estimates, and closes the ticket when shipping is confirmed."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is the final stage of the reasoning and action loop cycle?",
-        "options": [
-          "Thought",
-          "Action",
-          "Observation",
-          "Planning"
-        ],
-        "correctAnswer": 2
-      },
-      "kaiFeedback": {
-        "correct": "Correct! The result of the Action is parsed as an Observation, which feeds back into the loop.",
-        "incorrect": "Incorrect. An Action triggers a response. Reading that response is the Observation phase."
-      }
-    }
-  },
-  {
-    "id": 1114,
-    "activityId": 111,
-    "courseId": 1,
-    "stageId": 101,
-    "title": "Traditional AI vs Agentic AI",
-    "subtitle": "Fixed rules vs dynamic planning",
-    "biteType": "concept",
-    "orderIndex": 4,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Traditional AI vs Agentic AI",
-        "description": "Traditional AI relies on fixed logic, classification boundaries, or rigid decision trees. Agentic AI uses the reasoning capabilities of LLMs to generate flexible plans, handle unstructured tools, inspect intermediate outcomes, and adapt to unpredictable errors on the fly."
-      },
-      "simpleExplanation": {
-        "text": "Traditional AI is like a automated train (follows tracks; stops if track is damaged), while Agentic AI is like an off-road driver (dynamically detours around roadblocks)."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Adaptability",
-              "desc": "Agentic AI scales to complex scenarios without requiring hardcoded nested if-else statements."
-            },
-            {
-              "title": "Error Tolerance",
-              "desc": "Reflects on tool failures and retries alternative variables autonomously."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Invoice Audit Assistant",
-        "description": "A traditional parser fails if an invoice format shifts slightly. An agentic auditor reads the shifted layout, locates the fields semantically, queries missing items, and completes the reconciliation."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is a major advantage of Agentic AI over traditional rule-based AI?",
-        "options": [
-          "Lower total computational run cost",
-          "Ability to dynamically adapt to novel environments and plan detours",
-          "Bypassing neural network weights",
-          "None of the above"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Generative reasoning lets Agentic AI handle unstructured inputs and adapt to novel errors.",
-        "incorrect": "Not quite. Rule-based systems are low cost, but Agentic AI shines in handling novel environments dynamically."
-      }
+      "objective": "Trace the continuous lifecycle loop of perception, reasoning, planning, and execution.",
+      "readingTime": "3 min"
     }
   },
   {
@@ -674,223 +501,16 @@ export const LOCAL_BITES = [
     "activityId": 112,
     "courseId": 1,
     "stageId": 102,
-    "title": "Introduction to Planning",
-    "subtitle": "Dividing goals into steps",
+    "title": "Reasoning and Planning",
+    "subtitle": "Logical reasoning models and ReAct loops",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
     "xpReward": 50,
     "isRequired": true,
     "content": {
-      "concept": {
-        "title": "Introduction to Planning",
-        "description": "Planning is the ability of an agent to formulate a sequence of actions before executing them. This is critical for solving complex, multi-step tasks where direct single-step action generation fails."
-      },
-      "simpleExplanation": {
-        "text": "Think of it like planning a roadmap before a roadtrip, rather than making random turns at every intersection."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Sub-goal Decomposition",
-              "desc": "Splitting a large objective into smaller milestones."
-            },
-            {
-              "title": "Dynamic Re-planning",
-              "desc": "Modifying steps when tools report unexpected results."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Software Deployment Bot",
-        "description": "A deployment agent plans: 1) Run unit tests. 2) Build docker image. 3) Push to registry. 4) Deploy to Kubernetes. If step 1 fails, it stops and alerts developers instead of pushing broken code."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is the primary value of planning in autonomous agents?",
-        "options": [
-          "To increase token consumption",
-          "To define a structured sequence of sub-goals before execution",
-          "To format HTML output",
-          "To speed up local caching"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Planning allows agents to break down complex goals and execute them sequentially.",
-        "incorrect": "Not quite. Planning is about decomposing large tasks into manageable steps to increase success rates."
-      }
-    }
-  },
-  {
-    "id": 1122,
-    "activityId": 112,
-    "courseId": 1,
-    "stageId": 102,
-    "title": "Chain-of-Thought Reasoning",
-    "subtitle": "Letting the model think step-by-step",
-    "biteType": "concept",
-    "orderIndex": 2,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Chain-of-Thought Reasoning",
-        "description": "Chain-of-Thought (CoT) is a reasoning pattern where the model is prompted to output its intermediate reasoning steps before declaring the final answer. This dramatically increases mathematical, logical, and structural accuracy."
-      },
-      "simpleExplanation": {
-        "text": "It is like showing your work in a math exam to get partial credit and verify each step, instead of just guessing the final number."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Explicit Steps",
-              "desc": "Forces the model to calculate intermediate variables first."
-            },
-            {
-              "title": "Error Isolation",
-              "desc": "Allows engineers to inspect exactly at which step the logic failed."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Billing Audit Checker",
-        "description": "When auditing invoices, the agent outputs: 'Step 1: Parse subtotal ($100). Step 2: Apply tax rate 15% ($15). Step 3: Verify sum is $115.'"
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "How does Chain-of-Thought (CoT) improve model outputs?",
-        "options": [
-          "By bypassing the system prompts",
-          "By generating intermediate reasoning steps before the final response",
-          "By training the model on new data",
-          "By adding visual layouts"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Writing intermediate steps keeps the model on a logical track, reducing reasoning errors.",
-        "incorrect": "Incorrect. CoT works by prompting the model to reason step-by-step, not by retraining weights or changing layout."
-      }
-    }
-  },
-  {
-    "id": 1123,
-    "activityId": 112,
-    "courseId": 1,
-    "stageId": 102,
-    "title": "Self-Reflection & Correction",
-    "subtitle": "Double checking work before delivery",
-    "biteType": "concept",
-    "orderIndex": 3,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Self-Reflection & Correction",
-        "description": "Self-reflection is the capability of an agent to inspect its own generated output and evaluate its correctness. If errors are detected, it executes correction cycles to refine the final answer."
-      },
-      "simpleExplanation": {
-        "text": "It is like proofreading your email draft before clicking send."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Critique-Refine Loop",
-              "desc": "Evaluating outputs against constraints and instructions."
-            },
-            {
-              "title": "Auto-Debugging",
-              "desc": "Re-submitting compilation errors back to the model context to self-repair code."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "SQL Generator Self-Correction",
-        "description": "An agent writes a SQL query. Before running it, a syntax-checker agent checks it, flags a missing JOIN condition, corrects it, and sends the revised clean SQL for execution."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is self-reflection in agent loops?",
-        "options": [
-          "Mirroring input texts",
-          "An internal checkpoint where the agent evaluates and corrects its own outputs",
-          "Resetting the session context",
-          "Logging database queries"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Reflection lets agents assess progress and fix mistakes autonomously.",
-        "incorrect": "Not quite. Self-reflection is the process of reviewing and fixing errors in thoughts or tools before returning results."
-      }
-    }
-  },
-  {
-    "id": 1124,
-    "activityId": 112,
-    "courseId": 1,
-    "stageId": 102,
-    "title": "Tree of Thoughts Planning",
-    "subtitle": "Searching multiple decision branches",
-    "biteType": "concept",
-    "orderIndex": 4,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Tree of Thoughts Planning",
-        "description": "Tree of Thoughts (ToT) is a planning pattern where the agent maintains a tree of possible reasoning steps. It evaluates multiple paths, backtracks if a path hits a dead-end, and selects the optimal path using search algorithms (like DFS or BFS)."
-      },
-      "simpleExplanation": {
-        "text": "Like playing chess: you calculate several moves ahead for different scenarios before choosing your piece."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Branching Exploration",
-              "desc": "Generating multiple alternative paths for a problem."
-            },
-            {
-              "title": "Backtracking",
-              "desc": "Undoing steps when a branch leads to an failure."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Optimal Route Carrier",
-        "description": "A scheduling agent explores route combinations for deliveries. If one route runs into heavy delays, it backtracks and selects the next best alternative branch."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What distinguishes Tree of Thoughts (ToT) from standard prompting?",
-        "options": [
-          "ToT disables tool calling.",
-          "ToT explores and evaluates multiple reasoning paths, supporting backtracking.",
-          "ToT works only for image models.",
-          "ToT does not use LLMs."
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! ToT introduces branching and path evaluation into LLM planning.",
-        "incorrect": "Incorrect. ToT is a method of generating and searching multiple reasoning branches to find the optimal path."
-      }
+      "objective": "Explore how agents deconstruct complex goals using advanced reasoning frameworks like ReAct.",
+      "readingTime": "3 min"
     }
   },
   {
@@ -898,223 +518,16 @@ export const LOCAL_BITES = [
     "activityId": 113,
     "courseId": 1,
     "stageId": 103,
-    "title": "Introduction to Swarms",
-    "subtitle": "Coordinating teams of agents",
+    "title": "Multi-Agent Systems",
+    "subtitle": "Collaboration models for agent swarms",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
     "xpReward": 50,
     "isRequired": true,
     "content": {
-      "concept": {
-        "title": "Introduction to Swarms",
-        "description": "A multi-agent swarm is a group of specialized agents that collaborate to solve complex, multi-disciplinary problems. Each agent is configured with focused prompts and tools to minimize context bloat."
-      },
-      "simpleExplanation": {
-        "text": "Like a team of specialists (designer, developer, PM) working together on a software project rather than one person doing it all."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Separation of Concerns",
-              "desc": "Giving agents focused boundaries increases efficiency."
-            },
-            {
-              "title": "Context Optimization",
-              "desc": "Reduces token overhead by only sharing necessary tools."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Enterprise Writing Swarm",
-        "description": "A marketing request enters. The Researcher gathers trends, the Copywriter drafts the text, and the Compliance Agent verifies safety. They pass files sequentially to publish posts."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is a major advantage of agent swarms?",
-        "options": [
-          "Lower total memory storage",
-          "Delegating work to specialized agents with focused context boundaries",
-          "Zero dependency on API networks",
-          "They do not require LLM prompting"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Swarms improve accuracy by keeping agent tasks focused and compact.",
-        "incorrect": "Not quite. Swarms split tasks into specialized roles to manage context-window limits."
-      }
-    }
-  },
-  {
-    "id": 1132,
-    "activityId": 113,
-    "courseId": 1,
-    "stageId": 103,
-    "title": "Dynamic Routing Protocols",
-    "subtitle": "Passing tasks dynamically",
-    "biteType": "concept",
-    "orderIndex": 2,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Dynamic Routing Protocols",
-        "description": "Dynamic routing defines how control is passed between agents. Agents can pass tasks using supervisors (who route work) or peer-to-peer protocols based on output conditions."
-      },
-      "simpleExplanation": {
-        "text": "It is like a ticket system routing support requests to billing, engineering, or sales depending on keywords."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Supervisor Routing",
-              "desc": "A central agent determines which worker agent is next."
-            },
-            {
-              "title": "Peer Handoff",
-              "desc": "Worker agents directly return specific codes to trigger transition handlers."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Customer Care Router",
-        "description": "An inbound email arrives. The Triage Agent identifies a billing issue, invokes `transfer_to_billing()`, passing the context to the Billing Specialist agent."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "Which pattern uses a central orchestrator to route work?",
-        "options": [
-          "Peer Network",
-          "Supervisor Routing",
-          "Linear Loop",
-          "Static Array"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Supervisor nodes orchestrate the handoffs and aggregate worker responses.",
-        "incorrect": "Incorrect. Peer networks communicate directly. Supervisor routing uses a central controller."
-      }
-    }
-  },
-  {
-    "id": 1133,
-    "activityId": 113,
-    "courseId": 1,
-    "stageId": 103,
-    "title": "Shared Blackboard Systems",
-    "subtitle": "Using a global memory space",
-    "biteType": "concept",
-    "orderIndex": 3,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Shared Blackboard Systems",
-        "description": "Blackboard systems maintain a shared database/state space that all agents can read and write to. Instead of passing direct payloads, agents read current updates and contribute their outputs to the shared space."
-      },
-      "simpleExplanation": {
-        "text": "It is like team members updating sections on a shared Google Doc."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "State Persistence",
-              "desc": "A single source of truth for current environment status."
-            },
-            {
-              "title": "Decoupling",
-              "desc": "Agents do not need to know which other agents are currently active."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Collaborative Report Compiler",
-        "description": "Five agents write sections of an annual company report. They read the outlines from a shared database, paste their sections, and review others' work dynamically."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "How do agents coordinate in a blackboard architecture?",
-        "options": [
-          "By calling local APIs only",
-          "By reading and writing to a shared global state space",
-          "Through hardcoded file links",
-          "They do not coordinate"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! The blackboard acts as the global state space for agent contributions.",
-        "incorrect": "Not quite. Blackboard systems rely on a shared global state space where all agents read updates."
-      }
-    }
-  },
-  {
-    "id": 1134,
-    "activityId": 113,
-    "courseId": 1,
-    "stageId": 103,
-    "title": "Consensus & Voting Protocols",
-    "subtitle": "Resolving agent disagreements",
-    "biteType": "concept",
-    "orderIndex": 4,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Consensus & Voting Protocols",
-        "description": "When agents in a swarm have conflicting recommendations, consensus protocols resolve the issue. Swarms implement voting blocks, supervisor overrides, or critic-guided reconciliation to reach a single decision."
-      },
-      "simpleExplanation": {
-        "text": "Like a board of directors voting on a corporate strategy before execution."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Critic Auditing",
-              "desc": "A neutral evaluator checks the arguments of competing agents."
-            },
-            {
-              "title": "Voting Mechanisms",
-              "desc": "Majority wins structure for simple diagnostic classifications."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Medical Scan Validation",
-        "description": "Three diagnostic agents review an MRI. Two detect anomalies; one returns clean. A consensus auditor flags the scan for human doctor review based on majority output."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is the purpose of consensus protocols in multi-agent swarms?",
-        "options": [
-          "To speed up requests",
-          "To resolve conflicting outputs and arrive at a single decision",
-          "To reduce GPU temperature",
-          "To backup user files"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Consensus models resolve conflicts when agents outputs disagree.",
-        "incorrect": "Incorrect. Consensus is designed to resolve disagreements and unify outputs."
-      }
+      "objective": "Learn how multiple specialized agents collaborate to solve complex enterprise problems.",
+      "readingTime": "3 min"
     }
   },
   {
@@ -1122,223 +535,16 @@ export const LOCAL_BITES = [
     "activityId": 114,
     "courseId": 1,
     "stageId": 104,
-    "title": "Vector Databases & Semantics",
-    "subtitle": "Implementing long-term memories",
+    "title": "Enterprise Applications",
+    "subtitle": "Deploying autonomous workflows in production",
     "biteType": "concept",
     "orderIndex": 1,
     "estimatedMinutes": 3,
     "xpReward": 50,
     "isRequired": true,
     "content": {
-      "concept": {
-        "title": "Vector Databases & Semantics",
-        "description": "Vector databases index text chunks as high-dimensional mathematical vectors. This allows agents to retrieve relevant information based on semantic meaning rather than exact keyword matches, creating a long-term memory system."
-      },
-      "simpleExplanation": {
-        "text": "It is like looking up books by topic in a library, rather than searching by alphabetical titles."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Semantic Retrieval",
-              "desc": "Matching concepts based on mathematical similarity scores."
-            },
-            {
-              "title": "Context Augmenting",
-              "desc": "Injecting relevant retrieved documents into active prompts."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Customer History Recaller",
-        "description": "An assistant queries a vector database for customer preferences. It retrieves: 'User struggled with database setup.' and adjusts its active tutorial script to focus on database tips."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "How do vector databases help autonomous agents?",
-        "options": [
-          "By running unit tests",
-          "By storing and retrieving text embeddings for semantic long-term memory",
-          "By replacing regular SQL tables completely",
-          "By speeding up CSS rendering"
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Vector databases allow semantic memory storage and lookup.",
-        "incorrect": "Not quite. Vector databases store and query text embeddings, enabling long-term memory retrieval."
-      }
-    }
-  },
-  {
-    "id": 1142,
-    "activityId": 114,
-    "courseId": 1,
-    "stageId": 104,
-    "title": "RAG Pipeline Architectures",
-    "subtitle": "Connecting agents to files",
-    "biteType": "concept",
-    "orderIndex": 2,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "RAG Pipeline Architectures",
-        "description": "Retrieval-Augmented Generation (RAG) is a pipeline that retrieves facts from external databases to ground model generation. This keeps responses accurate, prevents hallucinations, and allows access to proprietary data."
-      },
-      "simpleExplanation": {
-        "text": "It is like an open-book exam: instead of guessing, you search the textbook for the correct formula before answering."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Retrieval Stage",
-              "desc": "Querying database indexes to fetch context documents."
-            },
-            {
-              "title": "Generation Stage",
-              "desc": "Model synthesizes response using the retrieved facts."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Tech Support Query Assistant",
-        "description": "When asked about error `0x403`, the RAG pipeline fetches documentation for `0x403` from a vector index, letting the agent describe the fix exactly."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What is the primary benefit of RAG in agent systems?",
-        "options": [
-          "It removes the need for prompting.",
-          "It grounds responses in retrieved documents, preventing model hallucinations.",
-          "It compiles JS to binary.",
-          "It automates Git commits."
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! RAG grounds outputs in database facts to ensure factual correctness.",
-        "incorrect": "Incorrect. RAG is designed to fetch supporting context files to prevent hallucinations."
-      }
-    }
-  },
-  {
-    "id": 1143,
-    "activityId": 114,
-    "courseId": 1,
-    "stageId": 104,
-    "title": "Tool Call Error Recovery",
-    "subtitle": "Handling exceptions gracefully",
-    "biteType": "concept",
-    "orderIndex": 3,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Tool Call Error Recovery",
-        "description": "Enterprise agents must handle tool call failures. If a database query fails or a network timeout occurs, recovery loops trigger retries, switch to backup tools, or dynamically format query parameters."
-      },
-      "simpleExplanation": {
-        "text": "Like taking a detour when a GPS maps a road closure."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Exception Catching",
-              "desc": "Intercepting error messages and feeding them back to the agent."
-            },
-            {
-              "title": "Tool Fallbacks",
-              "desc": "Switching to alternative tools when primary options fail."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Flight Booking Resilient Tool",
-        "description": "A booking tool fails with a timeout. The agent catches the issue, runs a status-check tool, detects the booking was incomplete, and retries the booking safely."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "What does an agent do during a tool call error recovery cycle?",
-        "options": [
-          "It shuts down the program.",
-          "It feeds the error message back to its reasoning loop to plan a correction step.",
-          "It bypasses RLS rules.",
-          "It asks the user to rewrite code."
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! Intercepting errors lets agents evaluate and retry tool execution safely.",
-        "incorrect": "Not quite. Resilient agents catch errors and feed them back to the reasoning context to plan detour actions."
-      }
-    }
-  },
-  {
-    "id": 1144,
-    "activityId": 114,
-    "courseId": 1,
-    "stageId": 104,
-    "title": "Human-in-the-Loop Safeguards",
-    "subtitle": "Introducing approval gates",
-    "biteType": "concept",
-    "orderIndex": 4,
-    "estimatedMinutes": 3,
-    "xpReward": 50,
-    "isRequired": true,
-    "content": {
-      "concept": {
-        "title": "Human-in-the-Loop Safeguards",
-        "description": "Human-in-the-Loop (HITL) introduces gate checkpoints where the agent pauses and waits for explicit human sign-off before executing high-risk or critical actions (like transfers or deployments)."
-      },
-      "simpleExplanation": {
-        "text": "It is like a two-key lock system on a bank vault: the manager must turn the key to approve the vault opening."
-      },
-      "visual": {
-        "type": "cards",
-        "data": {
-          "cardItems": [
-            {
-              "title": "Risk Mitigation",
-              "desc": "Prevents autonomous actions from creating financial or security risks."
-            },
-            {
-              "title": "Interactive Triage",
-              "desc": "Lets human operators inspect proposed tool inputs before run execution."
-            }
-          ]
-        }
-      },
-      "realWorldExample": {
-        "title": "Stock Portfolio Sales Bot",
-        "description": "An investment agent plans to sell $50,000 in shares. It generates the transaction payload, pauses execution, sends an approval request via Slack, and completes the sale only after the user clicks 'Approve'."
-      },
-      "quickActivity": {
-        "type": "multiple_choice",
-        "question": "Why is Human-in-the-Loop (HITL) critical in enterprise agents?",
-        "options": [
-          "It speed up loops.",
-          "It guards high-risk actions with human approval, ensuring safety and compliance.",
-          "It removes the need for databases.",
-          "It replaces the frontend framework."
-        ],
-        "correctAnswer": 1
-      },
-      "kaiFeedback": {
-        "correct": "Correct! HITL ensures safety and compliance by routing high-risk plans through human approvals.",
-        "incorrect": "Incorrect. HITL acts as a safety gate for high-risk actions to guarantee operational security."
-      }
+      "objective": "Understand how autonomous agents drive operational efficiency and compliance in modern enterprise environments.",
+      "readingTime": "3 min"
     }
   },
   {
