@@ -370,7 +370,7 @@ export function LearningBitePlayer({
     );
   }
 
-  if (activeBite && Number(activeBite.stageId || activeBite.stage_id) === 102) {
+  if (activeBite && Number(activeBite.stageId) === 102) {
     return (
       <CustomLockedStage2Player
         activeBite={activeBite}
@@ -379,7 +379,7 @@ export function LearningBitePlayer({
     );
   }
 
-  if (activeBite && Number(activeBite.stageId || activeBite.stage_id) === 103) {
+  if (activeBite && Number(activeBite.stageId) === 103) {
     return (
       <CustomLockedStage3Player
         activeBite={activeBite}
@@ -388,7 +388,7 @@ export function LearningBitePlayer({
     );
   }
 
-  if (activeBite && Number(activeBite.stageId || activeBite.stage_id) === 104) {
+  if (activeBite && Number(activeBite.stageId) === 104) {
     return (
       <CustomLockedStage4Player
         activeBite={activeBite}

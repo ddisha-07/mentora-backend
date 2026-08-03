@@ -2436,8 +2436,8 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   
   // Debug log details
   console.log("[Curriculum Debug] CourseDetails active course:", course.title, "ID:", course.id);
-  console.log("[Curriculum Debug] All stages in memory:", (journeyStages || []).map(s => `(${s.id}: c_id=${s.course_id}, ${s.title})`));
-  console.log("[Curriculum Debug] All activities in memory:", (learningActivities || []).map(a => `(${a.id}: s_id=${a.stage_id}, c_id=${a.course_id}, ${a.title})`));
+  console.log("[Curriculum Debug] All stages in memory:", (journeyStages || []).map(s => `(${s.id}: c_id=${s.courseId}, ${s.title})`));
+  console.log("[Curriculum Debug] All activities in memory:", (learningActivities || []).map(a => `(${a.id}: s_id=${a.stageId}, c_id=${a.courseId}, ${a.title})`));
   
   // Load journey stages, activities, and user progress
   const courseStages = (journeyStages || [])
@@ -2496,11 +2496,11 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       return;
     }
     if (status === 'locked') {
-      if (Number(activity.stageId || activity.stage_id) === 102) {
+      if (Number(activity.stageId) === 102) {
         alert("Available after completing Stage 1.");
-      } else if (Number(activity.stageId || activity.stage_id) === 103) {
+      } else if (Number(activity.stageId) === 103) {
         alert("Available after Stage 2.");
-      } else if (Number(activity.stageId || activity.stage_id) === 104) {
+      } else if (Number(activity.stageId) === 104) {
         alert("Available after Stage 3.");
       } else {
         alert("This activity is currently locked. Please complete the preceding activities to unlock it!");
@@ -2655,8 +2655,8 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   <div className="absolute top-12 bottom-12 w-0.5 bg-muted left-1/2 -translate-x-1/2 z-0" />
                   
                   {courseStages.map((stage, sIdx) => {
-                    const stageActivities = courseActivities.filter(a => Number(a.stageId || a.stage_id) === Number(stage.id));
-                    const stageBites = (learningBites || []).filter((b: any) => Number(b.stageId || b.stage_id) === Number(stage.id));
+                    const stageActivities = courseActivities.filter(a => Number(a.stageId) === Number(stage.id));
+                    const stageBites = (learningBites || []).filter((b: any) => Number(b.stageId) === Number(stage.id));
                     const stageXp = stageActivities.reduce((sum, a) => sum + (a.xpReward || a.xp_reward || 0), 0) + stageBites.reduce((sum, b) => sum + (b.xpReward || b.xp_reward || 0), 0);
                     
                     const completedStageBites = stageBites.filter((b: any) => 
@@ -2667,7 +2667,7 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     );
                     
                     let stageStatus = "Locked";
-                    const firstActIdx = courseActivities.findIndex(a => Number(a.stageId || a.stage_id) === Number(stage.id));
+                    const firstActIdx = courseActivities.findIndex(a => Number(a.stageId) === Number(stage.id));
                     const isStageAvailable = firstActIdx !== -1 && getActivityStatus(courseActivities[firstActIdx], firstActIdx) !== 'locked';
                     
                     if (completedStageActs.length === stageActivities.length && stageActivities.length > 0) {
@@ -5084,10 +5084,36 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
 
   // Learning Journeys states
-  const [journeyStages, setJourneyStages] = useState<any[]>(LOCAL_STAGES);
-  const [learningActivities, setLearningActivities] = useState<any[]>(LOCAL_ACTIVITIES);
+  const [journeyStages, setJourneyStages] = useState<any[]>(() =>
+    LOCAL_STAGES.map(s => ({
+      ...s,
+      courseId: s.courseId ?? s.course_id
+    }))
+  );
+  const [learningActivities, setLearningActivities] = useState<any[]>(() =>
+    LOCAL_ACTIVITIES.map(a => ({
+      ...a,
+      stageId: a.stageId ?? a.stage_id,
+      courseId: a.courseId ?? a.course_id,
+      activityType: a.activityType ?? a.activity_type,
+      xpReward: a.xpReward ?? a.xp_reward,
+      estimatedMinutes: a.estimatedMinutes ?? a.estimated_minutes,
+      isRequired: a.isRequired ?? a.is_required
+    }))
+  );
   const [activityProgress, setActivityProgress] = useState<any[]>([]);
-  const [learningBites, setLearningBites] = useState<any[]>(LOCAL_BITES);
+  const [learningBites, setLearningBites] = useState<any[]>(() =>
+    LOCAL_BITES.map(b => ({
+      ...b,
+      stageId: b.stageId ?? b.stage_id,
+      courseId: b.courseId ?? b.course_id,
+      activityId: b.activityId ?? b.activity_id,
+      biteType: b.biteType ?? b.bite_type,
+      estimatedMinutes: b.estimatedMinutes ?? b.estimated_minutes,
+      xpReward: b.xpReward ?? b.xp_reward,
+      isRequired: b.isRequired ?? b.is_required
+    }))
+  );
   const [biteProgress, setBiteProgress] = useState<any[]>([]);
   const [curriculumError, setCurriculumError] = useState<string | null>(null);
 
@@ -5670,9 +5696,29 @@ export default function App() {
       // Initialize dynamic local curriculum
       if (active) {
         setCourses(LOCAL_COURSES);
-        setJourneyStages(LOCAL_STAGES);
-        setLearningActivities(LOCAL_ACTIVITIES);
-        setLearningBites(LOCAL_BITES);
+        setJourneyStages(LOCAL_STAGES.map(s => ({
+          ...s,
+          courseId: s.courseId ?? s.course_id
+        })));
+        setLearningActivities(LOCAL_ACTIVITIES.map(a => ({
+          ...a,
+          stageId: a.stageId ?? a.stage_id,
+          courseId: a.courseId ?? a.course_id,
+          activityType: a.activityType ?? a.activity_type,
+          xpReward: a.xpReward ?? a.xp_reward,
+          estimatedMinutes: a.estimatedMinutes ?? a.estimated_minutes,
+          isRequired: a.isRequired ?? a.is_required
+        })));
+        setLearningBites(LOCAL_BITES.map(b => ({
+          ...b,
+          stageId: b.stageId ?? b.stage_id,
+          courseId: b.courseId ?? b.course_id,
+          activityId: b.activityId ?? b.activity_id,
+          biteType: b.biteType ?? b.bite_type,
+          estimatedMinutes: b.estimatedMinutes ?? b.estimated_minutes,
+          xpReward: b.xpReward ?? b.xp_reward,
+          isRequired: b.isRequired ?? b.is_required
+        })));
       }
 
       // Get current auth session
