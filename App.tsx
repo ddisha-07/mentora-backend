@@ -1940,7 +1940,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   } = useApp();
 
   const [goals, setGoals] = useState([
-    { id: 1, text: "Complete one Learning Bite", completed: true },
+    { id: 1, text: "Complete one Learning Bite", completed: false },
     { id: 2, text: "Ask Kai one question", completed: false },
     { id: 3, text: "Maintain your streak", completed: false }
   ]);
@@ -2467,7 +2467,12 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     .sort((a, b) => a.orderIndex - b.orderIndex);
   const courseActivities = (learningActivities || [])
     .filter(a => Number(a.courseId) === Number(course.id))
-    .sort((a, b) => a.orderIndex - b.orderIndex);
+    .sort((a, b) => {
+      if (Number(a.stageId) !== Number(b.stageId)) {
+        return Number(a.stageId) - Number(b.stageId);
+      }
+      return a.orderIndex - b.orderIndex;
+    });
   const progressRecords = (activityProgress || []).filter(p => Number(p.course_id) === Number(course.id));
   
   const completedActivities = courseActivities.filter(a => {
@@ -2494,6 +2499,9 @@ function CourseDetailPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     const prog = progressRecords.find(p => Number(p.activity_id) === Number(activity.id));
     if (prog) {
       return prog.status;
+    }
+    if (Number(activity.stageId) === 101) {
+      return 'available';
     }
     if (index === 0) {
       return 'available';
@@ -4182,11 +4190,11 @@ function ProfilePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     department: "Software Engineering",
     plant: "Jamshedpur HQ",
     designation: "Associate Engineer",
-    xp: 1240,
-    currentStreak: 12,
-    longestStreak: 15,
-    knowledgeCredits: 150,
-    mentoraCredits: 450,
+    xp: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    knowledgeCredits: 0,
+    mentoraCredits: 0,
     currentJourney: "Agentic AI",
     currentLevel: "Beginner"
   };
@@ -5088,11 +5096,11 @@ export default function App() {
         department: "Software Engineering",
         plant: "Jamshedpur HQ",
         designation: "Associate Engineer",
-        xp: 1240,
-        currentStreak: 12,
-        longestStreak: 15,
-        knowledgeCredits: 150,
-        mentoraCredits: 450,
+        xp: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        knowledgeCredits: 0,
+        mentoraCredits: 0,
         currentJourney: "Agentic AI",
         currentLevel: "Beginner"
       };
@@ -5777,6 +5785,8 @@ export default function App() {
             progress: 0,
             completed_lessons: []
           }]);
+          setActivityProgress([]);
+          setBiteProgress([]);
           parsePathname(window.location.pathname);
           setLoading(false);
         }
