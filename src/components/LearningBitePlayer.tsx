@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { LearningBite, UserBiteProgress } from "../types";
+import { useApp } from "../../App";
 
 interface LearningBitePlayerProps {
   bites: LearningBite[];
