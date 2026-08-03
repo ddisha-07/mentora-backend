@@ -793,19 +793,6 @@ export function LearningBitePlayer({
     }
   };
 
-  // Render unified lesson player for any course lessons
-  if (activeBite) {
-    return (
-      <UnifiedLessonPlayer
-        activeBite={activeBite}
-        onClose={onClose}
-        handleClaimXp={handleClaimXp}
-        isSaving={isSaving}
-        activityId={activityId}
-      />
-    );
-  }
-
   if (activeBite && Number(activeBite.id) === 1111) {
     return (
       <CustomSinglePagePlayer
@@ -873,6 +860,19 @@ export function LearningBitePlayer({
       <CustomLockedStage4Player
         activeBite={activeBite}
         onClose={onClose}
+      />
+    );
+  }
+
+  // Render unified lesson player for any course lessons
+  if (activeBite && activeBite.biteType === "lesson") {
+    return (
+      <UnifiedLessonPlayer
+        activeBite={activeBite}
+        onClose={onClose}
+        handleClaimXp={handleClaimXp}
+        isSaving={isSaving}
+        activityId={activityId}
       />
     );
   }
