@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { 
-  X, Zap, BookOpen, Trophy, ArrowRight, ArrowLeft, RotateCcw, 
+import {
+  X, Zap, BookOpen, Trophy, ArrowRight, ArrowLeft, RotateCcw,
   CheckCircle, AlertCircle, HelpCircle,
   Eye, Brain, Play as PlayIcon, Sparkles, Check, AlertTriangle, Lock, Clock,
   FileText, PlayCircle, Image as ImageIcon, Newspaper, Youtube
@@ -155,7 +155,7 @@ function UnifiedLessonPlayer({
 }) {
   const { profile, setPage, setChatInitialQuery, learningActivities } = useApp();
   const userRole = profile?.role || "JUNIOR_EMPLOYEE";
-  
+
   const currentBite = activeBite;
   const currentActivity = learningActivities?.find((a: any) => Number(a.id) === Number(activityId)) || null;
 
@@ -176,7 +176,17 @@ function UnifiedLessonPlayer({
           .select("*")
           .eq("lesson_id", activeBite.activityId)
           .order("display_order");
-        
+
+        console.log("Activity ID:", activeBite.activityId);
+        console.log("Resources:", data);
+        console.log("Resource Error:", error);
+
+        if (error) {
+          console.error("Error fetching lesson resources:", error);
+        } else if (active) {
+          setResources(data || []);
+        }
+
         console.log("resources:", data);
         console.log("error:", error);
 
@@ -264,7 +274,7 @@ function UnifiedLessonPlayer({
 
       {/* Scrollable Content Container */}
       <div className="flex-1 space-y-6 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
-        
+
         {/* Objective & Meta */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
           <div className="space-y-1 max-w-[80%]">
@@ -339,8 +349,8 @@ function UnifiedLessonPlayer({
                 </button>
               ))
             )}
-            
-            <button 
+
+            <button
               onClick={handleAskKai}
               className="flex items-center gap-2 bg-cyan-500/5 border border-cyan-500/10 p-3 rounded-xl hover:bg-cyan-500/10 text-left hover:border-cyan-500/20 transition-all text-xs font-bold text-cyan-400"
             >
@@ -359,7 +369,7 @@ function UnifiedLessonPlayer({
             <span className="text-xs text-foreground font-bold block">Need help understanding this topic?</span>
             <span className="text-[10px] text-muted-foreground block">Ask Kai, our AI learning assistant, for help anytime.</span>
           </div>
-          <button 
+          <button
             onClick={handleAskKai}
             className="flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
             style={{ fontFamily: "'Raleway', sans-serif" }}
@@ -372,7 +382,7 @@ function UnifiedLessonPlayer({
 
       {/* Footer */}
       <div className="border-t border-white/5 pt-4 mt-6 flex justify-end">
-        <button 
+        <button
           onClick={handleClaimXp}
           disabled={isSaving}
           className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-black px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-cyan-500/15 disabled:opacity-50"
@@ -457,7 +467,7 @@ export function LearningBitePlayer({
     return (
       <div className="bg-[#05050C] border border-border/10 rounded-3xl max-w-2xl mx-auto shadow-2xl relative overflow-hidden p-6 md:p-8 flex flex-col justify-between min-h-[400px]">
         <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-        
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/10 pb-4 mb-4 z-10">
           <div className="flex items-center gap-2">
@@ -481,7 +491,7 @@ export function LearningBitePlayer({
 
         {/* Footer */}
         <div className="flex items-center justify-end border-t border-border/10 pt-4 mt-6 z-10">
-          <button 
+          <button
             onClick={onClose}
             className="flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-black px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/10"
           >
@@ -525,7 +535,7 @@ export function LearningBitePlayer({
 
     const activityConfig = content.quickActivity;
     const isAnsCorrect = Number(selectedAnswer) === Number(activityConfig?.correctAnswer);
-    
+
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnsCorrect);
     setIsAnswerSubmitted(true);
@@ -548,7 +558,7 @@ export function LearningBitePlayer({
     if (localStorage.getItem("dev_bypass") === "true") {
       try {
         const xpEarned = activeBite.xpReward || 50;
-        
+
         // 1. Record User Bite Progress
         const newProgressRecord = {
           id: Math.floor(Math.random() * 100000),
@@ -589,7 +599,7 @@ export function LearningBitePlayer({
 
         if (allCompleted) {
           const activityXp = Number(activityId) === 111 ? 100 : 50;
-          
+
           const newActRecord = {
             id: Math.floor(Math.random() * 100000),
             user_id: "dev-user-id",
@@ -677,7 +687,7 @@ export function LearningBitePlayer({
           .select("xp")
           .eq("id", user.id)
           .single();
-        
+
         const currentXp = (profileData?.xp || 0) + xpEarned;
 
         const { error: profError } = await supabase
@@ -720,7 +730,7 @@ export function LearningBitePlayer({
           .maybeSingle();
 
         const actAlreadyCompleted = existingAct && existingAct.status === "completed";
-        
+
         const { error: actError } = await supabase
           .from("user_activity_progress")
           .upsert({
@@ -752,7 +762,7 @@ export function LearningBitePlayer({
             .select("xp")
             .eq("id", user.id)
             .single();
-          
+
           const nextXp = (profileData2?.xp || 0) + activityXp;
           const { error: profError2 } = await supabase
             .from("profiles")
@@ -766,7 +776,7 @@ export function LearningBitePlayer({
         } else {
           onAllBitesCompleted(0);
         }
-        
+
         onClose(); // Automatically return the user to the Course Details / Interactive Skill Path
       } else {
         if (currentBiteIdx < totalBitesCount - 1) {
@@ -783,7 +793,7 @@ export function LearningBitePlayer({
     }
   };
 
-    // Render unified lesson player for any course lessons
+  // Render unified lesson player for any course lessons
   if (activeBite) {
     return (
       <UnifiedLessonPlayer
@@ -892,15 +902,14 @@ export function LearningBitePlayer({
       {/* Step Progress indicators */}
       <div className="flex gap-1.5 justify-center mb-6">
         {[1, 2, 3, 4, 5, 6, 7].map((s) => (
-          <div 
-            key={s} 
-            className={`h-1 rounded-full transition-all duration-300 ${
-              s < step 
-                ? "w-8 bg-cyan-500" 
-                : s === step 
-                ? "w-10 bg-cyan-400 shadow-md shadow-cyan-400/20" 
+          <div
+            key={s}
+            className={`h-1 rounded-full transition-all duration-300 ${s < step
+              ? "w-8 bg-cyan-500"
+              : s === step
+                ? "w-10 bg-cyan-400 shadow-md shadow-cyan-400/20"
                 : "w-4 bg-border/20"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -920,9 +929,9 @@ export function LearningBitePlayer({
           <RealWorldExampleSection title={content.realWorldExample.title} description={content.realWorldExample.description} />
         )}
         {step === 5 && content.quickActivity && (
-          <QuickActivitySection 
-            question={content.quickActivity.question} 
-            options={content.quickActivity.options} 
+          <QuickActivitySection
+            question={content.quickActivity.question}
+            options={content.quickActivity.options}
             selectedIdx={selectedAnswer}
             onSelect={handleAnswerSelect}
             isSubmitted={isAnswerSubmitted}
@@ -930,7 +939,7 @@ export function LearningBitePlayer({
           />
         )}
         {step === 6 && content.kaiFeedback && (
-          <KaiFeedbackSection 
+          <KaiFeedbackSection
             feedback={isCorrect ? content.kaiFeedback.correct : content.kaiFeedback.incorrect}
             isCorrect={isCorrect}
             onTryAgain={handleTryAgain}
@@ -938,7 +947,7 @@ export function LearningBitePlayer({
           />
         )}
         {step === 7 && (
-          <BiteCompletionSection 
+          <BiteCompletionSection
             title={activeBite.title}
             xpReward={activeBite.xpReward}
             isSaving={isSaving}
@@ -950,7 +959,7 @@ export function LearningBitePlayer({
       {/* Footer Nav Controls */}
       <div className="flex items-center justify-between border-t border-border/10 pt-4 mt-6 z-10">
         {step > 1 && step < 6 ? (
-          <button 
+          <button
             onClick={handlePrevStep}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all active:scale-95"
           >
@@ -961,21 +970,20 @@ export function LearningBitePlayer({
         )}
 
         {step < 5 ? (
-          <button 
+          <button
             onClick={handleNextStep}
             className="flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-black px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/10"
           >
             Continue <ArrowRight size={13} />
           </button>
         ) : step === 5 ? (
-          <button 
+          <button
             onClick={handleAnswerSubmit}
             disabled={selectedAnswer === null || isAnswerSubmitted}
-            className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-              selectedAnswer !== null && !isAnswerSubmitted
-                ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
+            className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${selectedAnswer !== null && !isAnswerSubmitted
+              ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
           >
             Submit Answer
           </button>
@@ -1057,12 +1065,11 @@ export function VisualLearningSection({ type, data }: VisualProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
                 )}
-                <div 
-                  className={`px-5 py-3 rounded-xl border text-xs font-bold font-mono transition-all duration-300 w-full max-w-xs ${
-                    isActive 
-                      ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 scale-[1.03] shadow-md shadow-cyan-500/5" 
-                      : "bg-card border-border/10 text-muted-foreground"
-                  }`}
+                <div
+                  className={`px-5 py-3 rounded-xl border text-xs font-bold font-mono transition-all duration-300 w-full max-w-xs ${isActive
+                    ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 scale-[1.03] shadow-md shadow-cyan-500/5"
+                    : "bg-card border-border/10 text-muted-foreground"
+                    }`}
                 >
                   {step}
                 </div>
@@ -1188,29 +1195,27 @@ export function QuickActivitySection({
         {options.map((opt, idx) => {
           const isSelected = selectedIdx === idx;
           return (
-            <div 
+            <div
               key={idx}
               onClick={() => onSelect(idx)}
-              className={`p-3.5 border rounded-2xl text-xs cursor-pointer transition-all duration-200 ${
-                isSelected
-                  ? isSubmitted
-                    ? isCorrectAnswer
-                      ? "border-emerald-500 bg-emerald-500/5 text-foreground"
-                      : "border-red-500 bg-red-500/5 text-foreground"
-                    : "border-cyan-400 bg-cyan-500/5 text-foreground"
-                  : "border-border/10 bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground"
-              }`}
+              className={`p-3.5 border rounded-2xl text-xs cursor-pointer transition-all duration-200 ${isSelected
+                ? isSubmitted
+                  ? isCorrectAnswer
+                    ? "border-emerald-500 bg-emerald-500/5 text-foreground"
+                    : "border-red-500 bg-red-500/5 text-foreground"
+                  : "border-cyan-400 bg-cyan-500/5 text-foreground"
+                : "border-border/10 bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground"
+                }`}
             >
               <div className="flex gap-3 items-center">
-                <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-mono ${
-                  isSelected 
-                    ? isSubmitted
-                      ? isCorrectAnswer
-                        ? "border-emerald-500 text-emerald-400 bg-emerald-500/10"
-                        : "border-red-500 text-red-400 bg-red-500/10"
-                      : "border-cyan-400 text-cyan-400 bg-cyan-500/10"
-                    : "border-border/20 text-muted-foreground"
-                }`}>
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-mono ${isSelected
+                  ? isSubmitted
+                    ? isCorrectAnswer
+                      ? "border-emerald-500 text-emerald-400 bg-emerald-500/10"
+                      : "border-red-500 text-red-400 bg-red-500/10"
+                    : "border-cyan-400 text-cyan-400 bg-cyan-500/10"
+                  : "border-border/20 text-muted-foreground"
+                  }`}>
                   {String.fromCharCode(65 + idx)}
                 </div>
                 <span className="font-semibold">{opt}</span>
@@ -1306,7 +1311,7 @@ export function BiteCompletionSection({
       <div className="w-16 h-16 rounded-full bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center text-cyan-400 mx-auto animate-pulse">
         <Trophy size={30} className="animate-bounce" />
       </div>
-      
+
       <div className="space-y-2">
         <h4 className="text-lg font-extrabold text-foreground">Bite Complete!</h4>
         <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1435,7 +1440,7 @@ export function CustomSinglePagePlayer({
 
       {/* Content Body */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
-        
+
         {/* Objectives Panel */}
         <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
           <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
@@ -1473,7 +1478,7 @@ export function CustomSinglePagePlayer({
                 The agent senses its environment by reading databases, monitoring system metrics, or parsing incoming emails and webhooks.
               </p>
             </div>
-            
+
             <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex flex-col items-center text-center">
               <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mb-2">
                 <Brain size={16} />
@@ -1483,7 +1488,7 @@ export function CustomSinglePagePlayer({
                 The central LLM brain reviews the perceived state, references its memory of past actions, and formulates a step-by-step logic path.
               </p>
             </div>
-            
+
             <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-3.5 flex flex-col items-center text-center">
               <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 mb-2">
                 <PlayIcon size={14} className="fill-pink-400/20" />
@@ -1561,11 +1566,10 @@ export function CustomSinglePagePlayer({
                         <button
                           key={oIdx}
                           onClick={() => handleSelectOption(q.id, oIdx)}
-                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
-                            isSelected
-                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
-                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
-                          }`}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${isSelected
+                            ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                            : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                            }`}
                         >
                           {opt}
                         </button>
@@ -1581,11 +1585,10 @@ export function CustomSinglePagePlayer({
             <button
               onClick={handleCheckAnswers}
               disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
-              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
-                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+                }`}
             >
               Verify Answers
             </button>
@@ -1781,7 +1784,7 @@ export function CustomBite2Player({
 
       {/* Content Body */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
-        
+
         {/* Objectives Panel */}
         <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
           <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
@@ -1914,11 +1917,10 @@ export function CustomBite2Player({
                         <button
                           key={oIdx}
                           onClick={() => handleSelectOption(q.id, oIdx)}
-                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
-                            isSelected
-                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
-                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
-                          }`}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${isSelected
+                            ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                            : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                            }`}
                         >
                           {opt}
                         </button>
@@ -1934,11 +1936,10 @@ export function CustomBite2Player({
             <button
               onClick={handleCheckAnswers}
               disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
-              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
-                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+                }`}
             >
               Verify Answers
             </button>
@@ -2134,7 +2135,7 @@ export function CustomBite3Player({
 
       {/* Content Body */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
-        
+
         {/* Objectives Panel */}
         <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
           <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
@@ -2264,11 +2265,10 @@ export function CustomBite3Player({
                         <button
                           key={oIdx}
                           onClick={() => handleSelectOption(q.id, oIdx)}
-                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
-                            isSelected
-                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
-                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
-                          }`}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${isSelected
+                            ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                            : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                            }`}
                         >
                           {opt}
                         </button>
@@ -2284,11 +2284,10 @@ export function CustomBite3Player({
             <button
               onClick={handleCheckAnswers}
               disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
-              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
-                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+                }`}
             >
               Verify Answers
             </button>
@@ -2484,7 +2483,7 @@ export function CustomBite4Player({
 
       {/* Content Body */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-1 my-4 z-10 text-left">
-        
+
         {/* Objectives Panel */}
         <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4">
           <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">Learning Objective</span>
@@ -2510,7 +2509,7 @@ export function CustomBite4Player({
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-foreground">Traditional vs Agentic AI</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+
             {/* Traditional Card */}
             <div className="bg-white/[0.005] border border-white/5 rounded-2xl p-4 space-y-3">
               <div className="flex items-center gap-2 border-b border-white/5 pb-2">
@@ -2538,7 +2537,7 @@ export function CustomBite4Player({
                 <p><strong>Enterprise Application:</strong> Customer refunds manager connecting Stripes, logs, and databases.</p>
               </div>
             </div>
-            
+
           </div>
         </div>
 
@@ -2571,11 +2570,10 @@ export function CustomBite4Player({
                         <button
                           key={oIdx}
                           onClick={() => handleSelectOption(q.id, oIdx)}
-                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${
-                            isSelected
-                              ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
-                              : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
-                          }`}
+                          className={`text-left text-xs p-3 rounded-xl border transition-all duration-200 ${isSelected
+                            ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 font-medium"
+                            : "bg-muted/10 border-border/10 hover:border-border/30 text-muted-foreground"
+                            }`}
                         >
                           {opt}
                         </button>
@@ -2591,11 +2589,10 @@ export function CustomBite4Player({
             <button
               onClick={handleCheckAnswers}
               disabled={quizAnswers[1] === null || quizAnswers[2] === null || quizAnswers[3] === null}
-              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-                quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
-                  ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
+              className={`w-full py-3 rounded-xl text-xs font-bold transition-all active:scale-95 ${quizAnswers[1] !== null && quizAnswers[2] !== null && quizAnswers[3] !== null
+                ? "bg-cyan-400 hover:bg-cyan-500 text-black shadow-lg shadow-cyan-400/20"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+                }`}
             >
               Verify Answers
             </button>
@@ -2732,7 +2729,7 @@ export function CustomLockedStage2Player({
         <div className="w-16 h-16 rounded-full bg-cyan-500/5 border border-cyan-500/10 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/5">
           <Lock size={28} className="animate-pulse" />
         </div>
-        
+
         <div className="space-y-2 max-w-md">
           <h3 className="text-sm font-bold text-foreground">Content Locked</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -2816,7 +2813,7 @@ export function CustomLockedStage3Player({
         <div className="w-16 h-16 rounded-full bg-purple-500/5 border border-purple-500/10 flex items-center justify-center text-purple-400 shadow-lg shadow-purple-500/5">
           <Sparkles size={28} className="text-purple-400 animate-pulse" />
         </div>
-        
+
         <div className="space-y-2 max-w-md">
           <h3 className="text-lg font-black text-purple-400 tracking-tight">Coming Soon</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -2900,7 +2897,7 @@ export function CustomLockedStage4Player({
         <div className="w-16 h-16 rounded-full bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/5">
           <Sparkles size={28} className="text-indigo-400 animate-pulse" />
         </div>
-        
+
         <div className="space-y-2 max-w-md">
           <h3 className="text-lg font-black text-indigo-400 tracking-tight">Coming Soon</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
