@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { 
   X, Zap, BookOpen, Trophy, ArrowRight, ArrowLeft, RotateCcw, 
   CheckCircle, AlertCircle, HelpCircle,
-  Eye, Brain, Play as PlayIcon, Sparkles, Check, AlertTriangle, Lock, Clock
+  Eye, Brain, Play as PlayIcon, Sparkles, Check, AlertTriangle, Lock, Clock,
+  FileText, PlayCircle, Image as ImageIcon, Newspaper, Youtube
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { LearningBite, UserBiteProgress } from "../types";
@@ -153,6 +154,57 @@ function UnifiedLessonPlayer({
   const { profile, setPage, setChatInitialQuery } = useApp();
   const userRole = profile?.role || "JUNIOR_EMPLOYEE";
   
+  const [resources, setResources] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    let active = true;
+    const fetchResources = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("lesson_resources")
+          .select("*")
+          .eq("lesson_id", activeBite.activityId)
+          .order("display_order");
+        
+        if (error) {
+          console.error("Error fetching lesson resources:", error);
+        } else if (active) {
+          setResources(data || []);
+        }
+      } catch (err) {
+        console.error("Error in fetchResources:", err);
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchResources();
+    return () => {
+      active = false;
+    };
+  }, [activeBite.activityId]);
+
+  const renderResourceIcon = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "pdf":
+        return <FileText size={16} className="text-muted-foreground" />;
+      case "video":
+        return <PlayCircle size={16} className="text-muted-foreground" />;
+      case "image":
+        return <ImageIcon size={16} className="text-muted-foreground" />;
+      case "article":
+        return <Newspaper size={16} className="text-muted-foreground" />;
+      case "youtube":
+        return <Youtube size={16} className="text-muted-foreground" />;
+      default:
+        return <FileText size={16} className="text-muted-foreground" />;
+    }
+  };
+
   const data = LESSON_DATA[activeBite.id] || {
     title: activeBite.title,
     readingTime: "3 min read",
@@ -250,27 +302,32 @@ function UnifiedLessonPlayer({
         <div className="border-t border-white/5 pt-5 space-y-3">
           <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Lesson Resources</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button className="flex items-center gap-2 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground">
-              <span className="text-lg">📄</span>
-              <div>
-                <span className="block">AI Glossary</span>
-                <span className="text-[9px] text-muted-foreground font-normal">Common terms & definitions</span>
+            {isLoading ? (
+              <div className="col-span-1 sm:col-span-2 text-xs text-muted-foreground p-3">
+                Loading lesson resources...
               </div>
-            </button>
-            <button className="flex items-center gap-2 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground">
-              <span className="text-lg">📄</span>
-              <div>
-                <span className="block">Quick Revision Notes</span>
-                <span className="text-[9px] text-muted-foreground font-normal">Summary points for recap</span>
+            ) : resources.length === 0 ? (
+              <div className="col-span-1 sm:col-span-2 text-xs text-muted-foreground p-3">
+                No resources available for this lesson.
               </div>
-            </button>
-            <button className="flex items-center gap-2 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground">
-              <span className="text-lg">📄</span>
-              <div>
-                <span className="block">One-page Cheat Sheet</span>
-                <span className="text-[9px] text-muted-foreground font-normal">Core formulas & shortcuts</span>
-              </div>
-            </button>
+            ) : (
+              resources.map((resource) => (
+                <button
+                  key={resource.id}
+                  onClick={() => window.open(resource.file_url, "_blank")}
+                  className="flex items-center gap-2.5 bg-white/[0.02] border border-white/5 p-3 rounded-xl hover:bg-white/[0.04] text-left hover:border-white/10 transition-all text-xs font-bold text-foreground"
+                >
+                  <span className="flex-shrink-0">
+                    {renderResourceIcon(resource.resource_type)}
+                  </span>
+                  <div>
+                    <span className="block">{resource.title}</span>
+                    <span className="text-[9px] text-muted-foreground font-normal">{resource.description}</span>
+                  </div>
+                </button>
+              ))
+            )}
+            
             <button 
               onClick={handleAskKai}
               className="flex items-center gap-2 bg-cyan-500/5 border border-cyan-500/10 p-3 rounded-xl hover:bg-cyan-500/10 text-left hover:border-cyan-500/20 transition-all text-xs font-bold text-cyan-400"
