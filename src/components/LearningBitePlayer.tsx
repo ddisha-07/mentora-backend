@@ -144,16 +144,21 @@ function UnifiedLessonPlayer({
   activeBite,
   onClose,
   handleClaimXp,
-  isSaving
+  isSaving,
+  activityId
 }: {
   activeBite: LearningBite;
   onClose: () => void;
   handleClaimXp: () => Promise<void>;
   isSaving: boolean;
+  activityId: number;
 }) {
-  const { profile, setPage, setChatInitialQuery } = useApp();
+  const { profile, setPage, setChatInitialQuery, learningActivities } = useApp();
   const userRole = profile?.role || "JUNIOR_EMPLOYEE";
   
+  const currentBite = activeBite;
+  const currentActivity = learningActivities?.find((a: any) => Number(a.id) === Number(activityId)) || null;
+
   const [resources, setResources] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -162,12 +167,19 @@ function UnifiedLessonPlayer({
     const fetchResources = async () => {
       setIsLoading(true);
       try {
+        console.log("activityId:", activityId);
+        console.log("current bite:", currentBite);
+        console.log("current activity:", currentActivity);
+
         const { data, error } = await supabase
           .from("lesson_resources")
           .select("*")
           .eq("lesson_id", activeBite.activityId)
           .order("display_order");
         
+        console.log("resources:", data);
+        console.log("error:", error);
+
         if (error) {
           console.error("Error fetching lesson resources:", error);
         } else if (active) {
@@ -186,7 +198,7 @@ function UnifiedLessonPlayer({
     return () => {
       active = false;
     };
-  }, [activeBite.activityId]);
+  }, [activeBite.activityId, activityId, currentBite, currentActivity]);
 
   const renderResourceIcon = (type: string) => {
     switch (type?.toLowerCase()) {
@@ -779,6 +791,7 @@ export function LearningBitePlayer({
         onClose={onClose}
         handleClaimXp={handleClaimXp}
         isSaving={isSaving}
+        activityId={activityId}
       />
     );
   }
